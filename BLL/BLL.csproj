@@ -41,7 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="Autenticacion\LoginAppService.cs" />
+    <Compile Include="Bitacora\BitacoraService.cs" />
+    <Compile Include="Bitacora\IBitacoraService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
