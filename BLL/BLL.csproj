@@ -41,9 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Autenticacion\CerrarSesionAppService.cs" />
     <Compile Include="Autenticacion\LoginAppService.cs" />
     <Compile Include="Bitacora\BitacoraService.cs" />
     <Compile Include="Bitacora\IBitacoraService.cs" />
+    <Compile Include="Configuracion\AplicacionServiceFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

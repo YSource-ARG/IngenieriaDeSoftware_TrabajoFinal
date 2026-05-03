@@ -1,0 +1,48 @@
+﻿using BLL.Autenticacion;
+using BLL.Bitacora;
+using DAL.BaseDeDatos;
+using DAL.Bitacora;
+using DAL.Usuarios;
+using SSL.Interfaces;
+using SSL.Seguridad;
+using SSL.Sesion;
+using System;
+
+namespace BLL.Configuracion
+{
+    public class AplicacionServiceFactory
+    {
+        public LoginAppService LoginAppService { get; }
+        public CerrarSesionAppService CerrarSesionAppService { get; }
+
+        public AplicacionServiceFactory(string connectionString)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new ArgumentException("La cadena de conexión no puede estar vacía.", nameof(connectionString));
+            }
+
+            IConnectionFactory connectionFactory = new SqlConnectionFactory(connectionString);
+
+            IUsuarioRepositorio usuarioRepositorio = new UsuarioRepositorio(connectionFactory);
+            IBitacoraRepositorio bitacoraRepositorio = new BitacoraRepositorio(connectionFactory);
+
+            IPasswordHasher passwordHasher = new PasswordHasherService();
+            ISessionService sessionService = SessionService.ObtenerSesion();
+
+            IBitacoraService bitacoraService = new BitacoraService(bitacoraRepositorio);
+
+            LoginAppService = new LoginAppService(
+                usuarioRepositorio,
+                passwordHasher,
+                sessionService,
+                bitacoraService
+            );
+
+            CerrarSesionAppService = new CerrarSesionAppService(
+                sessionService,
+                bitacoraService
+            );
+        }
+    }
+}
