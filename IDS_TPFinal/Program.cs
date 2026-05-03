@@ -1,22 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using BLL.Configuracion;
+using System;
+using System.Configuration;
 using System.Windows.Forms;
 
-namespace IDS_TPFinal
+namespace UI
 {
     internal static class Program
     {
-        /// <summary>
-        /// Punto de entrada principal para la aplicación.
-        /// </summary>
         [STAThread]
         static void Main()
         {
+            string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+
+            AplicacionServiceFactory serviceFactory = new AplicacionServiceFactory(connectionString);
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+
+            Application.Run(new FrmLogin(
+                serviceFactory.LoginAppService,
+                serviceFactory.CerrarSesionAppService
+            ));
         }
     }
 }

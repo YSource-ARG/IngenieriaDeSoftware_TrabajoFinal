@@ -1,0 +1,103 @@
+IF DB_ID('TP_Ing_De_Software') IS NULL CREATE DATABASE TP_Ing_De_Software
+GO
+
+USE TP_Ing_De_Software
+GO
+
+IF OBJECT_ID('dbo.Usuario', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Usuario
+    (
+        Id uniqueidentifier NOT NULL PRIMARY KEY,
+        NombreUsuario nvarchar(100) NOT NULL,
+        PasswordHash nvarchar(255) NOT NULL,
+        Activo bit NOT NULL CONSTRAINT DF_Usuario_Activo DEFAULT (1),
+        FechaCreacion datetime2(7) NOT NULL CONSTRAINT DF_Usuario_FechaCreacion DEFAULT (SYSDATETIME()),
+        FechaUltimoAcceso datetime2(7) NULL
+    )
+END
+GO
+
+IF COL_LENGTH('dbo.Usuario', 'PasswordSalt') IS NOT NULL
+BEGIN
+    ALTER TABLE dbo.Usuario DROP COLUMN PasswordSalt
+END
+GO
+
+IF OBJECT_ID('dbo.Bitacora', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Bitacora
+    (
+        Id uniqueidentifier NOT NULL PRIMARY KEY,
+        Fecha datetime2(7) NOT NULL CONSTRAINT DF_Bitacora_Fecha DEFAULT (SYSDATETIME()),
+        UsuarioId uniqueidentifier NULL,
+        Usuario nvarchar(100) NULL,
+        Modulo nvarchar(100) NOT NULL,
+        Accion nvarchar(100) NOT NULL,
+        Descripcion nvarchar(500) NULL,
+        Tipo nvarchar(50) NOT NULL
+    )
+END
+GO
+
+IF COL_LENGTH('dbo.Bitacora', 'UsuarioId') IS NULL
+BEGIN
+    ALTER TABLE dbo.Bitacora ADD UsuarioId uniqueidentifier NULL
+END
+GO
+
+IF COL_LENGTH('dbo.Bitacora', 'Modulo') IS NULL
+BEGIN
+    ALTER TABLE dbo.Bitacora ADD Modulo nvarchar(100) NOT NULL CONSTRAINT DF_Bitacora_Modulo DEFAULT ('General')
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.Bitacora_Registrar
+    @Id UNIQUEIDENTIFIER,
+    @Fecha DATETIME2(7),
+    @UsuarioId UNIQUEIDENTIFIER = NULL,
+    @Usuario NVARCHAR(100) = NULL,
+    @Modulo NVARCHAR(100),
+    @Accion NVARCHAR(100),
+    @Descripcion NVARCHAR(500) = NULL,
+    @Tipo NVARCHAR(50)
+AS
+BEGIN
+    INSERT INTO dbo.Bitacora
+    (
+        Id,
+        Fecha,
+        UsuarioId,
+        Usuario,
+        Modulo,
+        Accion,
+        Descripcion,
+        Tipo
+    )
+    VALUES
+    (
+        @Id,
+        @Fecha,
+        @UsuarioId,
+        @Usuario,
+        @Modulo,
+        @Accion,
+        @Descripcion,
+        @Tipo
+    )
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Usuario WHERE NombreUsuario = 'admin')
+BEGIN
+    INSERT INTO dbo.Usuario (Id, NombreUsuario, PasswordHash, Activo, FechaCreacion, FechaUltimoAcceso)
+    VALUES (NEWID(), 'admin', 'A6xnQhbz4Vx2HuGl4lXwZ5U2I8iziLRFnhP5eNfIRvQ=', 1, SYSDATETIME(), NULL)
+END
+ELSE
+BEGIN
+    UPDATE dbo.Usuario
+    SET PasswordHash = 'A6xnQhbz4Vx2HuGl4lXwZ5U2I8iziLRFnhP5eNfIRvQ=',
+        Activo = 1
+    WHERE NombreUsuario = 'admin'
+END
+GO
