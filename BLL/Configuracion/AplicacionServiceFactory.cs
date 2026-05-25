@@ -1,4 +1,4 @@
-﻿using BLL.Autenticacion;
+using BLL.Autenticacion;
 using BLL.Bitacora;
 using BLL.Usuarios;
 using DAL.BaseDeDatos;
@@ -19,6 +19,8 @@ namespace BLL.Configuracion
 
         public GestionUsuariosAppService GestionUsuariosAppService { get; }
 
+        public IBitacoraService BitacoraService { get; }
+
         public AplicacionServiceFactory(string connectionString)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
@@ -34,25 +36,25 @@ namespace BLL.Configuracion
             IPasswordHasher passwordHasher = new PasswordHasherService();
             ISessionService sessionService = SessionService.ObtenerSesion();
 
-            IBitacoraService bitacoraService = new BitacoraService(bitacoraRepositorio);
+            BitacoraService = new BitacoraService(bitacoraRepositorio);
 
             LoginAppService = new LoginAppService(
                 usuarioRepositorio,
                 passwordHasher,
                 sessionService,
-                bitacoraService
+                BitacoraService
             );
 
             CerrarSesionAppService = new CerrarSesionAppService(
                 sessionService,
-                bitacoraService
+                BitacoraService
             );
 
             GestionUsuariosAppService = new GestionUsuariosAppService(
                 usuarioRepositorio,
                 passwordHasher,
                 sessionService,
-                bitacoraService
+                BitacoraService
             );
         }
     }

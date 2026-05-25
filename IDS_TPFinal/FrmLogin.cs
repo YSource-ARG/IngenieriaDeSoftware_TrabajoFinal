@@ -1,4 +1,5 @@
 using BLL.Autenticacion;
+using BLL.Bitacora;
 using BLL.Usuarios;
 using System;
 using System.Drawing;
@@ -12,11 +13,13 @@ namespace UI
         private readonly LoginAppService _loginAppService;
         private readonly CerrarSesionAppService _cerrarSesionAppService;
         private readonly GestionUsuariosAppService _gestionUsuariosAppService;
+        private readonly IBitacoraService _bitacoraService;
 
         public FrmLogin(
             LoginAppService loginAppService,
             CerrarSesionAppService cerrarSesionAppService,
-            GestionUsuariosAppService gestionUsuariosAppService)
+            GestionUsuariosAppService gestionUsuariosAppService,
+            IBitacoraService bitacoraService)
         {
             if (loginAppService == null)
             {
@@ -33,9 +36,15 @@ namespace UI
                 throw new ArgumentNullException(nameof(gestionUsuariosAppService));
             }
 
+            if (bitacoraService == null)
+            {
+                throw new ArgumentNullException(nameof(bitacoraService));
+            }
+
             _loginAppService = loginAppService;
             _cerrarSesionAppService = cerrarSesionAppService;
             _gestionUsuariosAppService = gestionUsuariosAppService;
+            _bitacoraService = bitacoraService;
 
             InitializeComponent();
 
@@ -120,7 +129,8 @@ namespace UI
         {
             FrmPrincipal frmPrincipal = new FrmPrincipal(
                 _cerrarSesionAppService,
-                _gestionUsuariosAppService
+                _gestionUsuariosAppService,
+                _bitacoraService
             );
 
             this.Hide();

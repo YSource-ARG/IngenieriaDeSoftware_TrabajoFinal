@@ -1,4 +1,5 @@
-﻿using BLL.Autenticacion;
+using BLL.Autenticacion;
+using BLL.Bitacora;
 using IDS_TPFinal;
 using System;
 using System.Drawing;
@@ -12,11 +13,15 @@ namespace UI
     {
         private readonly CerrarSesionAppService _cerrarSesionAppService;
         private readonly GestionUsuariosAppService _gestionUsuariosAppService;
+        private readonly IBitacoraService _bitacoraService;
         private bool _cerrandoSesion;
 
         public bool CerrandoSesion => _cerrandoSesion;
 
-        public FrmPrincipal(CerrarSesionAppService cerrarSesionAppService, GestionUsuariosAppService gestionUsuariosAppService)
+        public FrmPrincipal(
+            CerrarSesionAppService cerrarSesionAppService,
+            GestionUsuariosAppService gestionUsuariosAppService,
+            IBitacoraService bitacoraService)
         {
             if (cerrarSesionAppService == null)
             {
@@ -28,8 +33,14 @@ namespace UI
                 throw new ArgumentNullException(nameof(gestionUsuariosAppService));
             }
 
+            if (bitacoraService == null)
+            {
+                throw new ArgumentNullException(nameof(bitacoraService));
+            }
+
             _cerrarSesionAppService = cerrarSesionAppService;
             _gestionUsuariosAppService = gestionUsuariosAppService;
+            _bitacoraService = bitacoraService;
 
             InitializeComponent();
             AplicarEstiloVisual();
@@ -80,6 +91,7 @@ namespace UI
             ConfigurarBotonPrincipal(btnCerrarSesion);
             ConfigurarBotonSecundario(btnSalir);
             ConfigurarBotonSecundario(btnGestionUsuarios);
+            ConfigurarBotonSecundario(btnConsultaBitacora);
         }
 
         private void ConfigurarAreaMdi()
@@ -129,21 +141,31 @@ namespace UI
         private void btnGestionUsuarios_Click(object sender, EventArgs e)
         {
             FrmGestionUsuarios frmGestionUsuarios = new FrmGestionUsuarios(_gestionUsuariosAppService);
+            MostrarFormularioDialogoCentrado(frmGestionUsuarios);
+        }
 
-            frmGestionUsuarios.StartPosition = FormStartPosition.Manual;
+        private void btnConsultaBitacora_Click(object sender, EventArgs e)
+        {
+            FrmConsultaBitacora frmConsultaBitacora = new FrmConsultaBitacora(_bitacoraService);
+            MostrarFormularioDialogoCentrado(frmConsultaBitacora);
+        }
 
-            frmGestionUsuarios.Shown += (s, args) =>
+        private void MostrarFormularioDialogoCentrado(Form formulario)
+        {
+            formulario.StartPosition = FormStartPosition.Manual;
+
+            formulario.Shown += (s, args) =>
             {
                 Screen pantalla = Screen.FromControl(this);
                 Rectangle areaTrabajo = pantalla.WorkingArea;
 
-                int x = areaTrabajo.Left + (areaTrabajo.Width - frmGestionUsuarios.Width) / 2;
-                int y = areaTrabajo.Top + (areaTrabajo.Height - frmGestionUsuarios.Height) / 2;
+                int x = areaTrabajo.Left + (areaTrabajo.Width - formulario.Width) / 2;
+                int y = areaTrabajo.Top + (areaTrabajo.Height - formulario.Height) / 2;
 
-                frmGestionUsuarios.Location = new Point(x, y);
+                formulario.Location = new Point(x, y);
             };
 
-            frmGestionUsuarios.ShowDialog(this);
+            formulario.ShowDialog(this);
         }
     }
 }
