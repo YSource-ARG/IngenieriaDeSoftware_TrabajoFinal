@@ -51,6 +51,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Estilos\TemaVisual.cs" />
+    <Compile Include="FrmConsultaBitacora.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmConsultaBitacora.Designer.cs">
+      <DependentUpon>FrmConsultaBitacora.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmGestionUsuarios.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmGestionUsuarios.Designer.cs">
+      <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmGestionUsuarios.Estilo.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FrmLogin.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -65,6 +80,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="FrmGestionUsuarios.resx">
+      <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FrmLogin.resx">
       <DependentUpon>FrmLogin.cs</DependentUpon>
     </EmbeddedResource>

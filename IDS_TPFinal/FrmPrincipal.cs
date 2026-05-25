@@ -1,26 +1,35 @@
 ﻿using BLL.Autenticacion;
+using IDS_TPFinal;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
 using UI.Estilos;
+using BLL.Usuarios;
 
 namespace UI
 {
     public partial class FrmPrincipal : Form
     {
         private readonly CerrarSesionAppService _cerrarSesionAppService;
+        private readonly GestionUsuariosAppService _gestionUsuariosAppService;
         private bool _cerrandoSesion;
 
         public bool CerrandoSesion => _cerrandoSesion;
 
-        public FrmPrincipal(CerrarSesionAppService cerrarSesionAppService)
+        public FrmPrincipal(CerrarSesionAppService cerrarSesionAppService, GestionUsuariosAppService gestionUsuariosAppService)
         {
             if (cerrarSesionAppService == null)
             {
                 throw new ArgumentNullException(nameof(cerrarSesionAppService));
             }
 
+            if (gestionUsuariosAppService == null)
+            {
+                throw new ArgumentNullException(nameof(gestionUsuariosAppService));
+            }
+
             _cerrarSesionAppService = cerrarSesionAppService;
+            _gestionUsuariosAppService = gestionUsuariosAppService;
 
             InitializeComponent();
             AplicarEstiloVisual();
@@ -70,6 +79,7 @@ namespace UI
 
             ConfigurarBotonPrincipal(btnCerrarSesion);
             ConfigurarBotonSecundario(btnSalir);
+            ConfigurarBotonSecundario(btnGestionUsuarios);
         }
 
         private void ConfigurarAreaMdi()
@@ -116,9 +126,24 @@ namespace UI
             this.Close();
         }
 
-        private void lblResumenTexto_Click(object sender, EventArgs e)
+        private void btnGestionUsuarios_Click(object sender, EventArgs e)
         {
+            FrmGestionUsuarios frmGestionUsuarios = new FrmGestionUsuarios(_gestionUsuariosAppService);
 
+            frmGestionUsuarios.StartPosition = FormStartPosition.Manual;
+
+            frmGestionUsuarios.Shown += (s, args) =>
+            {
+                Screen pantalla = Screen.FromControl(this);
+                Rectangle areaTrabajo = pantalla.WorkingArea;
+
+                int x = areaTrabajo.Left + (areaTrabajo.Width - frmGestionUsuarios.Width) / 2;
+                int y = areaTrabajo.Top + (areaTrabajo.Height - frmGestionUsuarios.Height) / 2;
+
+                frmGestionUsuarios.Location = new Point(x, y);
+            };
+
+            frmGestionUsuarios.ShowDialog(this);
         }
     }
 }
