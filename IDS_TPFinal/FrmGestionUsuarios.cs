@@ -20,11 +20,75 @@ namespace IDS_TPFinal
                 ?? throw new ArgumentNullException(nameof(gestionUsuariosAppService));
 
             InitializeComponent();
+
+            dgvUsuarios.SelectionChanged += dgvUsuarios_SelectionChanged;
         }
 
         private void btnGuardar_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Formulario conectado. Próximo paso: guardar usuario desde BLL.");
+            try
+            {
+                if (_gestionUsuariosAppService == null)
+                {
+                    MessageBox.Show("El formulario no recibió el servicio de gestión de usuarios.", "Error de configuración", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    return;
+                }
+
+                string nombreUsuario = txtNombreUsuario.Text;
+                string nombreCompleto = txtNombreCompleto.Text;
+                string passwordInicial = txtPassword.Text;
+                bool activo = cmbEstado.SelectedItem?.ToString() == "Activo";
+
+                _gestionUsuariosAppService.CrearUsuario(nombreUsuario, nombreCompleto, passwordInicial, activo);
+
+                MessageBox.Show("Usuario creado correctamente.", "Gestión de usuarios", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                txtId.Clear();
+                txtNombreUsuario.Clear();
+                txtNombreCompleto.Clear();
+                txtPassword.Clear();
+                txtFechaCreacion.Clear();
+                txtFechaUltimoAcceso.Clear();
+
+                if (cmbEstado.Items.Count > 0)
+                {
+                    cmbEstado.SelectedIndex = 0;
+                }
+
+                CargarUsuarios();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "No se pudo guardar el usuario", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        private void dgvUsuarios_SelectionChanged(object sender, EventArgs e)
+        {
+            CargarUsuarioSeleccionadoEnFormulario();
+        }
+
+        private void CargarUsuarioSeleccionadoEnFormulario()
+        {
+            if (dgvUsuarios.CurrentRow == null)
+            {
+                return;
+            }
+
+            txtId.Text = Convert.ToString(dgvUsuarios.CurrentRow.Cells["Id"].Value);
+            txtNombreUsuario.Text = Convert.ToString(dgvUsuarios.CurrentRow.Cells["NombreUsuario"].Value);
+            txtNombreCompleto.Text = Convert.ToString(dgvUsuarios.CurrentRow.Cells["NombreCompleto"].Value);
+            txtFechaCreacion.Text = Convert.ToString(dgvUsuarios.CurrentRow.Cells["FechaCreacion"].Value);
+            txtFechaUltimoAcceso.Text = Convert.ToString(dgvUsuarios.CurrentRow.Cells["UltimoAcceso"].Value);
+
+            string estado = Convert.ToString(dgvUsuarios.CurrentRow.Cells["Estado"].Value);
+
+            if (estado == "Activo" || estado == "Inactivo")
+            {
+                cmbEstado.SelectedItem = estado;
+            }
+
+            txtPassword.Clear();
         }
         private void CargarUsuarios()
         {

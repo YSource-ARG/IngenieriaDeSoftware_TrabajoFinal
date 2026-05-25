@@ -75,12 +75,12 @@
             this.panelHeader.Controls.Add(this.lblIcono);
             this.panelHeader.Location = new System.Drawing.Point(18, 18);
             this.panelHeader.Name = "panelHeader";
-            this.panelHeader.Size = new System.Drawing.Size(1373, 122);
+            this.panelHeader.Size = new System.Drawing.Size(1254, 122);
             this.panelHeader.TabIndex = 0;
             // 
             // btnCerrar
             // 
-            this.btnCerrar.Location = new System.Drawing.Point(1234, 39);
+            this.btnCerrar.Location = new System.Drawing.Point(1074, 28);
             this.btnCerrar.Name = "btnCerrar";
             this.btnCerrar.Size = new System.Drawing.Size(112, 44);
             this.btnCerrar.TabIndex = 3;
@@ -127,7 +127,7 @@
             this.panelContenido.Controls.Add(this.btnNuevo);
             this.panelContenido.Location = new System.Drawing.Point(18, 154);
             this.panelContenido.Name = "panelContenido";
-            this.panelContenido.Size = new System.Drawing.Size(1373, 486);
+            this.panelContenido.Size = new System.Drawing.Size(1254, 486);
             this.panelContenido.TabIndex = 1;
             // 
             // dgvUsuarios
@@ -135,7 +135,7 @@
             this.dgvUsuarios.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvUsuarios.Location = new System.Drawing.Point(38, 65);
             this.dgvUsuarios.Name = "dgvUsuarios";
-            this.dgvUsuarios.Size = new System.Drawing.Size(585, 202);
+            this.dgvUsuarios.Size = new System.Drawing.Size(509, 202);
             this.dgvUsuarios.TabIndex = 8;
             // 
             // panelLineaDerecha
@@ -180,7 +180,7 @@
             this.panelEdicion.Controls.Add(this.txtNombreUsuario);
             this.panelEdicion.Controls.Add(this.txtId);
             this.panelEdicion.Controls.Add(this.lblDatosUsuario);
-            this.panelEdicion.Location = new System.Drawing.Point(677, 17);
+            this.panelEdicion.Location = new System.Drawing.Point(553, 14);
             this.panelEdicion.Name = "panelEdicion";
             this.panelEdicion.Size = new System.Drawing.Size(669, 275);
             this.panelEdicion.TabIndex = 0;
@@ -367,7 +367,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1403, 660);
+            this.ClientSize = new System.Drawing.Size(1291, 660);
             this.Controls.Add(this.panelContenido);
             this.Controls.Add(this.panelHeader);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;

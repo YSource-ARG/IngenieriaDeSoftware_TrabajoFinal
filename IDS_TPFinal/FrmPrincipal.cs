@@ -129,7 +129,21 @@ namespace UI
         private void btnGestionUsuarios_Click(object sender, EventArgs e)
         {
             FrmGestionUsuarios frmGestionUsuarios = new FrmGestionUsuarios(_gestionUsuariosAppService);
-            frmGestionUsuarios.ShowDialog();
+
+            frmGestionUsuarios.StartPosition = FormStartPosition.Manual;
+
+            frmGestionUsuarios.Shown += (s, args) =>
+            {
+                Screen pantalla = Screen.FromControl(this);
+                Rectangle areaTrabajo = pantalla.WorkingArea;
+
+                int x = areaTrabajo.Left + (areaTrabajo.Width - frmGestionUsuarios.Width) / 2;
+                int y = areaTrabajo.Top + (areaTrabajo.Height - frmGestionUsuarios.Height) / 2;
+
+                frmGestionUsuarios.Location = new Point(x, y);
+            };
+
+            frmGestionUsuarios.ShowDialog(this);
         }
     }
 }

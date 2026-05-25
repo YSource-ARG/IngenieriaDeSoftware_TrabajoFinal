@@ -20,7 +20,7 @@ namespace UI.Estilos
             formulario.BackColor = FondoPrincipal;
             formulario.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
         }
-
+        
         public static void AplicarPanelPrincipal(Panel panel)
         {
             panel.BackColor = FondoPanel;
