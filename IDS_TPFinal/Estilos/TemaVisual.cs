@@ -88,5 +88,39 @@ namespace UI.Estilos
             label.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
             label.BackColor = Color.Transparent;
         }
+
+        public static void AplicarDataGridView(DataGridView grilla)
+        {
+            grilla.BackgroundColor = FondoInput;
+            grilla.BorderStyle = BorderStyle.FixedSingle;
+            grilla.GridColor = BordeSuave;
+
+            grilla.EnableHeadersVisualStyles = false;
+
+            grilla.ColumnHeadersDefaultCellStyle.BackColor = FondoPanel;
+            grilla.ColumnHeadersDefaultCellStyle.ForeColor = TextoPrincipal;
+            grilla.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            grilla.ColumnHeadersDefaultCellStyle.SelectionBackColor = FondoPanel;
+            grilla.ColumnHeadersDefaultCellStyle.SelectionForeColor = TextoPrincipal;
+
+            grilla.DefaultCellStyle.BackColor = FondoInput;
+            grilla.DefaultCellStyle.ForeColor = TextoPrincipal;
+            grilla.DefaultCellStyle.SelectionBackColor = AzulPrincipal;
+            grilla.DefaultCellStyle.SelectionForeColor = Color.White;
+            grilla.DefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+
+            grilla.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(30, 34, 40);
+            grilla.AlternatingRowsDefaultCellStyle.ForeColor = TextoPrincipal;
+            grilla.AlternatingRowsDefaultCellStyle.SelectionBackColor = AzulPrincipal;
+            grilla.AlternatingRowsDefaultCellStyle.SelectionForeColor = Color.White;
+
+            grilla.RowHeadersVisible = false;
+            grilla.AllowUserToAddRows = false;
+            grilla.AllowUserToDeleteRows = false;
+            grilla.ReadOnly = true;
+            grilla.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            grilla.MultiSelect = false;
+            grilla.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        }
     }
 }

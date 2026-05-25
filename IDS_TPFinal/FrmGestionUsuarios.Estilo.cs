@@ -11,6 +11,7 @@ namespace IDS_TPFinal
         {
             AplicarEstiloVisual();
             ConfigurarEstadoInicial();
+            CargarUsuarios();
         }
 
         private void AplicarEstiloVisual()
@@ -23,6 +24,9 @@ namespace IDS_TPFinal
 
             panelLineaIzquierda.BackColor = TemaVisual.BordeSuave;
             panelLineaDerecha.BackColor = TemaVisual.BordeSuave;
+
+            panelLineaIzquierda.Visible = false;
+            panelLineaDerecha.Visible = false;
 
             lblIcono.Font = new Font("Segoe UI Emoji", 28F, FontStyle.Regular);
             lblIcono.ForeColor = TemaVisual.TextoPrincipal;
@@ -56,8 +60,12 @@ namespace IDS_TPFinal
             TemaVisual.AplicarTextBox(txtNombreUsuario);
             TemaVisual.AplicarTextBox(txtNombreCompleto);
             TemaVisual.AplicarTextBox(txtPassword);
+            TemaVisual.AplicarTextBox(txtFechaCreacion);
+            TemaVisual.AplicarTextBox(txtFechaUltimoAcceso);
 
-            AplicarComboBox(cmbEstado);            
+            AplicarComboBox(cmbEstado);
+
+            TemaVisual.AplicarDataGridView(dgvUsuarios);
 
             TemaVisual.AplicarBotonPrincipal(btnGuardar);
             TemaVisual.AplicarBotonSecundario(btnCancelar);
@@ -72,7 +80,10 @@ namespace IDS_TPFinal
         private void ConfigurarEstadoInicial()
         {
             txtId.ReadOnly = true;
-            txtPassword.UseSystemPasswordChar = true;            
+            txtFechaCreacion.ReadOnly = true;
+            txtFechaUltimoAcceso.ReadOnly = true;
+
+            txtPassword.UseSystemPasswordChar = true;
 
             cmbEstado.Items.Clear();
             cmbEstado.Items.Add("Activo");
@@ -102,16 +113,6 @@ namespace IDS_TPFinal
             comboBox.ForeColor = TemaVisual.TextoPrincipal;
             comboBox.FlatStyle = FlatStyle.Flat;
             comboBox.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
-        }
-
-        private void AplicarDateTimePicker(DateTimePicker dateTimePicker)
-        {
-            dateTimePicker.CalendarForeColor = TemaVisual.TextoPrincipal;
-            dateTimePicker.CalendarMonthBackground = TemaVisual.FondoInput;
-            dateTimePicker.CalendarTitleBackColor = TemaVisual.FondoPanel;
-            dateTimePicker.CalendarTitleForeColor = TemaVisual.TextoPrincipal;
-            dateTimePicker.CalendarTrailingForeColor = TemaVisual.TextoMuted;
-            dateTimePicker.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
         }
 
         private void AplicarBotonAccion(Button boton, string texto)

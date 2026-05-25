@@ -79,6 +79,7 @@ namespace UI
 
             ConfigurarBotonPrincipal(btnCerrarSesion);
             ConfigurarBotonSecundario(btnSalir);
+            ConfigurarBotonSecundario(btnGestionUsuarios);
         }
 
         private void ConfigurarAreaMdi()
