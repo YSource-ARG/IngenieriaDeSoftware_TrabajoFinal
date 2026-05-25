@@ -54,6 +54,9 @@
     <Compile Include="FrmCambioPasswordObligatorio.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="FrmCambioPasswordObligatorio.Designer.cs">
+      <DependentUpon>FrmCambioPasswordObligatorio.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmConsultaBitacora.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -71,15 +74,19 @@
     </Compile>
     <Compile Include="FrmGestionUsuarios.Eventos.cs">
       <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="FrmGestionUsuarios.Grilla.cs">
       <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="FrmGestionUsuarios.Modos.cs">
       <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="FrmGestionUsuarios.Operaciones.cs">
       <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="FrmLogin.cs">
       <SubType>Form</SubType>
@@ -95,6 +102,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="FrmCambioPasswordObligatorio.resx">
+      <DependentUpon>FrmCambioPasswordObligatorio.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FrmGestionUsuarios.resx">
       <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>
     </EmbeddedResource>
