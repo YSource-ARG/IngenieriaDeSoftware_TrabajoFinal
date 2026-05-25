@@ -1,4 +1,4 @@
-﻿using BLL.Configuracion;
+using BLL.Configuracion;
 using System;
 using System.Configuration;
 using System.Windows.Forms;
@@ -17,7 +17,12 @@ namespace UI
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            Application.Run(new FrmLogin(serviceFactory.LoginAppService, serviceFactory.CerrarSesionAppService, serviceFactory.GestionUsuariosAppService));
+            Application.Run(new FrmLogin(
+                serviceFactory.LoginAppService,
+                serviceFactory.CerrarSesionAppService,
+                serviceFactory.GestionUsuariosAppService,
+                serviceFactory.BitacoraService
+            ));
         }
     }
 }

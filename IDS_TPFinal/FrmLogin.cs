@@ -1,4 +1,5 @@
-﻿using BLL.Autenticacion;
+using BLL.Autenticacion;
+using BLL.Bitacora;
 using BLL.Usuarios;
 using System;
 using System.Drawing;
@@ -12,11 +13,13 @@ namespace UI
         private readonly LoginAppService _loginAppService;
         private readonly CerrarSesionAppService _cerrarSesionAppService;
         private readonly GestionUsuariosAppService _gestionUsuariosAppService;
+        private readonly IBitacoraService _bitacoraService;
 
         public FrmLogin(
             LoginAppService loginAppService,
             CerrarSesionAppService cerrarSesionAppService,
-            GestionUsuariosAppService gestionUsuariosAppService)
+            GestionUsuariosAppService gestionUsuariosAppService,
+            IBitacoraService bitacoraService)
         {
             if (loginAppService == null)
             {
@@ -33,9 +36,15 @@ namespace UI
                 throw new ArgumentNullException(nameof(gestionUsuariosAppService));
             }
 
+            if (bitacoraService == null)
+            {
+                throw new ArgumentNullException(nameof(bitacoraService));
+            }
+
             _loginAppService = loginAppService;
             _cerrarSesionAppService = cerrarSesionAppService;
             _gestionUsuariosAppService = gestionUsuariosAppService;
+            _bitacoraService = bitacoraService;
 
             InitializeComponent();
 
@@ -82,39 +91,65 @@ namespace UI
                 return;
             }
 
-            bool loginExitoso = _loginAppService.IniciarSesion(txtNombreUsuario.Text.Trim(), txtPassword.Text);
+            ResultadoLogin resultadoLogin = _loginAppService.IniciarSesion(txtNombreUsuario.Text.Trim(), txtPassword.Text);
 
-            if (loginExitoso)
-            {
-                FrmPrincipal frmPrincipal = new FrmPrincipal(
-                    _cerrarSesionAppService,
-                    _gestionUsuariosAppService
-                );
-
-                this.Hide();
-
-                frmPrincipal.FormClosed += (s, args) =>
-                {
-                    if (frmPrincipal.CerrandoSesion)
-                    {
-                        txtPassword.Clear();
-                        this.Show();
-                        txtPassword.Focus();
-                    }
-                    else
-                    {
-                        this.Close();
-                    }
-                };
-
-                frmPrincipal.Show();
-            }
-            else
+            if (!resultadoLogin.LoginExitoso)
             {
                 MessageBox.Show("Usuario o contraseña incorrectos.", "Login", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtPassword.Clear();
                 txtPassword.Focus();
+                return;
             }
+
+            if (resultadoLogin.DebeCambiarPassword && !CambiarPasswordObligatorio(resultadoLogin))
+            {
+                _cerrarSesionAppService.CerrarSesion();
+                txtPassword.Clear();
+                txtPassword.Focus();
+                return;
+            }
+
+            AbrirFormularioPrincipal();
+        }
+
+        private bool CambiarPasswordObligatorio(ResultadoLogin resultadoLogin)
+        {
+            using (FrmCambioPasswordObligatorio frmCambioPassword = new FrmCambioPasswordObligatorio(
+                _gestionUsuariosAppService,
+                resultadoLogin.UsuarioId,
+                resultadoLogin.NombreUsuario))
+            {
+                DialogResult resultado = frmCambioPassword.ShowDialog(this);
+
+                return resultado == DialogResult.OK;
+            }
+        }
+
+        private void AbrirFormularioPrincipal()
+        {
+            FrmPrincipal frmPrincipal = new FrmPrincipal(
+                _cerrarSesionAppService,
+                _gestionUsuariosAppService,
+                _bitacoraService
+            );
+
+            this.Hide();
+
+            frmPrincipal.FormClosed += (s, args) =>
+            {
+                if (frmPrincipal.CerrandoSesion)
+                {
+                    txtPassword.Clear();
+                    this.Show();
+                    txtPassword.Focus();
+                }
+                else
+                {
+                    this.Close();
+                }
+            };
+
+            frmPrincipal.Show();
         }
 
         private void AplicarEstiloVisual()

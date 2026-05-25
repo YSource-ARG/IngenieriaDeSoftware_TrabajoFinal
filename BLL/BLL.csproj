@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Autenticacion\CerrarSesionAppService.cs" />
     <Compile Include="Autenticacion\LoginAppService.cs" />
+    <Compile Include="Autenticacion\ResultadoLogin.cs" />
     <Compile Include="Bitacora\BitacoraService.cs" />
     <Compile Include="Bitacora\IBitacoraService.cs" />
     <Compile Include="Configuracion\AplicacionServiceFactory.cs" />

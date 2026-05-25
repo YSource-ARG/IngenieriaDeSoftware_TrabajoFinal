@@ -35,6 +35,7 @@ namespace DAL.Usuarios
                     NombreCompleto,
                     PasswordHash, 
                     Activo, 
+                    DebeCambiarPassword,
                     FechaCreacion, 
                     FechaUltimoAcceso 
                 FROM dbo.Usuario 
@@ -74,6 +75,7 @@ namespace DAL.Usuarios
                     NombreCompleto,
                     PasswordHash, 
                     Activo, 
+                    DebeCambiarPassword,
                     FechaCreacion, 
                     FechaUltimoAcceso 
                 FROM dbo.Usuario 
@@ -107,6 +109,7 @@ namespace DAL.Usuarios
                     NombreCompleto,
                     PasswordHash, 
                     Activo, 
+                    DebeCambiarPassword,
                     FechaCreacion, 
                     FechaUltimoAcceso 
                 FROM dbo.Usuario
@@ -191,6 +194,7 @@ namespace DAL.Usuarios
                     NombreCompleto,
                     PasswordHash,
                     Activo,
+                    DebeCambiarPassword,
                     FechaCreacion,
                     FechaUltimoAcceso
                 )
@@ -201,6 +205,7 @@ namespace DAL.Usuarios
                     @NombreCompleto,
                     @PasswordHash,
                     @Activo,
+                    @DebeCambiarPassword,
                     @FechaCreacion,
                     @FechaUltimoAcceso
                 )";
@@ -270,6 +275,11 @@ namespace DAL.Usuarios
 
         public void ActualizarPassword(Guid idUsuario, string passwordHash)
         {
+            ActualizarPasswordYEstadoCambioObligatorio(idUsuario, passwordHash, false);
+        }
+
+        public void ActualizarPasswordYEstadoCambioObligatorio(Guid idUsuario, string passwordHash, bool debeCambiarPassword)
+        {
             if (idUsuario == Guid.Empty)
             {
                 throw new ArgumentException("El identificador del usuario no puede estar vacío.", nameof(idUsuario));
@@ -282,7 +292,8 @@ namespace DAL.Usuarios
 
             const string sql = @"
                 UPDATE dbo.Usuario
-                SET PasswordHash = @PasswordHash
+                SET PasswordHash = @PasswordHash,
+                    DebeCambiarPassword = @DebeCambiarPassword
                 WHERE Id = @Id";
 
             using (SqlConnection connection = _connectionFactory.CrearConexion())
@@ -290,6 +301,7 @@ namespace DAL.Usuarios
             {
                 command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
                 command.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = passwordHash;
+                command.Parameters.Add("@DebeCambiarPassword", SqlDbType.Bit).Value = debeCambiarPassword;
 
                 connection.Open();
                 command.ExecuteNonQuery();
@@ -330,6 +342,7 @@ namespace DAL.Usuarios
                     : reader["NombreCompleto"].ToString(),
                 PasswordHash = reader["PasswordHash"].ToString(),
                 Activo = Convert.ToBoolean(reader["Activo"]),
+                DebeCambiarPassword = Convert.ToBoolean(reader["DebeCambiarPassword"]),
                 FechaCreacion = Convert.ToDateTime(reader["FechaCreacion"]),
                 FechaUltimoAcceso = reader["FechaUltimoAcceso"] == DBNull.Value
                     ? (DateTime?)null
@@ -347,6 +360,7 @@ namespace DAL.Usuarios
                     : usuario.NombreCompleto.Trim();
             command.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = usuario.PasswordHash;
             command.Parameters.Add("@Activo", SqlDbType.Bit).Value = usuario.Activo;
+            command.Parameters.Add("@DebeCambiarPassword", SqlDbType.Bit).Value = usuario.DebeCambiarPassword;
             command.Parameters.Add("@FechaCreacion", SqlDbType.DateTime2).Value = usuario.FechaCreacion;
             command.Parameters.Add("@FechaUltimoAcceso", SqlDbType.DateTime2).Value =
                 usuario.FechaUltimoAcceso.HasValue

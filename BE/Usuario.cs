@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace BE
 {
@@ -9,6 +9,7 @@ namespace BE
         public string NombreCompleto { get; set; }
         public string PasswordHash { get; set; }
         public bool Activo { get; set; }
+        public bool DebeCambiarPassword { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime? FechaUltimoAcceso { get; set; }
     }

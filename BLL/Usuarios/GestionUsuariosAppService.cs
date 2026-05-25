@@ -9,6 +9,8 @@ namespace BLL.Usuarios
 {
     public class GestionUsuariosAppService
     {
+        private const string PasswordTemporalBlanqueo = "1234";
+
         private readonly IUsuarioRepositorio _usuarioRepositorio;
         private readonly IPasswordHasher _passwordHasher;
         private readonly ISessionService _sessionService;
@@ -59,6 +61,7 @@ namespace BLL.Usuarios
                 NombreCompleto = nombreCompleto.Trim(),
                 PasswordHash = _passwordHasher.GenerarHash(passwordInicial),
                 Activo = activo,
+                DebeCambiarPassword = false,
                 FechaCreacion = DateTime.Now,
                 FechaUltimoAcceso = null
             };
@@ -125,7 +128,37 @@ namespace BLL.Usuarios
             );
         }
 
-        public void RestablecerPassword(Guid idUsuario, string nuevaPassword)
+        public string BlanquearPassword(Guid idUsuario)
+        {
+            if (idUsuario == Guid.Empty)
+            {
+                throw new ArgumentException("El identificador del usuario no puede estar vacío.", nameof(idUsuario));
+            }
+
+            Usuario usuario = _usuarioRepositorio.ObtenerPorId(idUsuario);
+
+            if (usuario == null)
+            {
+                throw new InvalidOperationException("No se encontró el usuario indicado.");
+            }
+
+            string passwordTemporalHash = _passwordHasher.GenerarHash(PasswordTemporalBlanqueo);
+
+            _usuarioRepositorio.ActualizarPasswordYEstadoCambioObligatorio(
+                idUsuario,
+                passwordTemporalHash,
+                true
+            );
+
+            RegistrarBitacora(
+                "PASSWORD_BLANQUEADA",
+                $"Se blanqueó la contraseña del usuario '{usuario.NombreUsuario}' y se marcó cambio obligatorio."
+            );
+
+            return PasswordTemporalBlanqueo;
+        }
+
+        public void ConfirmarCambioPasswordObligatorio(Guid idUsuario, string nuevaPassword, string confirmarPassword)
         {
             if (idUsuario == Guid.Empty)
             {
@@ -137,6 +170,11 @@ namespace BLL.Usuarios
                 throw new ArgumentException("La nueva contraseña no puede estar vacía.", nameof(nuevaPassword));
             }
 
+            if (nuevaPassword != confirmarPassword)
+            {
+                throw new InvalidOperationException("La nueva contraseña y su confirmación no coinciden.");
+            }
+
             Usuario usuario = _usuarioRepositorio.ObtenerPorId(idUsuario);
 
             if (usuario == null)
@@ -144,13 +182,17 @@ namespace BLL.Usuarios
                 throw new InvalidOperationException("No se encontró el usuario indicado.");
             }
 
-            string passwordHash = _passwordHasher.GenerarHash(nuevaPassword);
+            string nuevoPasswordHash = _passwordHasher.GenerarHash(nuevaPassword);
 
-            _usuarioRepositorio.ActualizarPassword(idUsuario, passwordHash);
+            _usuarioRepositorio.ActualizarPasswordYEstadoCambioObligatorio(
+                idUsuario,
+                nuevoPasswordHash,
+                false
+            );
 
             RegistrarBitacora(
-                "PASSWORD_RESTABLECIDA",
-                $"Se restableció la contraseña del usuario '{usuario.NombreUsuario}'."
+                "PASSWORD_CAMBIADA",
+                $"El usuario '{usuario.NombreUsuario}' cambió su contraseña obligatoria."
             );
         }
 

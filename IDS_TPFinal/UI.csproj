@@ -51,6 +51,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Estilos\TemaVisual.cs" />
+    <Compile Include="FrmCambioPasswordObligatorio.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FrmConsultaBitacora.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -65,6 +68,18 @@
     </Compile>
     <Compile Include="FrmGestionUsuarios.Estilo.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmGestionUsuarios.Eventos.cs">
+      <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmGestionUsuarios.Grilla.cs">
+      <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmGestionUsuarios.Modos.cs">
+      <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmGestionUsuarios.Operaciones.cs">
+      <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>
     </Compile>
     <Compile Include="FrmLogin.cs">
       <SubType>Form</SubType>
