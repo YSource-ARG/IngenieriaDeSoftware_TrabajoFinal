@@ -15,7 +15,8 @@ namespace IDS_TPFinal
         {
             Alta,
             Consulta,
-            Edicion
+            Edicion,
+            RestablecimientoPassword
         }
 
         public FrmGestionUsuarios()
@@ -37,6 +38,8 @@ namespace IDS_TPFinal
             dgvUsuarios.SelectionChanged += dgvUsuarios_SelectionChanged;
             btnNuevo.Click += btnNuevo_Click;
             btnEditar.Click += btnEditar_Click;
+            btnInhabilitarReactivar.Click += btnInhabilitarReactivar_Click;
+            btnRestablecerPassword.Click += btnRestablecerPassword_Click;
             btnCancelar.Click += btnCancelar_Click;
             btnCerrar.Click += btnCerrar_Click;
         }
@@ -67,8 +70,14 @@ namespace IDS_TPFinal
                     return;
                 }
 
+                if (_modoActual == ModoFormularioUsuario.RestablecimientoPassword)
+                {
+                    RestablecerPasswordUsuario();
+                    return;
+                }
+
                 MostrarAdvertencia(
-                    "Para modificar un usuario, primero seleccioná un registro y presioná Editar.",
+                    "Seleccioná una operación válida antes de guardar.",
                     "Operación no disponible"
                 );
             }
@@ -96,7 +105,56 @@ namespace IDS_TPFinal
             }
 
             AplicarModoEdicion();
-            txtNombreUsuario.Focus();
+            txtNombreCompleto.Focus();
+        }
+
+        private void btnInhabilitarReactivar_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_modoActual == ModoFormularioUsuario.Edicion ||
+                    _modoActual == ModoFormularioUsuario.RestablecimientoPassword)
+                {
+                    MostrarAdvertencia(
+                        "Terminá la operación actual guardando o cancelando antes de cambiar el estado del usuario.",
+                        "Operación en curso"
+                    );
+
+                    return;
+                }
+
+                if (!HayUsuarioSeleccionado())
+                {
+                    MostrarAdvertencia(
+                        "Seleccioná un usuario de la grilla antes de cambiar su estado.",
+                        "Usuario no seleccionado"
+                    );
+
+                    return;
+                }
+
+                CambiarEstadoUsuarioSeleccionado();
+            }
+            catch (Exception ex)
+            {
+                MostrarAdvertencia(ex.Message, "No se pudo cambiar el estado del usuario");
+            }
+        }
+
+        private void btnRestablecerPassword_Click(object sender, EventArgs e)
+        {
+            if (!HayUsuarioSeleccionado())
+            {
+                MostrarAdvertencia(
+                    "Seleccioná un usuario de la grilla antes de restablecer la contraseña.",
+                    "Usuario no seleccionado"
+                );
+
+                return;
+            }
+
+            AplicarModoRestablecimientoPassword();
+            txtPassword.Focus();
         }
 
         private void btnCancelar_Click(object sender, EventArgs e)
@@ -144,13 +202,79 @@ namespace IDS_TPFinal
 
             _gestionUsuariosAppService.ModificarUsuario(
                 idUsuario,
-                txtNombreUsuario.Text,
                 txtNombreCompleto.Text,
                 ObtenerEstadoSeleccionado()
             );
 
             MessageBox.Show(
                 "Usuario modificado correctamente.",
+                "Gestión de usuarios",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+
+            CargarUsuarios();
+        }
+
+        private void RestablecerPasswordUsuario()
+        {
+            Guid idUsuario = ObtenerIdUsuarioSeleccionado();
+            string nombreUsuario = txtNombreUsuario.Text;
+
+            DialogResult respuesta = MessageBox.Show(
+                $"¿Confirmás que querés restablecer la contraseña del usuario '{nombreUsuario}'?",
+                "Confirmar restablecimiento de contraseña",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (respuesta != DialogResult.Yes)
+            {
+                return;
+            }
+
+            _gestionUsuariosAppService.RestablecerPassword(
+                idUsuario,
+                txtPassword.Text
+            );
+
+            MessageBox.Show(
+                "Contraseña restablecida correctamente.",
+                "Gestión de usuarios",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+
+            CargarUsuarios();
+        }
+
+        private void CambiarEstadoUsuarioSeleccionado()
+        {
+            Guid idUsuario = ObtenerIdUsuarioSeleccionado();
+            bool usuarioActivo = ObtenerEstadoSeleccionado();
+            bool nuevoEstado = !usuarioActivo;
+
+            string accion = nuevoEstado ? "reactivar" : "inhabilitar";
+            string nombreUsuario = txtNombreUsuario.Text;
+
+            DialogResult respuesta = MessageBox.Show(
+                $"¿Confirmás que querés {accion} el usuario '{nombreUsuario}'?",
+                "Confirmar cambio de estado",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (respuesta != DialogResult.Yes)
+            {
+                return;
+            }
+
+            _gestionUsuariosAppService.CambiarEstadoUsuario(idUsuario, nuevoEstado);
+
+            MessageBox.Show(
+                nuevoEstado
+                    ? "Usuario reactivado correctamente."
+                    : "Usuario inhabilitado correctamente.",
                 "Gestión de usuarios",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
@@ -277,6 +401,10 @@ namespace IDS_TPFinal
 
             btnGuardar.Enabled = true;
             btnEditar.Enabled = false;
+            btnInhabilitarReactivar.Enabled = false;
+            btnRestablecerPassword.Enabled = false;
+
+            btnInhabilitarReactivar.Text = "⏻\nInhabilitar/Reactivar";
 
             lblPassword.Text = "Nueva contraseña";
         }
@@ -292,6 +420,10 @@ namespace IDS_TPFinal
 
             btnGuardar.Enabled = false;
             btnEditar.Enabled = true;
+            btnInhabilitarReactivar.Enabled = true;
+            btnRestablecerPassword.Enabled = true;
+
+            ActualizarTextoBotonCambioEstado();
 
             lblPassword.Text = "Nueva contraseña";
         }
@@ -300,16 +432,43 @@ namespace IDS_TPFinal
         {
             _modoActual = ModoFormularioUsuario.Edicion;
 
-            txtNombreUsuario.ReadOnly = false;
+            txtNombreUsuario.ReadOnly = true;
             txtNombreCompleto.ReadOnly = false;
             txtPassword.ReadOnly = true;
             cmbEstado.Enabled = true;
 
             btnGuardar.Enabled = true;
             btnEditar.Enabled = false;
+            btnInhabilitarReactivar.Enabled = false;
+            btnRestablecerPassword.Enabled = false;
 
             txtPassword.Clear();
             lblPassword.Text = "Nueva contraseña";
+        }
+
+        private void AplicarModoRestablecimientoPassword()
+        {
+            _modoActual = ModoFormularioUsuario.RestablecimientoPassword;
+
+            txtNombreUsuario.ReadOnly = true;
+            txtNombreCompleto.ReadOnly = true;
+            txtPassword.ReadOnly = false;
+            cmbEstado.Enabled = false;
+
+            btnGuardar.Enabled = true;
+            btnEditar.Enabled = false;
+            btnInhabilitarReactivar.Enabled = false;
+            btnRestablecerPassword.Enabled = false;
+
+            txtPassword.Clear();
+            lblPassword.Text = "Nueva contraseña";
+        }
+
+        private void ActualizarTextoBotonCambioEstado()
+        {
+            btnInhabilitarReactivar.Text = ObtenerEstadoSeleccionado()
+                ? "⏻\nInhabilitar"
+                : "⏻\nReactivar";
         }
 
         private void LimpiarCampos()

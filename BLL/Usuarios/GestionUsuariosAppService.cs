@@ -1,4 +1,4 @@
-﻿using BE;
+using BE;
 using BLL.Bitacora;
 using DAL.Usuarios;
 using SSL.Interfaces;
@@ -38,7 +38,7 @@ namespace BLL.Usuarios
 
         public void CrearUsuario(string nombreUsuario, string nombreCompleto, string passwordInicial, bool activo)
         {
-            ValidarDatosUsuario(nombreUsuario, nombreCompleto);
+            ValidarDatosAltaUsuario(nombreUsuario, nombreCompleto);
 
             if (string.IsNullOrWhiteSpace(passwordInicial))
             {
@@ -71,21 +71,14 @@ namespace BLL.Usuarios
             );
         }
 
-        public void ModificarUsuario(Guid idUsuario, string nombreUsuario, string nombreCompleto, bool activo)
+        public void ModificarUsuario(Guid idUsuario, string nombreCompleto, bool activo)
         {
             if (idUsuario == Guid.Empty)
             {
                 throw new ArgumentException("El identificador del usuario no puede estar vacío.", nameof(idUsuario));
             }
 
-            ValidarDatosUsuario(nombreUsuario, nombreCompleto);
-
-            string nombreUsuarioNormalizado = nombreUsuario.Trim();
-
-            if (_usuarioRepositorio.ExisteNombreUsuario(nombreUsuarioNormalizado, idUsuario))
-            {
-                throw new InvalidOperationException("Ya existe otro usuario con ese nombre.");
-            }
+            ValidarNombreCompleto(nombreCompleto);
 
             Usuario usuario = _usuarioRepositorio.ObtenerPorId(idUsuario);
 
@@ -94,11 +87,13 @@ namespace BLL.Usuarios
                 throw new InvalidOperationException("No se encontró el usuario indicado.");
             }
 
-            usuario.NombreUsuario = nombreUsuarioNormalizado;
-            usuario.NombreCompleto = nombreCompleto.Trim();
-            usuario.Activo = activo;
+            string nombreCompletoNormalizado = nombreCompleto.Trim();
 
-            _usuarioRepositorio.ModificarDatos(usuario);
+            _usuarioRepositorio.ModificarDatos(
+                idUsuario,
+                nombreCompletoNormalizado,
+                activo
+            );
 
             RegistrarBitacora(
                 "USUARIO_MODIFICADO",
@@ -159,13 +154,18 @@ namespace BLL.Usuarios
             );
         }
 
-        private void ValidarDatosUsuario(string nombreUsuario, string nombreCompleto)
+        private void ValidarDatosAltaUsuario(string nombreUsuario, string nombreCompleto)
         {
             if (string.IsNullOrWhiteSpace(nombreUsuario))
             {
                 throw new ArgumentException("El nombre de usuario no puede estar vacío.", nameof(nombreUsuario));
             }
 
+            ValidarNombreCompleto(nombreCompleto);
+        }
+
+        private void ValidarNombreCompleto(string nombreCompleto)
+        {
             if (string.IsNullOrWhiteSpace(nombreCompleto))
             {
                 throw new ArgumentException("El nombre completo no puede estar vacío.", nameof(nombreCompleto));

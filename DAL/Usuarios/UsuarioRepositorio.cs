@@ -1,4 +1,4 @@
-﻿using BE;
+using BE;
 using DAL.BaseDeDatos;
 using System;
 using System.Collections.Generic;
@@ -215,30 +215,30 @@ namespace DAL.Usuarios
             }
         }
 
-        public void ModificarDatos(Usuario usuario)
+        public void ModificarDatos(Guid idUsuario, string nombreCompleto, bool activo)
         {
-            if (usuario == null)
+            if (idUsuario == Guid.Empty)
             {
-                throw new ArgumentNullException(nameof(usuario));
+                throw new ArgumentException("El identificador del usuario no puede estar vacío.", nameof(idUsuario));
+            }
+
+            if (string.IsNullOrWhiteSpace(nombreCompleto))
+            {
+                throw new ArgumentException("El nombre completo no puede estar vacío.", nameof(nombreCompleto));
             }
 
             const string sql = @"
                 UPDATE dbo.Usuario
-                SET NombreUsuario = @NombreUsuario,
-                    NombreCompleto = @NombreCompleto,
+                SET NombreCompleto = @NombreCompleto,
                     Activo = @Activo
                 WHERE Id = @Id";
 
             using (SqlConnection connection = _connectionFactory.CrearConexion())
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = usuario.Id;
-                command.Parameters.Add("@NombreUsuario", SqlDbType.NVarChar, 100).Value = usuario.NombreUsuario;
-                command.Parameters.Add("@NombreCompleto", SqlDbType.NVarChar, 150).Value =
-                    string.IsNullOrWhiteSpace(usuario.NombreCompleto)
-                        ? (object)DBNull.Value
-                        : usuario.NombreCompleto.Trim();
-                command.Parameters.Add("@Activo", SqlDbType.Bit).Value = usuario.Activo;
+                command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
+                command.Parameters.Add("@NombreCompleto", SqlDbType.NVarChar, 150).Value = nombreCompleto.Trim();
+                command.Parameters.Add("@Activo", SqlDbType.Bit).Value = activo;
 
                 connection.Open();
                 command.ExecuteNonQuery();

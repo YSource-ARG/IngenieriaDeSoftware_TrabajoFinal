@@ -1,4 +1,4 @@
-﻿using BE;
+using BE;
 using System;
 using System.Collections.Generic;
 
@@ -16,7 +16,7 @@ namespace DAL.Usuarios
 
         void Crear(Usuario usuario);
 
-        void ModificarDatos(Usuario usuario);
+        void ModificarDatos(Guid idUsuario, string nombreCompleto, bool activo);
 
         void CambiarEstado(Guid idUsuario, bool activo);
 
