@@ -1,4 +1,5 @@
 ﻿using BLL.Autenticacion;
+using IDS_TPFinal;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -116,9 +117,10 @@ namespace UI
             this.Close();
         }
 
-        private void lblResumenTexto_Click(object sender, EventArgs e)
+        private void btnGestionUsuarios_Click(object sender, EventArgs e)
         {
-
+            FrmGestionUsuarios frmGestionUsuarios = new FrmGestionUsuarios();
+            frmGestionUsuarios.ShowDialog();
         }
     }
 }

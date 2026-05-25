@@ -43,6 +43,7 @@
             this.lblResumenTitulo = new System.Windows.Forms.Label();
             this.lblDescripcion = new System.Windows.Forms.Label();
             this.lblBienvenida = new System.Windows.Forms.Label();
+            this.btnGestionUsuarios = new System.Windows.Forms.Button();
             this.panelHeader.SuspendLayout();
             this.panelLateral.SuspendLayout();
             this.panelContenido.SuspendLayout();
@@ -93,6 +94,7 @@
             // 
             // panelLateral
             // 
+            this.panelLateral.Controls.Add(this.btnGestionUsuarios);
             this.panelLateral.Controls.Add(this.btnSalir);
             this.panelLateral.Controls.Add(this.btnCerrarSesion);
             this.panelLateral.Controls.Add(this.lblSeccion);
@@ -105,7 +107,7 @@
             // 
             // btnSalir
             // 
-            this.btnSalir.Location = new System.Drawing.Point(15, 138);
+            this.btnSalir.Location = new System.Drawing.Point(11, 156);
             this.btnSalir.Margin = new System.Windows.Forms.Padding(2);
             this.btnSalir.Name = "btnSalir";
             this.btnSalir.Size = new System.Drawing.Size(135, 34);
@@ -116,7 +118,7 @@
             // 
             // btnCerrarSesion
             // 
-            this.btnCerrarSesion.Location = new System.Drawing.Point(15, 96);
+            this.btnCerrarSesion.Location = new System.Drawing.Point(11, 108);
             this.btnCerrarSesion.Margin = new System.Windows.Forms.Padding(2);
             this.btnCerrarSesion.Name = "btnCerrarSesion";
             this.btnCerrarSesion.Size = new System.Drawing.Size(135, 34);
@@ -144,7 +146,7 @@
             this.panelContenido.Location = new System.Drawing.Point(165, 77);
             this.panelContenido.Margin = new System.Windows.Forms.Padding(2);
             this.panelContenido.Name = "panelContenido";
-            this.panelContenido.Padding = new System.Windows.Forms.Padding(26, 26, 26, 26);
+            this.panelContenido.Padding = new System.Windows.Forms.Padding(26);
             this.panelContenido.Size = new System.Drawing.Size(735, 508);
             this.panelContenido.TabIndex = 2;
             // 
@@ -167,7 +169,6 @@
             this.lblResumenTexto.TabIndex = 1;
             this.lblResumenTexto.Text = "Panel para acceder a los diferentes modulos del sistema a medida que los vayamos " +
     "implementando.";
-            this.lblResumenTexto.Click += new System.EventHandler(this.lblResumenTexto_Click);
             // 
             // lblResumenTitulo
             // 
@@ -198,6 +199,17 @@
             this.lblBienvenida.Size = new System.Drawing.Size(109, 13);
             this.lblBienvenida.TabIndex = 0;
             this.lblBienvenida.Text = "Bienvenido al sistema";
+            // 
+            // btnGestionUsuarios
+            // 
+            this.btnGestionUsuarios.Location = new System.Drawing.Point(11, 61);
+            this.btnGestionUsuarios.Margin = new System.Windows.Forms.Padding(2);
+            this.btnGestionUsuarios.Name = "btnGestionUsuarios";
+            this.btnGestionUsuarios.Size = new System.Drawing.Size(135, 34);
+            this.btnGestionUsuarios.TabIndex = 3;
+            this.btnGestionUsuarios.Text = "Gestión de usuarios";
+            this.btnGestionUsuarios.UseVisualStyleBackColor = true;
+            this.btnGestionUsuarios.Click += new System.EventHandler(this.btnGestionUsuarios_Click);
             // 
             // FrmPrincipal
             // 
@@ -241,5 +253,6 @@
         private System.Windows.Forms.Panel panelTarjetaResumen;
         private System.Windows.Forms.Label lblResumenTitulo;
         private System.Windows.Forms.Label lblResumenTexto;
+        private System.Windows.Forms.Button btnGestionUsuarios;
     }
 }
