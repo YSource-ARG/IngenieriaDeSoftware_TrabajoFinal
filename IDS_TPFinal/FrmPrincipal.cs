@@ -4,24 +4,32 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using UI.Estilos;
+using BLL.Usuarios;
 
 namespace UI
 {
     public partial class FrmPrincipal : Form
     {
         private readonly CerrarSesionAppService _cerrarSesionAppService;
+        private readonly GestionUsuariosAppService _gestionUsuariosAppService;
         private bool _cerrandoSesion;
 
         public bool CerrandoSesion => _cerrandoSesion;
 
-        public FrmPrincipal(CerrarSesionAppService cerrarSesionAppService)
+        public FrmPrincipal(CerrarSesionAppService cerrarSesionAppService, GestionUsuariosAppService gestionUsuariosAppService)
         {
             if (cerrarSesionAppService == null)
             {
                 throw new ArgumentNullException(nameof(cerrarSesionAppService));
             }
 
+            if (gestionUsuariosAppService == null)
+            {
+                throw new ArgumentNullException(nameof(gestionUsuariosAppService));
+            }
+
             _cerrarSesionAppService = cerrarSesionAppService;
+            _gestionUsuariosAppService = gestionUsuariosAppService;
 
             InitializeComponent();
             AplicarEstiloVisual();
@@ -119,7 +127,7 @@ namespace UI
 
         private void btnGestionUsuarios_Click(object sender, EventArgs e)
         {
-            FrmGestionUsuarios frmGestionUsuarios = new FrmGestionUsuarios();
+            FrmGestionUsuarios frmGestionUsuarios = new FrmGestionUsuarios(_gestionUsuariosAppService);
             frmGestionUsuarios.ShowDialog();
         }
     }

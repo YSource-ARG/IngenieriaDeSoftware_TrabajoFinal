@@ -10,6 +10,7 @@ BEGIN
     (
         Id uniqueidentifier NOT NULL PRIMARY KEY,
         NombreUsuario nvarchar(100) NOT NULL,
+        NombreCompleto nvarchar(150) NULL,
         PasswordHash nvarchar(255) NOT NULL,
         Activo bit NOT NULL CONSTRAINT DF_Usuario_Activo DEFAULT (1),
         FechaCreacion datetime2(7) NOT NULL CONSTRAINT DF_Usuario_FechaCreacion DEFAULT (SYSDATETIME()),
@@ -21,6 +22,12 @@ GO
 IF COL_LENGTH('dbo.Usuario', 'PasswordSalt') IS NOT NULL
 BEGIN
     ALTER TABLE dbo.Usuario DROP COLUMN PasswordSalt
+END
+GO
+
+IF COL_LENGTH('dbo.Usuario', 'NombreCompleto') IS NULL
+BEGIN
+    ALTER TABLE dbo.Usuario ADD NombreCompleto nvarchar(150) NULL
 END
 GO
 
@@ -90,13 +97,14 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Usuario WHERE NombreUsuario = 'admin')
 BEGIN
-    INSERT INTO dbo.Usuario (Id, NombreUsuario, PasswordHash, Activo, FechaCreacion, FechaUltimoAcceso)
-    VALUES (NEWID(), 'admin', 'A6xnQhbz4Vx2HuGl4lXwZ5U2I8iziLRFnhP5eNfIRvQ=', 1, SYSDATETIME(), NULL)
+    INSERT INTO dbo.Usuario (Id, NombreUsuario, NombreCompleto, PasswordHash, Activo, FechaCreacion, FechaUltimoAcceso)
+VALUES (NEWID(), 'admin', 'Administrador del Sistema', 'A6xnQhbz4Vx2HuGl4lXwZ5U2I8iziLRFnhP5eNfIRvQ=', 1, SYSDATETIME(), NULL)
 END
 ELSE
 BEGIN
     UPDATE dbo.Usuario
-    SET PasswordHash = 'A6xnQhbz4Vx2HuGl4lXwZ5U2I8iziLRFnhP5eNfIRvQ=',
+    SET NombreCompleto = 'Administrador del Sistema',
+        PasswordHash = 'A6xnQhbz4Vx2HuGl4lXwZ5U2I8iziLRFnhP5eNfIRvQ=',
         Activo = 1
     WHERE NombreUsuario = 'admin'
 END

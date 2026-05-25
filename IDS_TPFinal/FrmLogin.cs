@@ -1,7 +1,8 @@
-﻿using System;
+﻿using BLL.Autenticacion;
+using BLL.Usuarios;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
-using BLL.Autenticacion;
 using UI.Estilos;
 
 namespace UI
@@ -10,8 +11,12 @@ namespace UI
     {
         private readonly LoginAppService _loginAppService;
         private readonly CerrarSesionAppService _cerrarSesionAppService;
+        private readonly GestionUsuariosAppService _gestionUsuariosAppService;
 
-        public FrmLogin(LoginAppService loginAppService, CerrarSesionAppService cerrarSesionAppService)
+        public FrmLogin(
+            LoginAppService loginAppService,
+            CerrarSesionAppService cerrarSesionAppService,
+            GestionUsuariosAppService gestionUsuariosAppService)
         {
             if (loginAppService == null)
             {
@@ -23,8 +28,14 @@ namespace UI
                 throw new ArgumentNullException(nameof(cerrarSesionAppService));
             }
 
+            if (gestionUsuariosAppService == null)
+            {
+                throw new ArgumentNullException(nameof(gestionUsuariosAppService));
+            }
+
             _loginAppService = loginAppService;
             _cerrarSesionAppService = cerrarSesionAppService;
+            _gestionUsuariosAppService = gestionUsuariosAppService;
 
             InitializeComponent();
 
@@ -75,7 +86,10 @@ namespace UI
 
             if (loginExitoso)
             {
-                FrmPrincipal frmPrincipal = new FrmPrincipal(_cerrarSesionAppService);
+                FrmPrincipal frmPrincipal = new FrmPrincipal(
+                    _cerrarSesionAppService,
+                    _gestionUsuariosAppService
+                );
 
                 this.Hide();
 

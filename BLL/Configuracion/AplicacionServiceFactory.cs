@@ -1,5 +1,6 @@
 ﻿using BLL.Autenticacion;
 using BLL.Bitacora;
+using BLL.Usuarios;
 using DAL.BaseDeDatos;
 using DAL.Bitacora;
 using DAL.Usuarios;
@@ -13,7 +14,10 @@ namespace BLL.Configuracion
     public class AplicacionServiceFactory
     {
         public LoginAppService LoginAppService { get; }
+
         public CerrarSesionAppService CerrarSesionAppService { get; }
+
+        public GestionUsuariosAppService GestionUsuariosAppService { get; }
 
         public AplicacionServiceFactory(string connectionString)
         {
@@ -40,6 +44,13 @@ namespace BLL.Configuracion
             );
 
             CerrarSesionAppService = new CerrarSesionAppService(
+                sessionService,
+                bitacoraService
+            );
+
+            GestionUsuariosAppService = new GestionUsuariosAppService(
+                usuarioRepositorio,
+                passwordHasher,
                 sessionService,
                 bitacoraService
             );

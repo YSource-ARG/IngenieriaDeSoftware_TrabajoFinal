@@ -57,9 +57,7 @@ namespace IDS_TPFinal
             TemaVisual.AplicarTextBox(txtNombreCompleto);
             TemaVisual.AplicarTextBox(txtPassword);
 
-            AplicarComboBox(cmbEstado);
-            AplicarDateTimePicker(dtpFechaCreacion);
-            AplicarDateTimePicker(dtpFechaUltimoAcceso);
+            AplicarComboBox(cmbEstado);            
 
             TemaVisual.AplicarBotonPrincipal(btnGuardar);
             TemaVisual.AplicarBotonSecundario(btnCancelar);
@@ -74,12 +72,7 @@ namespace IDS_TPFinal
         private void ConfigurarEstadoInicial()
         {
             txtId.ReadOnly = true;
-            txtPassword.UseSystemPasswordChar = true;
-
-            dtpFechaCreacion.Enabled = false;
-            dtpFechaUltimoAcceso.Enabled = false;
-            dtpFechaCreacion.CustomFormat = "dd/MM/yyyy HH:mm";
-            dtpFechaUltimoAcceso.CustomFormat = "dd/MM/yyyy HH:mm";
+            txtPassword.UseSystemPasswordChar = true;            
 
             cmbEstado.Items.Clear();
             cmbEstado.Items.Add("Activo");
