@@ -51,6 +51,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Estilos\TemaVisual.cs" />
+    <Compile Include="FrmCambioPasswordObligatorio.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FrmConsultaBitacora.cs">
       <SubType>Form</SubType>
     </Compile>

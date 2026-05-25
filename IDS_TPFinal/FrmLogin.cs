@@ -1,4 +1,4 @@
-﻿using BLL.Autenticacion;
+using BLL.Autenticacion;
 using BLL.Usuarios;
 using System;
 using System.Drawing;
@@ -82,39 +82,64 @@ namespace UI
                 return;
             }
 
-            bool loginExitoso = _loginAppService.IniciarSesion(txtNombreUsuario.Text.Trim(), txtPassword.Text);
+            ResultadoLogin resultadoLogin = _loginAppService.IniciarSesion(txtNombreUsuario.Text.Trim(), txtPassword.Text);
 
-            if (loginExitoso)
-            {
-                FrmPrincipal frmPrincipal = new FrmPrincipal(
-                    _cerrarSesionAppService,
-                    _gestionUsuariosAppService
-                );
-
-                this.Hide();
-
-                frmPrincipal.FormClosed += (s, args) =>
-                {
-                    if (frmPrincipal.CerrandoSesion)
-                    {
-                        txtPassword.Clear();
-                        this.Show();
-                        txtPassword.Focus();
-                    }
-                    else
-                    {
-                        this.Close();
-                    }
-                };
-
-                frmPrincipal.Show();
-            }
-            else
+            if (!resultadoLogin.LoginExitoso)
             {
                 MessageBox.Show("Usuario o contraseña incorrectos.", "Login", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtPassword.Clear();
                 txtPassword.Focus();
+                return;
             }
+
+            if (resultadoLogin.DebeCambiarPassword && !CambiarPasswordObligatorio(resultadoLogin))
+            {
+                _cerrarSesionAppService.CerrarSesion();
+                txtPassword.Clear();
+                txtPassword.Focus();
+                return;
+            }
+
+            AbrirFormularioPrincipal();
+        }
+
+        private bool CambiarPasswordObligatorio(ResultadoLogin resultadoLogin)
+        {
+            using (FrmCambioPasswordObligatorio frmCambioPassword = new FrmCambioPasswordObligatorio(
+                _gestionUsuariosAppService,
+                resultadoLogin.UsuarioId,
+                resultadoLogin.NombreUsuario))
+            {
+                DialogResult resultado = frmCambioPassword.ShowDialog(this);
+
+                return resultado == DialogResult.OK;
+            }
+        }
+
+        private void AbrirFormularioPrincipal()
+        {
+            FrmPrincipal frmPrincipal = new FrmPrincipal(
+                _cerrarSesionAppService,
+                _gestionUsuariosAppService
+            );
+
+            this.Hide();
+
+            frmPrincipal.FormClosed += (s, args) =>
+            {
+                if (frmPrincipal.CerrandoSesion)
+                {
+                    txtPassword.Clear();
+                    this.Show();
+                    txtPassword.Focus();
+                }
+                else
+                {
+                    this.Close();
+                }
+            };
+
+            frmPrincipal.Show();
         }
 
         private void AplicarEstiloVisual()

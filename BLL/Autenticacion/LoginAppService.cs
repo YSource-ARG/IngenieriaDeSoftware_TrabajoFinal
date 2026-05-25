@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using BLL.Bitacora;
 using DAL.Usuarios;
 using SSL.Interfaces;
@@ -40,20 +40,27 @@ namespace BLL.Autenticacion
             _bitacoraService = bitacoraService;
         }
 
-        public bool IniciarSesion(string nombreUsuario, string passwordIngresada)
+        public ResultadoLogin IniciarSesion(string nombreUsuario, string passwordIngresada)
         {
             if (string.IsNullOrWhiteSpace(nombreUsuario) || string.IsNullOrWhiteSpace(passwordIngresada))
             {
-                return false;
+                return ResultadoLogin.Fallido();
             }
 
             var usuario = _usuarioRepositorio.ObtenerPorNombreUsuario(nombreUsuario);
 
             if (usuario == null)
             {
-                _bitacoraService.Registrar(null, nombreUsuario, "Seguridad", "LOGIN_FALLIDO", "Intento de login con usuario inexistente.", "WARN");
+                _bitacoraService.Registrar(
+                    null,
+                    nombreUsuario,
+                    "Seguridad",
+                    "LOGIN_FALLIDO",
+                    "Intento de login con usuario inexistente.",
+                    "WARN"
+                );
 
-                return false;
+                return ResultadoLogin.Fallido();
             }
 
             bool passwordValida = _passwordHasher.VerificarPassword(passwordIngresada, usuario.PasswordHash);
@@ -69,15 +76,26 @@ namespace BLL.Autenticacion
                     "WARN"
                 );
 
-                return false;
+                return ResultadoLogin.Fallido();
             }
 
             _sessionService.IniciarSesion(usuario.Id, usuario.NombreUsuario);
             _usuarioRepositorio.ActualizarFechaUltimoAcceso(usuario.Id);
 
-            _bitacoraService.Registrar(usuario.Id, usuario.NombreUsuario, "Seguridad", "LOGIN_EXITOSO", "El usuario inició sesión correctamente.", "INFO");
+            _bitacoraService.Registrar(
+                usuario.Id,
+                usuario.NombreUsuario,
+                "Seguridad",
+                "LOGIN_EXITOSO",
+                "El usuario inició sesión correctamente.",
+                "INFO"
+            );
 
-            return true;
+            return ResultadoLogin.Exitoso(
+                usuario.Id,
+                usuario.NombreUsuario,
+                usuario.DebeCambiarPassword
+            );
         }
     }
 }

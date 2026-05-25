@@ -15,8 +15,7 @@ namespace IDS_TPFinal
         {
             Alta,
             Consulta,
-            Edicion,
-            RestablecimientoPassword
+            Edicion
         }
 
         public FrmGestionUsuarios()
@@ -70,12 +69,6 @@ namespace IDS_TPFinal
                     return;
                 }
 
-                if (_modoActual == ModoFormularioUsuario.RestablecimientoPassword)
-                {
-                    RestablecerPasswordUsuario();
-                    return;
-                }
-
                 MostrarAdvertencia(
                     "Seleccioná una operación válida antes de guardar.",
                     "Operación no disponible"
@@ -112,12 +105,11 @@ namespace IDS_TPFinal
         {
             try
             {
-                if (_modoActual == ModoFormularioUsuario.Edicion ||
-                    _modoActual == ModoFormularioUsuario.RestablecimientoPassword)
+                if (_modoActual == ModoFormularioUsuario.Edicion)
                 {
                     MostrarAdvertencia(
-                        "Terminá la operación actual guardando o cancelando antes de cambiar el estado del usuario.",
-                        "Operación en curso"
+                        "Terminá la edición actual guardando o cancelando antes de cambiar el estado del usuario.",
+                        "Edición en curso"
                     );
 
                     return;
@@ -143,18 +135,24 @@ namespace IDS_TPFinal
 
         private void btnRestablecerPassword_Click(object sender, EventArgs e)
         {
-            if (!HayUsuarioSeleccionado())
+            try
             {
-                MostrarAdvertencia(
-                    "Seleccioná un usuario de la grilla antes de restablecer la contraseña.",
-                    "Usuario no seleccionado"
-                );
+                if (!HayUsuarioSeleccionado())
+                {
+                    MostrarAdvertencia(
+                        "Seleccioná un usuario de la grilla antes de blanquear su contraseña.",
+                        "Usuario no seleccionado"
+                    );
 
-                return;
+                    return;
+                }
+
+                BlanquearPasswordUsuarioSeleccionado();
             }
-
-            AplicarModoRestablecimientoPassword();
-            txtPassword.Focus();
+            catch (Exception ex)
+            {
+                MostrarAdvertencia(ex.Message, "No se pudo blanquear la contraseña");
+            }
         }
 
         private void btnCancelar_Click(object sender, EventArgs e)
@@ -216,38 +214,6 @@ namespace IDS_TPFinal
             CargarUsuarios();
         }
 
-        private void RestablecerPasswordUsuario()
-        {
-            Guid idUsuario = ObtenerIdUsuarioSeleccionado();
-            string nombreUsuario = txtNombreUsuario.Text;
-
-            DialogResult respuesta = MessageBox.Show(
-                $"¿Confirmás que querés restablecer la contraseña del usuario '{nombreUsuario}'?",
-                "Confirmar restablecimiento de contraseña",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (respuesta != DialogResult.Yes)
-            {
-                return;
-            }
-
-            _gestionUsuariosAppService.RestablecerPassword(
-                idUsuario,
-                txtPassword.Text
-            );
-
-            MessageBox.Show(
-                "Contraseña restablecida correctamente.",
-                "Gestión de usuarios",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
-            );
-
-            CargarUsuarios();
-        }
-
         private void CambiarEstadoUsuarioSeleccionado()
         {
             Guid idUsuario = ObtenerIdUsuarioSeleccionado();
@@ -275,6 +241,35 @@ namespace IDS_TPFinal
                 nuevoEstado
                     ? "Usuario reactivado correctamente."
                     : "Usuario inhabilitado correctamente.",
+                "Gestión de usuarios",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+
+            CargarUsuarios();
+        }
+
+        private void BlanquearPasswordUsuarioSeleccionado()
+        {
+            Guid idUsuario = ObtenerIdUsuarioSeleccionado();
+            string nombreUsuario = txtNombreUsuario.Text;
+
+            DialogResult respuesta = MessageBox.Show(
+                $"¿Confirmás que querés blanquear la contraseña del usuario '{nombreUsuario}'?",
+                "Confirmar blanqueo de contraseña",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (respuesta != DialogResult.Yes)
+            {
+                return;
+            }
+
+            string passwordTemporal = _gestionUsuariosAppService.BlanquearPassword(idUsuario);
+
+            MessageBox.Show(
+                $"Contraseña blanqueada correctamente.\n\nUsuario: {nombreUsuario}\nContraseña temporal: {passwordTemporal}\n\nAl ingresar, el usuario deberá cambiar su contraseña.",
                 "Gestión de usuarios",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
@@ -436,24 +431,6 @@ namespace IDS_TPFinal
             txtNombreCompleto.ReadOnly = false;
             txtPassword.ReadOnly = true;
             cmbEstado.Enabled = true;
-
-            btnGuardar.Enabled = true;
-            btnEditar.Enabled = false;
-            btnInhabilitarReactivar.Enabled = false;
-            btnRestablecerPassword.Enabled = false;
-
-            txtPassword.Clear();
-            lblPassword.Text = "Nueva contraseña";
-        }
-
-        private void AplicarModoRestablecimientoPassword()
-        {
-            _modoActual = ModoFormularioUsuario.RestablecimientoPassword;
-
-            txtNombreUsuario.ReadOnly = true;
-            txtNombreCompleto.ReadOnly = true;
-            txtPassword.ReadOnly = false;
-            cmbEstado.Enabled = false;
 
             btnGuardar.Enabled = true;
             btnEditar.Enabled = false;
