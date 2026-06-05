@@ -55,7 +55,7 @@ namespace DAL.Usuarios
                     {
                         return null;
                     }
-
+                    //aca se crea un objeto Usuario con los datos obtenidos con la query
                     return MapearUsuario(reader);
                 }
             }

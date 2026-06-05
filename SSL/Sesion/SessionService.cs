@@ -17,7 +17,10 @@ namespace SSL.Sesion
         private SessionService()
         {
         }
-
+        /// <summary>
+        /// Singleton para obtener la instancia unica de sesion 
+        /// </summary>
+        /// <returns></returns>
         public static SessionService ObtenerSesion()
         {
             if (_instance == null)
@@ -45,7 +48,7 @@ namespace SSL.Sesion
             {
                 throw new ArgumentException("El nombre de usuario no puede estar vacío.", nameof(nombreUsuario));
             }
-
+            // aca asigna al usuario como el actual
             UsuarioIdActual = usuarioId;
             NombreUsuarioActual = nombreUsuario;
         }

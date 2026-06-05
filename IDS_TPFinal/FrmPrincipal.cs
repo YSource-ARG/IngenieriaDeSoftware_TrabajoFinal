@@ -125,7 +125,8 @@ namespace UI
             boton.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             boton.Cursor = Cursors.Hand;
         }
-
+        // Al cerrarse el formulario principal, se decide si volver al login
+        // porque el usuario cerró sesión, o cerrar toda la aplicación.
         private void btnCerrarSesion_Click(object sender, EventArgs e)
         {
             _cerrarSesionAppService.CerrarSesion();

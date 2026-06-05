@@ -72,7 +72,7 @@ namespace UI
             panelLogin.Left = (this.ClientSize.Width - panelLogin.Width) / 2;
             panelLogin.Top = (this.ClientSize.Height - panelLogin.Height) / 2;
         }
-
+        
         private void btnIngresar_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtNombreUsuario.Text))
@@ -90,7 +90,7 @@ namespace UI
                 txtPassword.Focus();
                 return;
             }
-
+            //aca comienza el caso de uso del login, invocando el metodo de la BLL
             ResultadoLogin resultadoLogin = _loginAppService.IniciarSesion(txtNombreUsuario.Text.Trim(), txtPassword.Text);
 
             if (!resultadoLogin.LoginExitoso)
@@ -108,7 +108,7 @@ namespace UI
                 txtPassword.Focus();
                 return;
             }
-
+            //aca despues de la orquestacion del caso de uso con resultado exitoso el usuario queda logueado, y se abre el formulario principal
             AbrirFormularioPrincipal();
         }
 
@@ -134,7 +134,7 @@ namespace UI
             );
 
             this.Hide();
-
+            //aca el evento de cerrar con la x el formulario invoca el cierre de sesion del usuario logueado
             frmPrincipal.FormClosed += (s, args) =>
             {
                 if (frmPrincipal.CerrandoSesion)
