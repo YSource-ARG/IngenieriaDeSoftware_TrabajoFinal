@@ -81,7 +81,7 @@ namespace BLL.Autenticacion
             }
             //metodo para asignar al usuario como el actual
             _sessionService.IniciarSesion(usuario.Id, usuario.NombreUsuario);
-            //metodo para guardar en base de daros los datos del ultimo acceso del usuario
+            // Se actualiza en base de datos la fecha del último acceso del usuario
             _usuarioRepositorio.ActualizarFechaUltimoAcceso(usuario.Id);
 
             _bitacoraService.Registrar(

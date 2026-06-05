@@ -33,7 +33,8 @@ namespace SSL.Seguridad
             return SonIgualesTiempoConstante(hashGenerado, passwordHashAlmacenado);
         }
         /// <summary>
-        /// Metodo de seguridad que recorre todo el string (el hash) aunque encuentre diferencias para evitar que descifren el hash
+        /// Compara los hashes recorriendo todos los bytes para reducir el riesgo
+        /// de ataques por medición de tiempo.
         /// </summary>
         /// <param name="valor1"></param>
         /// <param name="valor2"></param>
