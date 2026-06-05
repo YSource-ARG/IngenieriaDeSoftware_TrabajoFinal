@@ -32,7 +32,12 @@ namespace SSL.Seguridad
             string hashGenerado = GenerarHash(passwordIngresada);
             return SonIgualesTiempoConstante(hashGenerado, passwordHashAlmacenado);
         }
-
+        /// <summary>
+        /// Metodo de seguridad que recorre todo el string (el hash) aunque encuentre diferencias para evitar que descifren el hash
+        /// </summary>
+        /// <param name="valor1"></param>
+        /// <param name="valor2"></param>
+        /// <returns></returns>
         private bool SonIgualesTiempoConstante(string valor1, string valor2)
         {
             byte[] valor1Bytes = Convert.FromBase64String(valor1);

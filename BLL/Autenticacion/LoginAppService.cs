@@ -46,10 +46,11 @@ namespace BLL.Autenticacion
             {
                 return ResultadoLogin.Fallido();
             }
-
+            //por aca continua el caso de uso del login invocando el metodo de la DAL
+            // y nos devuelve el objeto Usuario con sus datos 
             var usuario = _usuarioRepositorio.ObtenerPorNombreUsuario(nombreUsuario);
 
-            if (usuario == null)
+            if (usuario == null)//en el caso fallido lo registra en la bitacora
             {
                 _bitacoraService.Registrar(
                     null,
@@ -62,7 +63,7 @@ namespace BLL.Autenticacion
 
                 return ResultadoLogin.Fallido();
             }
-
+            //en el camino feliz, con los datos del usuario, ahora se puede validar la contraseña
             bool passwordValida = _passwordHasher.VerificarPassword(passwordIngresada, usuario.PasswordHash);
 
             if (!passwordValida)
@@ -78,8 +79,9 @@ namespace BLL.Autenticacion
 
                 return ResultadoLogin.Fallido();
             }
-
+            //metodo para asignar al usuario como el actual
             _sessionService.IniciarSesion(usuario.Id, usuario.NombreUsuario);
+            //metodo para guardar en base de daros los datos del ultimo acceso del usuario
             _usuarioRepositorio.ActualizarFechaUltimoAcceso(usuario.Id);
 
             _bitacoraService.Registrar(
