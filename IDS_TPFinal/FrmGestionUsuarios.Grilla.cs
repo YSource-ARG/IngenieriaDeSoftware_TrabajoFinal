@@ -5,6 +5,7 @@ namespace IDS_TPFinal
 {
     public partial class FrmGestionUsuarios
     {
+        // Se consulta los usuarios mediante GestionUsuariosAppService y los muestra en la grilla
         private void CargarUsuarios()
         {
             if (_gestionUsuariosAppService == null)
@@ -16,6 +17,7 @@ namespace IDS_TPFinal
 
             try
             {
+                // Se pide los usuarios a GestionUsuariosAppServices en la BLL
                 var usuarios = _gestionUsuariosAppService.ListarUsuarios(null, null);
 
                 dgvUsuarios.DataSource = usuarios
@@ -43,6 +45,7 @@ namespace IDS_TPFinal
             }
         }
 
+        // Lógica para extrar y plasmar datos de un usuario seleccionado de la grilla
         private void CargarUsuarioSeleccionadoEnFormulario()
         {
             if (dgvUsuarios.CurrentRow == null)

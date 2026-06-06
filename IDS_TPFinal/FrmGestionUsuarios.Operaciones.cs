@@ -5,6 +5,7 @@ namespace IDS_TPFinal
 {
     public partial class FrmGestionUsuarios
     {
+        // Inicia el "Alta de usuario" tomando los datos ingresados
         private void CrearUsuario()
         {
             _gestionUsuariosAppService.CrearUsuario(
@@ -24,6 +25,7 @@ namespace IDS_TPFinal
             CargarUsuarios();
         }
 
+        // Inicia la "Modificación de Usuario" en base a los datos ingresados para el usuario seleccionado.
         private void ModificarUsuario()
         {
             Guid idUsuario = ObtenerIdUsuarioSeleccionado();
@@ -44,6 +46,7 @@ namespace IDS_TPFinal
             CargarUsuarios();
         }
 
+        // Se cambia el estado (Habilitado / Deshabilitado) del usuario seleccionado
         private void CambiarEstadoUsuarioSeleccionado()
         {
             Guid idUsuario = ObtenerIdUsuarioSeleccionado();
@@ -79,6 +82,7 @@ namespace IDS_TPFinal
             CargarUsuarios();
         }
 
+        // Se blanquea la contraseña del usuario seleccionado para que deba realizar un cambio de la misma.
         private void BlanquearPasswordUsuarioSeleccionado()
         {
             Guid idUsuario = ObtenerIdUsuarioSeleccionado();

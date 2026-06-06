@@ -7,6 +7,8 @@ using System.Collections.Generic;
 
 namespace BLL.Usuarios
 {
+    // Clase encargada de manejar los casos de uso relacionados con usuarios
+    // En estos casos: Validaciones; Repositorios; Hasheo; Sesion actual; Bitácora
     public class GestionUsuariosAppService
     {
         private const string PasswordTemporalBlanqueo = "1234";
@@ -28,6 +30,7 @@ namespace BLL.Usuarios
             _bitacoraService = bitacoraService ?? throw new ArgumentNullException(nameof(bitacoraService));
         }
 
+        // Se lista usuarios a través de la consulta ubicada en el repositorio de usuarios (DAL) 
         public List<Usuario> ListarUsuarios(string textoBusqueda, bool? activo)
         {
             return _usuarioRepositorio.Listar(textoBusqueda, activo);
@@ -38,6 +41,7 @@ namespace BLL.Usuarios
             return _usuarioRepositorio.ObtenerPorId(idUsuario);
         }
 
+        // Se validan y persisten los datos, se hashea la contraseña y se registra en la bitácora.
         public void CrearUsuario(string nombreUsuario, string nombreCompleto, string passwordInicial, bool activo)
         {
             ValidarDatosAltaUsuario(nombreUsuario, nombreCompleto);
@@ -68,12 +72,14 @@ namespace BLL.Usuarios
 
             _usuarioRepositorio.Crear(usuario);
 
+            // Registro para auditoría
             RegistrarBitacora(
                 "USUARIO_CREADO",
                 $"Se creó el usuario '{usuario.NombreUsuario}'."
             );
         }
 
+        // Se valida y obtiene usuario, y luego se actualiza sus datos editables.
         public void ModificarUsuario(Guid idUsuario, string nombreCompleto, bool activo)
         {
             if (idUsuario == Guid.Empty)
@@ -214,6 +220,7 @@ namespace BLL.Usuarios
             }
         }
 
+        // Centralización de registro de auditoria de gestión de usuario.
         private void RegistrarBitacora(string accion, string descripcion)
         {
             _bitacoraService.Registrar(
