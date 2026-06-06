@@ -43,7 +43,8 @@ namespace SSL.Sesion
             {
                 throw new ArgumentException("El ID del usuario no es válido.", nameof(usuarioId));
             }
-
+            // Validación defensiva: la UI ya valida este dato,
+            // pero se protege el servicio ante llamadas inválidas desde otros puntos del sistema.
             if (string.IsNullOrWhiteSpace(nombreUsuario))
             {
                 throw new ArgumentException("El nombre de usuario no puede estar vacío.", nameof(nombreUsuario));
