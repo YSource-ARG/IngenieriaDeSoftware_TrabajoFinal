@@ -37,6 +37,7 @@ namespace IDS_TPFinal
 
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
+            cmbTipo.SelectedIndex = 0;
             cmbModulo.SelectedIndex = 0;
             dtpFechaDesde.Value = DateTime.Today.AddDays(-7);
             dtpFechaHasta.Value = DateTime.Today;
@@ -56,6 +57,13 @@ namespace IDS_TPFinal
             cmbModulo.Items.Add("Usuarios");
             cmbModulo.SelectedIndex = 0;
 
+            cmbTipo.Items.Clear();
+            cmbTipo.Items.Add("Todos");
+            cmbTipo.Items.Add("INFO");
+            cmbTipo.Items.Add("WARN");
+            cmbTipo.Items.Add("ERROR");
+            cmbTipo.SelectedIndex = 0;
+
             dtpFechaDesde.Value = DateTime.Today.AddDays(-7);
             dtpFechaHasta.Value = DateTime.Today;
         }
@@ -74,8 +82,10 @@ namespace IDS_TPFinal
                 DateTime fechaDesde = dtpFechaDesde.Value.Date;
                 DateTime fechaHasta = dtpFechaHasta.Value.Date.AddDays(1).AddTicks(-1);
 
+                string tipo = ObtenerTipoSeleccionado();
+                
                 var registros = _bitacoraService
-                    .Listar(modulo, fechaDesde, fechaHasta, 500)
+                    .Listar(modulo, tipo, fechaDesde, fechaHasta, 500)
                     .Select(registro => new
                     {
                         Fecha = registro.Fecha.ToString("dd/MM/yyyy HH:mm:ss"),
@@ -101,7 +111,17 @@ namespace IDS_TPFinal
                 );
             }
         }
+        private string ObtenerTipoSeleccionado()
+        {
+            string tipo = cmbTipo.SelectedItem?.ToString();
 
+            if (string.IsNullOrWhiteSpace(tipo) || tipo == "Todos")
+            {
+                return null;
+            }
+
+            return tipo;
+        }
         private string ObtenerModuloSeleccionado()
         {
             string modulo = cmbModulo.SelectedItem?.ToString();
@@ -139,9 +159,11 @@ namespace IDS_TPFinal
             TemaVisual.AplicarTextoSecundario(lblModulo);
             TemaVisual.AplicarTextoSecundario(lblFechaDesde);
             TemaVisual.AplicarTextoSecundario(lblFechaHasta);
+            TemaVisual.AplicarTextoSecundario(lblTipo);
             TemaVisual.AplicarTextoSecundario(lblCantidadRegistros);
 
             cmbModulo.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbTipo.DropDownStyle = ComboBoxStyle.DropDownList;
         }
     }
 }

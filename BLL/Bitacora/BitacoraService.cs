@@ -42,7 +42,7 @@ namespace BLL.Bitacora
         }
 
         // Consulta los registros de la bitácora aplicando filtros de fechas y cantidades máx
-        public List<BE.Bitacora> Listar(string modulo, DateTime? fechaDesde, DateTime? fechaHasta, int cantidadMaxima)
+        public List<BE.Bitacora> Listar(string modulo, string tipo, DateTime? fechaDesde, DateTime? fechaHasta, int cantidadMaxima)
         {
             int cantidadNormalizada = NormalizarCantidadMaxima(cantidadMaxima);
 
@@ -53,6 +53,7 @@ namespace BLL.Bitacora
 
             return _bitacoraRepositorio.Listar(
                 modulo,
+                tipo,
                 fechaDesde,
                 fechaHasta,
                 cantidadNormalizada
