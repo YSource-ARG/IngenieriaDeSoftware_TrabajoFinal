@@ -60,6 +60,7 @@ namespace IDS_TPFinal
             dtpFechaHasta.Value = DateTime.Today;
         }
 
+        // Consulta a la bitácora segun los filtros seleccionados
         private void CargarBitacora()
         {
             if (_bitacoraService == null)

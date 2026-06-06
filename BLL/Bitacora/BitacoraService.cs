@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace BLL.Bitacora
 {
+    // Service encargado de registrar y consultar eventos del sistema.
     public class BitacoraService : IBitacoraService
     {
         private const int CantidadMaximaPorDefecto = 200;
@@ -21,6 +22,7 @@ namespace BLL.Bitacora
             _bitacoraRepositorio = bitacoraRepositorio;
         }
 
+        // Crea un registro en la bitácora con los datos mínimos necesarios para auditar la acción.
         public void Registrar(Guid? usuarioId, string usuario, string modulo, string accion, string descripcion, string tipo)
         {
             var bitacora = new BE.Bitacora
@@ -35,9 +37,11 @@ namespace BLL.Bitacora
                 Tipo = tipo
             };
 
+            // Persiste dicho registro
             _bitacoraRepositorio.Registrar(bitacora);
         }
 
+        // Consulta los registros de la bitácora aplicando filtros de fechas y cantidades máx
         public List<BE.Bitacora> Listar(string modulo, DateTime? fechaDesde, DateTime? fechaHasta, int cantidadMaxima)
         {
             int cantidadNormalizada = NormalizarCantidadMaxima(cantidadMaxima);
@@ -55,6 +59,7 @@ namespace BLL.Bitacora
             );
         }
 
+        // Limita cant maxima de registros devueltos para evitar problemas 
         private int NormalizarCantidadMaxima(int cantidadMaxima)
         {
             if (cantidadMaxima <= 0)

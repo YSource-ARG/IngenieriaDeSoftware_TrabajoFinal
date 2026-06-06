@@ -16,6 +16,7 @@ namespace IDS_TPFinal
             btnCerrar.Click += btnCerrar_Click;
         }
 
+        // Realiza una operación de persistencia en base al modo en que se encuentra el formulario.
         private void btnGuardar_Click(object sender, EventArgs e)
         {
             try

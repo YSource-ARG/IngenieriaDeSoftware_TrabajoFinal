@@ -22,6 +22,7 @@ namespace IDS_TPFinal
             InitializeComponent();
         }
 
+        // Se recibe el servicio de gestión de usuarios (creado por factory) 
         public FrmGestionUsuarios(GestionUsuariosAppService gestionUsuariosAppService)
         {
             _gestionUsuariosAppService = gestionUsuariosAppService
