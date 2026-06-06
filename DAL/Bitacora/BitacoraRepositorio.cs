@@ -64,7 +64,7 @@ namespace DAL.Bitacora
             }
         }
 
-        public List<BE.Bitacora> Listar(string modulo, DateTime? fechaDesde, DateTime? fechaHasta, int cantidadMaxima)
+        public List<BE.Bitacora> Listar(string modulo, string tipo, DateTime? fechaDesde, DateTime? fechaHasta, int cantidadMaxima)
         {
             const string sql = @"
                 SELECT TOP (@CantidadMaxima)
@@ -78,6 +78,7 @@ namespace DAL.Bitacora
                     Tipo
                 FROM dbo.Bitacora
                 WHERE (@Modulo IS NULL OR Modulo = @Modulo)
+                  AND (@Tipo IS NULL OR Tipo = @Tipo)
                   AND (@FechaDesde IS NULL OR Fecha >= @FechaDesde)
                   AND (@FechaHasta IS NULL OR Fecha <= @FechaHasta)
                 ORDER BY Fecha DESC";
@@ -88,6 +89,11 @@ namespace DAL.Bitacora
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.Add("@CantidadMaxima", SqlDbType.Int).Value = cantidadMaxima;
+
+                command.Parameters.Add("@Tipo", SqlDbType.NVarChar, 20).Value =
+                    string.IsNullOrWhiteSpace(tipo)
+                        ? (object)DBNull.Value
+                        : tipo.Trim();
 
                 command.Parameters.Add("@Modulo", SqlDbType.NVarChar, 100).Value =
                     string.IsNullOrWhiteSpace(modulo)
