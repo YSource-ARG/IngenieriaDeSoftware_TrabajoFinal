@@ -72,12 +72,18 @@ namespace UI
             panelLogin.Left = (this.ClientSize.Width - panelLogin.Width) / 2;
             panelLogin.Top = (this.ClientSize.Height - panelLogin.Height) / 2;
         }
-        
+
         private void btnIngresar_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtNombreUsuario.Text))
             {
-                MessageBox.Show("Por favor, ingrese su nombre de usuario.", "Login", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(
+                    "Por favor, ingrese su nombre de usuario.",
+                    "Login",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
                 txtNombreUsuario.Clear();
                 txtNombreUsuario.Focus();
                 return;
@@ -85,30 +91,79 @@ namespace UI
 
             if (string.IsNullOrWhiteSpace(txtPassword.Text))
             {
-                MessageBox.Show("Por favor, ingrese su contraseña.", "Login", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(
+                    "Por favor, ingrese su contraseña.",
+                    "Login",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
                 txtPassword.Clear();
                 txtPassword.Focus();
                 return;
             }
-            //aca comienza el caso de uso del login, invocando el metodo de la BLL
-            ResultadoLogin resultadoLogin = _loginAppService.IniciarSesion(txtNombreUsuario.Text.Trim(), txtPassword.Text);
+
+            ResultadoLogin resultadoLogin = _loginAppService.IniciarSesion(
+                txtNombreUsuario.Text.Trim(),
+                txtPassword.Text
+            );
+
+            if (resultadoLogin.UsuarioBloqueado)
+            {
+                string mensaje =
+                    "El acceso fue bloqueado temporalmente por varios intentos fallidos. " +
+                    "Intente nuevamente en unos minutos.";
+
+                if (resultadoLogin.BloqueadoHasta.HasValue)
+                {
+                    TimeSpan tiempoRestante =
+                        resultadoLogin.BloqueadoHasta.Value - DateTime.Now;
+
+                    int minutosRestantes = Math.Max(
+                        1,
+                        (int)Math.Ceiling(tiempoRestante.TotalMinutes)
+                    );
+
+                    mensaje =
+                        $"El acceso fue bloqueado temporalmente. " +
+                        $"Intente nuevamente en aproximadamente {minutosRestantes} minuto(s).";
+                }
+
+                MessageBox.Show(
+                    mensaje,
+                    "Acceso bloqueado",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                txtPassword.Clear();
+                txtPassword.Focus();
+                return;
+            }
 
             if (!resultadoLogin.LoginExitoso)
             {
-                MessageBox.Show("Usuario o contraseña incorrectos.", "Login", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(
+                    "Usuario o contraseña incorrectos.",
+                    "Login",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
                 txtPassword.Clear();
                 txtPassword.Focus();
                 return;
             }
 
-            if (resultadoLogin.DebeCambiarPassword && !CambiarPasswordObligatorio(resultadoLogin))
+            if (resultadoLogin.DebeCambiarPassword &&
+                !CambiarPasswordObligatorio(resultadoLogin))
             {
                 _cerrarSesionAppService.CerrarSesion();
                 txtPassword.Clear();
                 txtPassword.Focus();
                 return;
             }
-            //aca despues de la orquestacion del caso de uso con resultado exitoso el usuario queda logueado, y se abre el formulario principal
+
             AbrirFormularioPrincipal();
         }
 
