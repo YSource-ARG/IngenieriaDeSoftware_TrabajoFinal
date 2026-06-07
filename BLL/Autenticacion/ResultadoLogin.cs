@@ -4,15 +4,27 @@ namespace BLL.Autenticacion
 {
     public class ResultadoLogin
     {
-        private ResultadoLogin(bool loginExitoso, Guid usuarioId, string nombreUsuario, bool debeCambiarPassword)
+        private ResultadoLogin(
+            bool loginExitoso,
+            bool usuarioBloqueado,
+            DateTime? bloqueadoHasta,
+            Guid usuarioId,
+            string nombreUsuario,
+            bool debeCambiarPassword)
         {
             LoginExitoso = loginExitoso;
+            UsuarioBloqueado = usuarioBloqueado;
+            BloqueadoHasta = bloqueadoHasta;
             UsuarioId = usuarioId;
             NombreUsuario = nombreUsuario;
             DebeCambiarPassword = debeCambiarPassword;
         }
 
         public bool LoginExitoso { get; private set; }
+
+        public bool UsuarioBloqueado { get; private set; }
+
+        public DateTime? BloqueadoHasta { get; private set; }
 
         public Guid UsuarioId { get; private set; }
 
@@ -22,12 +34,41 @@ namespace BLL.Autenticacion
 
         public static ResultadoLogin Fallido()
         {
-            return new ResultadoLogin(false, Guid.Empty, null, false);
+            return new ResultadoLogin(
+                false,
+                false,
+                null,
+                Guid.Empty,
+                null,
+                false
+            );
         }
 
-        public static ResultadoLogin Exitoso(Guid usuarioId, string nombreUsuario, bool debeCambiarPassword)
+        public static ResultadoLogin Bloqueado(DateTime bloqueadoHasta)
         {
-            return new ResultadoLogin(true, usuarioId, nombreUsuario, debeCambiarPassword);
+            return new ResultadoLogin(
+                false,
+                true,
+                bloqueadoHasta,
+                Guid.Empty,
+                null,
+                false
+            );
+        }
+
+        public static ResultadoLogin Exitoso(
+            Guid usuarioId,
+            string nombreUsuario,
+            bool debeCambiarPassword)
+        {
+            return new ResultadoLogin(
+                true,
+                false,
+                null,
+                usuarioId,
+                nombreUsuario,
+                debeCambiarPassword
+            );
         }
     }
 }

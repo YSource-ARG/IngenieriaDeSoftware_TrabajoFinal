@@ -36,6 +36,8 @@ namespace DAL.Usuarios
                     PasswordHash, 
                     Activo, 
                     DebeCambiarPassword,
+                    IntentosFallidosLogin,
+                    BloqueadoHasta,
                     FechaCreacion, 
                     FechaUltimoAcceso 
                 FROM dbo.Usuario 
@@ -76,6 +78,8 @@ namespace DAL.Usuarios
                     PasswordHash, 
                     Activo, 
                     DebeCambiarPassword,
+                    IntentosFallidosLogin,
+                    BloqueadoHasta,
                     FechaCreacion, 
                     FechaUltimoAcceso 
                 FROM dbo.Usuario 
@@ -110,6 +114,8 @@ namespace DAL.Usuarios
                     PasswordHash, 
                     Activo, 
                     DebeCambiarPassword,
+                    IntentosFallidosLogin,
+                    BloqueadoHasta,
                     FechaCreacion, 
                     FechaUltimoAcceso 
                 FROM dbo.Usuario
@@ -330,7 +336,78 @@ namespace DAL.Usuarios
                 command.ExecuteNonQuery();
             }
         }
+        public void ActualizarIntentosFallidosLogin(
+    Guid idUsuario,
+    int intentosFallidos,
+    DateTime? bloqueadoHasta)
+        {
+            if (idUsuario == Guid.Empty)
+            {
+                throw new ArgumentException(
+                    "El identificador del usuario no puede estar vacío.",
+                    nameof(idUsuario)
+                );
+            }
 
+            if (intentosFallidos < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(intentosFallidos),
+                    "La cantidad de intentos fallidos no puede ser negativa."
+                );
+            }
+
+            const string sql = @"
+        UPDATE dbo.Usuario
+        SET IntentosFallidosLogin = @IntentosFallidosLogin,
+            BloqueadoHasta = @BloqueadoHasta
+        WHERE Id = @Id";
+
+            using (SqlConnection connection = _connectionFactory.CrearConexion())
+            using (SqlCommand command = new SqlCommand(sql, connection))
+            {
+                command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value =
+                    idUsuario;
+
+                command.Parameters.Add("@IntentosFallidosLogin", SqlDbType.Int).Value =
+                    intentosFallidos;
+
+                command.Parameters.Add("@BloqueadoHasta", SqlDbType.DateTime2).Value =
+                    bloqueadoHasta.HasValue
+                        ? (object)bloqueadoHasta.Value
+                        : DBNull.Value;
+
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public void RestablecerIntentosFallidosLogin(Guid idUsuario)
+        {
+            if (idUsuario == Guid.Empty)
+            {
+                throw new ArgumentException(
+                    "El identificador del usuario no puede estar vacío.",
+                    nameof(idUsuario)
+                );
+            }
+
+            const string sql = @"
+        UPDATE dbo.Usuario
+        SET IntentosFallidosLogin = 0,
+            BloqueadoHasta = NULL
+        WHERE Id = @Id";
+
+            using (SqlConnection connection = _connectionFactory.CrearConexion())
+            using (SqlCommand command = new SqlCommand(sql, connection))
+            {
+                command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value =
+                    idUsuario;
+
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
         private Usuario MapearUsuario(SqlDataReader reader)
         {
             return new Usuario
@@ -343,6 +420,10 @@ namespace DAL.Usuarios
                 PasswordHash = reader["PasswordHash"].ToString(),
                 Activo = Convert.ToBoolean(reader["Activo"]),
                 DebeCambiarPassword = Convert.ToBoolean(reader["DebeCambiarPassword"]),
+                IntentosFallidosLogin = Convert.ToInt32(reader["IntentosFallidosLogin"]),
+                BloqueadoHasta = reader["BloqueadoHasta"] == DBNull.Value
+                    ? (DateTime?)null
+                    : Convert.ToDateTime(reader["BloqueadoHasta"]),
                 FechaCreacion = Convert.ToDateTime(reader["FechaCreacion"]),
                 FechaUltimoAcceso = reader["FechaUltimoAcceso"] == DBNull.Value
                     ? (DateTime?)null

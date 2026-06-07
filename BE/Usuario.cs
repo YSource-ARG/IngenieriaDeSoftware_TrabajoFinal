@@ -10,6 +10,10 @@ namespace BE
         public string PasswordHash { get; set; }
         public bool Activo { get; set; }
         public bool DebeCambiarPassword { get; set; }
+
+        public int IntentosFallidosLogin { get; set; }
+        public DateTime? BloqueadoHasta { get; set; }
+
         public DateTime FechaCreacion { get; set; }
         public DateTime? FechaUltimoAcceso { get; set; }
     }

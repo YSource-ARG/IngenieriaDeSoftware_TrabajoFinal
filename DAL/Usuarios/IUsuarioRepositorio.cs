@@ -22,8 +22,20 @@ namespace DAL.Usuarios
 
         void ActualizarPassword(Guid idUsuario, string passwordHash);
 
-        void ActualizarPasswordYEstadoCambioObligatorio(Guid idUsuario, string passwordHash, bool debeCambiarPassword);
+        void ActualizarPasswordYEstadoCambioObligatorio(
+            Guid idUsuario,
+            string passwordHash,
+            bool debeCambiarPassword
+        );
 
         void ActualizarFechaUltimoAcceso(Guid idUsuario);
+
+        void ActualizarIntentosFallidosLogin(
+            Guid idUsuario,
+            int intentosFallidos,
+            DateTime? bloqueadoHasta
+        );
+
+        void RestablecerIntentosFallidosLogin(Guid idUsuario);
     }
 }

@@ -7,12 +7,19 @@ namespace BLL.Autenticacion
 {
     public class LoginAppService
     {
+        private const int CantidadMaximaIntentosFallidos = 3;
+        private const int MinutosBloqueo = 5;
+
         private readonly IUsuarioRepositorio _usuarioRepositorio;
         private readonly IPasswordHasher _passwordHasher;
         private readonly ISessionService _sessionService;
         private readonly IBitacoraService _bitacoraService;
 
-        public LoginAppService(IUsuarioRepositorio usuarioRepositorio, IPasswordHasher passwordHasher, ISessionService sessionService, IBitacoraService bitacoraService)
+        public LoginAppService(
+            IUsuarioRepositorio usuarioRepositorio,
+            IPasswordHasher passwordHasher,
+            ISessionService sessionService,
+            IBitacoraService bitacoraService)
         {
             if (usuarioRepositorio == null)
             {
@@ -40,17 +47,20 @@ namespace BLL.Autenticacion
             _bitacoraService = bitacoraService;
         }
 
-        public ResultadoLogin IniciarSesion(string nombreUsuario, string passwordIngresada)
+        public ResultadoLogin IniciarSesion(
+            string nombreUsuario,
+            string passwordIngresada)
         {
-            if (string.IsNullOrWhiteSpace(nombreUsuario) || string.IsNullOrWhiteSpace(passwordIngresada))
+            if (string.IsNullOrWhiteSpace(nombreUsuario) ||
+                string.IsNullOrWhiteSpace(passwordIngresada))
             {
                 return ResultadoLogin.Fallido();
             }
-            //por aca continua el caso de uso del login invocando el metodo de la DAL
-            // y nos devuelve el objeto Usuario con sus datos 
-            var usuario = _usuarioRepositorio.ObtenerPorNombreUsuario(nombreUsuario);
 
-            if (usuario == null)//en el caso fallido lo registra en la bitacora
+            var usuario =
+                _usuarioRepositorio.ObtenerPorNombreUsuario(nombreUsuario);
+
+            if (usuario == null)
             {
                 _bitacoraService.Registrar(
                     null,
@@ -63,11 +73,79 @@ namespace BLL.Autenticacion
 
                 return ResultadoLogin.Fallido();
             }
-            //en el camino feliz, con los datos del usuario, ahora se puede validar la contraseña
-            bool passwordValida = _passwordHasher.VerificarPassword(passwordIngresada, usuario.PasswordHash);
+
+            DateTime fechaActual = DateTime.Now;
+
+            // Si el bloqueo sigue vigente, no se verifica la contraseña.
+            if (usuario.BloqueadoHasta.HasValue &&
+                usuario.BloqueadoHasta.Value > fechaActual)
+            {
+                _bitacoraService.Registrar(
+                    usuario.Id,
+                    usuario.NombreUsuario,
+                    "Seguridad",
+                    "LOGIN_BLOQUEADO",
+                    "Intento de acceso mientras el usuario se encuentra bloqueado.",
+                    "WARN"
+                );
+
+                return ResultadoLogin.Bloqueado(
+                    usuario.BloqueadoHasta.Value
+                );
+            }
+
+            // Si el bloqueo ya venció, se inicia un nuevo ciclo de intentos.
+            if (usuario.BloqueadoHasta.HasValue)
+            {
+                _usuarioRepositorio.RestablecerIntentosFallidosLogin(
+                    usuario.Id
+                );
+
+                usuario.IntentosFallidosLogin = 0;
+                usuario.BloqueadoHasta = null;
+            }
+
+            bool passwordValida =
+                _passwordHasher.VerificarPassword(
+                    passwordIngresada,
+                    usuario.PasswordHash
+                );
 
             if (!passwordValida)
             {
+                int intentosFallidos =
+                    usuario.IntentosFallidosLogin + 1;
+
+                DateTime? bloqueadoHasta = null;
+
+                if (intentosFallidos >= CantidadMaximaIntentosFallidos)
+                {
+                    bloqueadoHasta =
+                        fechaActual.AddMinutes(MinutosBloqueo);
+                }
+
+                _usuarioRepositorio.ActualizarIntentosFallidosLogin(
+                    usuario.Id,
+                    intentosFallidos,
+                    bloqueadoHasta
+                );
+
+                if (bloqueadoHasta.HasValue)
+                {
+                    _bitacoraService.Registrar(
+                        usuario.Id,
+                        usuario.NombreUsuario,
+                        "Seguridad",
+                        "LOGIN_BLOQUEADO",
+                        "El usuario fue bloqueado temporalmente por intentos fallidos.",
+                        "WARN"
+                    );
+
+                    return ResultadoLogin.Bloqueado(
+                        bloqueadoHasta.Value
+                    );
+                }
+
                 _bitacoraService.Registrar(
                     usuario.Id,
                     usuario.NombreUsuario,
@@ -79,10 +157,24 @@ namespace BLL.Autenticacion
 
                 return ResultadoLogin.Fallido();
             }
-            //metodo para asignar al usuario como el actual
-            _sessionService.IniciarSesion(usuario.Id, usuario.NombreUsuario);
-            // Se actualiza en base de datos la fecha del último acceso del usuario
-            _usuarioRepositorio.ActualizarFechaUltimoAcceso(usuario.Id);
+
+            // Un acceso correcto limpia cualquier intento fallido anterior.
+            if (usuario.IntentosFallidosLogin > 0 ||
+                usuario.BloqueadoHasta.HasValue)
+            {
+                _usuarioRepositorio.RestablecerIntentosFallidosLogin(
+                    usuario.Id
+                );
+            }
+
+            _sessionService.IniciarSesion(
+                usuario.Id,
+                usuario.NombreUsuario
+            );
+
+            _usuarioRepositorio.ActualizarFechaUltimoAcceso(
+                usuario.Id
+            );
 
             _bitacoraService.Registrar(
                 usuario.Id,
