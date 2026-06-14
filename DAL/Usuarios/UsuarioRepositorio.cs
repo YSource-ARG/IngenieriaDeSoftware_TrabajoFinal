@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using DAL.Excepciones;
 
 namespace DAL.Usuarios
 {
@@ -29,37 +30,48 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-                SELECT 
-                    Id, 
-                    NombreUsuario, 
-                    NombreCompleto,
-                    PasswordHash, 
-                    Activo, 
-                    DebeCambiarPassword,
-                    IntentosFallidosLogin,
-                    BloqueadoHasta,
-                    FechaCreacion, 
-                    FechaUltimoAcceso 
-                FROM dbo.Usuario 
-                WHERE NombreUsuario = @NombreUsuario 
-                  AND Activo = 1";
+        SELECT 
+            Id, 
+            NombreUsuario, 
+            NombreCompleto,
+            PasswordHash, 
+            Activo, 
+            DebeCambiarPassword,
+            IntentosFallidosLogin,
+            BloqueadoHasta,
+            FechaCreacion, 
+            FechaUltimoAcceso 
+        FROM dbo.Usuario 
+        WHERE NombreUsuario = @NombreUsuario 
+          AND Activo = 1";
 
-            using (SqlConnection connection = _connectionFactory.CrearConexion())
-            using (SqlCommand command = new SqlCommand(sql, connection))
+            try
             {
-                command.Parameters.Add("@NombreUsuario", SqlDbType.NVarChar, 100).Value = nombreUsuario;
-
-                connection.Open();
-
-                using (SqlDataReader reader = command.ExecuteReader())
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    if (!reader.Read())
+                    command.Parameters.Add("@NombreUsuario", SqlDbType.NVarChar, 100).Value = nombreUsuario;
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        return null;
+                        if (!reader.Read())
+                        {
+                            return null;
+                        }
+
+                        return MapearUsuario(reader);
                     }
-                    //aca se crea un objeto Usuario con los datos obtenidos con la query
-                    return MapearUsuario(reader);
                 }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudo consultar el usuario en la base de datos.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
         }
 
@@ -71,36 +83,47 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-                SELECT 
-                    Id, 
-                    NombreUsuario, 
-                    NombreCompleto,
-                    PasswordHash, 
-                    Activo, 
-                    DebeCambiarPassword,
-                    IntentosFallidosLogin,
-                    BloqueadoHasta,
-                    FechaCreacion, 
-                    FechaUltimoAcceso 
-                FROM dbo.Usuario 
-                WHERE Id = @Id";
+        SELECT 
+            Id, 
+            NombreUsuario, 
+            NombreCompleto,
+            PasswordHash, 
+            Activo, 
+            DebeCambiarPassword,
+            IntentosFallidosLogin,
+            BloqueadoHasta,
+            FechaCreacion, 
+            FechaUltimoAcceso 
+        FROM dbo.Usuario 
+        WHERE Id = @Id";
 
-            using (SqlConnection connection = _connectionFactory.CrearConexion())
-            using (SqlCommand command = new SqlCommand(sql, connection))
+            try
             {
-                command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
-
-                connection.Open();
-
-                using (SqlDataReader reader = command.ExecuteReader())
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    if (!reader.Read())
-                    {
-                        return null;
-                    }
+                    command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
 
-                    return MapearUsuario(reader);
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                        {
+                            return null;
+                        }
+
+                        return MapearUsuario(reader);
+                    }
                 }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudo consultar el usuario por identificador.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
         }
 
@@ -127,28 +150,39 @@ namespace DAL.Usuarios
 
             List<Usuario> usuarios = new List<Usuario>();
 
-            using (SqlConnection connection = _connectionFactory.CrearConexion())
-            using (SqlCommand command = new SqlCommand(sql, connection))
+            try
             {
-                command.Parameters.Add("@TextoBusqueda", SqlDbType.NVarChar, 150).Value =
-                    string.IsNullOrWhiteSpace(textoBusqueda)
-                        ? (object)DBNull.Value
-                        : textoBusqueda.Trim();
-
-                command.Parameters.Add("@Activo", SqlDbType.Bit).Value =
-                    activo.HasValue
-                        ? (object)activo.Value
-                        : DBNull.Value;
-
-                connection.Open();
-
-                using (SqlDataReader reader = command.ExecuteReader())
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    while (reader.Read())
+                    command.Parameters.Add("@TextoBusqueda", SqlDbType.NVarChar, 150).Value =
+                        string.IsNullOrWhiteSpace(textoBusqueda)
+                            ? (object)DBNull.Value
+                            : textoBusqueda.Trim();
+
+                    command.Parameters.Add("@Activo", SqlDbType.Bit).Value =
+                        activo.HasValue
+                            ? (object)activo.Value
+                            : DBNull.Value;
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        usuarios.Add(MapearUsuario(reader));
+                        while (reader.Read())
+                        {
+                            usuarios.Add(MapearUsuario(reader));
+                        }
                     }
                 }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudo obtener el listado de usuarios.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
 
             return usuarios;
@@ -162,26 +196,37 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-                SELECT COUNT(1)
-                FROM dbo.Usuario
-                WHERE NombreUsuario = @NombreUsuario
-                  AND (@IdUsuarioExcluido IS NULL OR Id <> @IdUsuarioExcluido)";
+        SELECT COUNT(1)
+        FROM dbo.Usuario
+        WHERE NombreUsuario = @NombreUsuario
+          AND (@IdUsuarioExcluido IS NULL OR Id <> @IdUsuarioExcluido)";
 
-            using (SqlConnection connection = _connectionFactory.CrearConexion())
-            using (SqlCommand command = new SqlCommand(sql, connection))
+            try
             {
-                command.Parameters.Add("@NombreUsuario", SqlDbType.NVarChar, 100).Value = nombreUsuario.Trim();
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@NombreUsuario", SqlDbType.NVarChar, 100).Value = nombreUsuario.Trim();
 
-                command.Parameters.Add("@IdUsuarioExcluido", SqlDbType.UniqueIdentifier).Value =
-                    idUsuarioExcluido.HasValue
-                        ? (object)idUsuarioExcluido.Value
-                        : DBNull.Value;
+                    command.Parameters.Add("@IdUsuarioExcluido", SqlDbType.UniqueIdentifier).Value =
+                        idUsuarioExcluido.HasValue
+                            ? (object)idUsuarioExcluido.Value
+                            : DBNull.Value;
 
-                connection.Open();
+                    connection.Open();
 
-                int cantidad = Convert.ToInt32(command.ExecuteScalar());
+                    int cantidad = Convert.ToInt32(command.ExecuteScalar());
 
-                return cantidad > 0;
+                    return cantidad > 0;
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudo verificar la existencia del nombre de usuario.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
         }
 
@@ -193,36 +238,47 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-                INSERT INTO dbo.Usuario
-                (
-                    Id,
-                    NombreUsuario,
-                    NombreCompleto,
-                    PasswordHash,
-                    Activo,
-                    DebeCambiarPassword,
-                    FechaCreacion,
-                    FechaUltimoAcceso
-                )
-                VALUES
-                (
-                    @Id,
-                    @NombreUsuario,
-                    @NombreCompleto,
-                    @PasswordHash,
-                    @Activo,
-                    @DebeCambiarPassword,
-                    @FechaCreacion,
-                    @FechaUltimoAcceso
-                )";
+        INSERT INTO dbo.Usuario
+        (
+            Id,
+            NombreUsuario,
+            NombreCompleto,
+            PasswordHash,
+            Activo,
+            DebeCambiarPassword,
+            FechaCreacion,
+            FechaUltimoAcceso
+        )
+        VALUES
+        (
+            @Id,
+            @NombreUsuario,
+            @NombreCompleto,
+            @PasswordHash,
+            @Activo,
+            @DebeCambiarPassword,
+            @FechaCreacion,
+            @FechaUltimoAcceso
+        )";
 
-            using (SqlConnection connection = _connectionFactory.CrearConexion())
-            using (SqlCommand command = new SqlCommand(sql, connection))
+            try
             {
-                CargarParametrosUsuario(command, usuario);
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    CargarParametrosUsuario(command, usuario);
 
-                connection.Open();
-                command.ExecuteNonQuery();
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudo crear el usuario en la base de datos.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
         }
 
@@ -239,20 +295,31 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-                UPDATE dbo.Usuario
-                SET NombreCompleto = @NombreCompleto,
-                    Activo = @Activo
-                WHERE Id = @Id";
+        UPDATE dbo.Usuario
+        SET NombreCompleto = @NombreCompleto,
+            Activo = @Activo
+        WHERE Id = @Id";
 
-            using (SqlConnection connection = _connectionFactory.CrearConexion())
-            using (SqlCommand command = new SqlCommand(sql, connection))
+            try
             {
-                command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
-                command.Parameters.Add("@NombreCompleto", SqlDbType.NVarChar, 150).Value = nombreCompleto.Trim();
-                command.Parameters.Add("@Activo", SqlDbType.Bit).Value = activo;
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
+                    command.Parameters.Add("@NombreCompleto", SqlDbType.NVarChar, 150).Value = nombreCompleto.Trim();
+                    command.Parameters.Add("@Activo", SqlDbType.Bit).Value = activo;
 
-                connection.Open();
-                command.ExecuteNonQuery();
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudieron modificar los datos del usuario.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
         }
 
@@ -264,18 +331,29 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-                UPDATE dbo.Usuario
-                SET Activo = @Activo
-                WHERE Id = @Id";
+        UPDATE dbo.Usuario
+        SET Activo = @Activo
+        WHERE Id = @Id";
 
-            using (SqlConnection connection = _connectionFactory.CrearConexion())
-            using (SqlCommand command = new SqlCommand(sql, connection))
+            try
             {
-                command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
-                command.Parameters.Add("@Activo", SqlDbType.Bit).Value = activo;
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
+                    command.Parameters.Add("@Activo", SqlDbType.Bit).Value = activo;
 
-                connection.Open();
-                command.ExecuteNonQuery();
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudo cambiar el estado del usuario.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
         }
 
@@ -297,20 +375,31 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-                UPDATE dbo.Usuario
-                SET PasswordHash = @PasswordHash,
-                    DebeCambiarPassword = @DebeCambiarPassword
-                WHERE Id = @Id";
+        UPDATE dbo.Usuario
+        SET PasswordHash = @PasswordHash,
+            DebeCambiarPassword = @DebeCambiarPassword
+        WHERE Id = @Id";
 
-            using (SqlConnection connection = _connectionFactory.CrearConexion())
-            using (SqlCommand command = new SqlCommand(sql, connection))
+            try
             {
-                command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
-                command.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = passwordHash;
-                command.Parameters.Add("@DebeCambiarPassword", SqlDbType.Bit).Value = debeCambiarPassword;
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
+                    command.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = passwordHash;
+                    command.Parameters.Add("@DebeCambiarPassword", SqlDbType.Bit).Value = debeCambiarPassword;
 
-                connection.Open();
-                command.ExecuteNonQuery();
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudo actualizar la contraseña del usuario.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
         }
 
@@ -322,18 +411,29 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-                UPDATE dbo.Usuario 
-                SET FechaUltimoAcceso = SYSDATETIME() 
-                WHERE Id = @Id 
-                  AND Activo = 1";
+        UPDATE dbo.Usuario 
+        SET FechaUltimoAcceso = SYSDATETIME() 
+        WHERE Id = @Id 
+          AND Activo = 1";
 
-            using (SqlConnection connection = _connectionFactory.CrearConexion())
-            using (SqlCommand command = new SqlCommand(sql, connection))
+            try
             {
-                command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
 
-                connection.Open();
-                command.ExecuteNonQuery();
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudo actualizar la fecha de último acceso del usuario.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
         }
         public void ActualizarIntentosFallidosLogin(
@@ -358,27 +458,38 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-        UPDATE dbo.Usuario
-        SET IntentosFallidosLogin = @IntentosFallidosLogin,
-            BloqueadoHasta = @BloqueadoHasta
-        WHERE Id = @Id";
+UPDATE dbo.Usuario
+SET IntentosFallidosLogin = @IntentosFallidosLogin,
+    BloqueadoHasta = @BloqueadoHasta
+WHERE Id = @Id";
 
-            using (SqlConnection connection = _connectionFactory.CrearConexion())
-            using (SqlCommand command = new SqlCommand(sql, connection))
+            try
             {
-                command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value =
-                    idUsuario;
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value =
+                        idUsuario;
 
-                command.Parameters.Add("@IntentosFallidosLogin", SqlDbType.Int).Value =
-                    intentosFallidos;
+                    command.Parameters.Add("@IntentosFallidosLogin", SqlDbType.Int).Value =
+                        intentosFallidos;
 
-                command.Parameters.Add("@BloqueadoHasta", SqlDbType.DateTime2).Value =
-                    bloqueadoHasta.HasValue
-                        ? (object)bloqueadoHasta.Value
-                        : DBNull.Value;
+                    command.Parameters.Add("@BloqueadoHasta", SqlDbType.DateTime2).Value =
+                        bloqueadoHasta.HasValue
+                            ? (object)bloqueadoHasta.Value
+                            : DBNull.Value;
 
-                connection.Open();
-                command.ExecuteNonQuery();
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudieron actualizar los intentos fallidos de login.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
         }
 
@@ -393,19 +504,30 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-        UPDATE dbo.Usuario
-        SET IntentosFallidosLogin = 0,
-            BloqueadoHasta = NULL
-        WHERE Id = @Id";
+UPDATE dbo.Usuario
+SET IntentosFallidosLogin = 0,
+    BloqueadoHasta = NULL
+WHERE Id = @Id";
 
-            using (SqlConnection connection = _connectionFactory.CrearConexion())
-            using (SqlCommand command = new SqlCommand(sql, connection))
+            try
             {
-                command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value =
-                    idUsuario;
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value =
+                        idUsuario;
 
-                connection.Open();
-                command.ExecuteNonQuery();
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudieron restablecer los intentos fallidos de login.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
         }
         private Usuario MapearUsuario(SqlDataReader reader)
