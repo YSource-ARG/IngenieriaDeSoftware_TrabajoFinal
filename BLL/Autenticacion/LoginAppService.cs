@@ -1,6 +1,7 @@
 using System;
 using BLL.Bitacora;
 using DAL.Usuarios;
+using DAL.Excepciones;
 using SSL.Interfaces;
 
 namespace BLL.Autenticacion
@@ -48,148 +49,152 @@ namespace BLL.Autenticacion
         }
 
         public ResultadoLogin IniciarSesion(
-            string nombreUsuario,
-            string passwordIngresada)
+    string nombreUsuario,
+    string passwordIngresada)
         {
-            if (string.IsNullOrWhiteSpace(nombreUsuario) ||
-                string.IsNullOrWhiteSpace(passwordIngresada))
+            try
             {
-                return ResultadoLogin.Fallido();
-            }
-
-            var usuario =
-                _usuarioRepositorio.ObtenerPorNombreUsuario(nombreUsuario);
-
-            if (usuario == null)
-            {
-                _bitacoraService.Registrar(
-                    null,
-                    nombreUsuario,
-                    "Seguridad",
-                    "LOGIN_FALLIDO",
-                    "Intento de login con usuario inexistente.",
-                    "WARN"
-                );
-
-                return ResultadoLogin.Fallido();
-            }
-
-            DateTime fechaActual = DateTime.Now;
-
-            // Si el bloqueo sigue vigente, no se verifica la contraseña.
-            if (usuario.BloqueadoHasta.HasValue &&
-                usuario.BloqueadoHasta.Value > fechaActual)
-            {
-                _bitacoraService.Registrar(
-                    usuario.Id,
-                    usuario.NombreUsuario,
-                    "Seguridad",
-                    "LOGIN_BLOQUEADO",
-                    "Intento de acceso mientras el usuario se encuentra bloqueado.",
-                    "WARN"
-                );
-
-                return ResultadoLogin.Bloqueado(
-                    usuario.BloqueadoHasta.Value
-                );
-            }
-
-            // Si el bloqueo ya venció, se inicia un nuevo ciclo de intentos.
-            if (usuario.BloqueadoHasta.HasValue)
-            {
-                _usuarioRepositorio.RestablecerIntentosFallidosLogin(
-                    usuario.Id
-                );
-
-                usuario.IntentosFallidosLogin = 0;
-                usuario.BloqueadoHasta = null;
-            }
-
-            bool passwordValida =
-                _passwordHasher.VerificarPassword(
-                    passwordIngresada,
-                    usuario.PasswordHash
-                );
-
-            if (!passwordValida)
-            {
-                int intentosFallidos =
-                    usuario.IntentosFallidosLogin + 1;
-
-                DateTime? bloqueadoHasta = null;
-
-                if (intentosFallidos >= CantidadMaximaIntentosFallidos)
+                if (string.IsNullOrWhiteSpace(nombreUsuario) ||
+                    string.IsNullOrWhiteSpace(passwordIngresada))
                 {
-                    bloqueadoHasta =
-                        fechaActual.AddMinutes(MinutosBloqueo);
+                    return ResultadoLogin.Fallido();
                 }
 
-                _usuarioRepositorio.ActualizarIntentosFallidosLogin(
-                    usuario.Id,
-                    intentosFallidos,
-                    bloqueadoHasta
-                );
+                var usuario =
+                    _usuarioRepositorio.ObtenerPorNombreUsuario(nombreUsuario);
 
-                if (bloqueadoHasta.HasValue)
+                if (usuario == null)
+                {
+                    _bitacoraService.Registrar(
+                        null,
+                        nombreUsuario,
+                        "Seguridad",
+                        "LOGIN_FALLIDO",
+                        "Intento de login con usuario inexistente.",
+                        "WARN"
+                    );
+
+                    return ResultadoLogin.Fallido();
+                }
+
+                DateTime fechaActual = DateTime.Now;
+
+                if (usuario.BloqueadoHasta.HasValue &&
+                    usuario.BloqueadoHasta.Value > fechaActual)
                 {
                     _bitacoraService.Registrar(
                         usuario.Id,
                         usuario.NombreUsuario,
                         "Seguridad",
                         "LOGIN_BLOQUEADO",
-                        "El usuario fue bloqueado temporalmente por intentos fallidos.",
+                        "Intento de acceso mientras el usuario se encuentra bloqueado.",
                         "WARN"
                     );
 
                     return ResultadoLogin.Bloqueado(
-                        bloqueadoHasta.Value
+                        usuario.BloqueadoHasta.Value
                     );
                 }
+
+                if (usuario.BloqueadoHasta.HasValue)
+                {
+                    _usuarioRepositorio.RestablecerIntentosFallidosLogin(
+                        usuario.Id
+                    );
+
+                    usuario.IntentosFallidosLogin = 0;
+                    usuario.BloqueadoHasta = null;
+                }
+
+                bool passwordValida =
+                    _passwordHasher.VerificarPassword(
+                        passwordIngresada,
+                        usuario.PasswordHash
+                    );
+
+                if (!passwordValida)
+                {
+                    int intentosFallidos =
+                        usuario.IntentosFallidosLogin + 1;
+
+                    DateTime? bloqueadoHasta = null;
+
+                    if (intentosFallidos >= CantidadMaximaIntentosFallidos)
+                    {
+                        bloqueadoHasta =
+                            fechaActual.AddMinutes(MinutosBloqueo);
+                    }
+
+                    _usuarioRepositorio.ActualizarIntentosFallidosLogin(
+                        usuario.Id,
+                        intentosFallidos,
+                        bloqueadoHasta
+                    );
+
+                    if (bloqueadoHasta.HasValue)
+                    {
+                        _bitacoraService.Registrar(
+                            usuario.Id,
+                            usuario.NombreUsuario,
+                            "Seguridad",
+                            "LOGIN_BLOQUEADO",
+                            "El usuario fue bloqueado temporalmente por intentos fallidos.",
+                            "WARN"
+                        );
+
+                        return ResultadoLogin.Bloqueado(
+                            bloqueadoHasta.Value
+                        );
+                    }
+
+                    _bitacoraService.Registrar(
+                        usuario.Id,
+                        usuario.NombreUsuario,
+                        "Seguridad",
+                        "LOGIN_FALLIDO",
+                        "Intento de login con contraseña incorrecta.",
+                        "WARN"
+                    );
+
+                    return ResultadoLogin.Fallido();
+                }
+
+                if (usuario.IntentosFallidosLogin > 0 ||
+                    usuario.BloqueadoHasta.HasValue)
+                {
+                    _usuarioRepositorio.RestablecerIntentosFallidosLogin(
+                        usuario.Id
+                    );
+                }
+
+                _sessionService.IniciarSesion(
+                    usuario.Id,
+                    usuario.NombreUsuario
+                );
+
+                _usuarioRepositorio.ActualizarFechaUltimoAcceso(
+                    usuario.Id
+                );
 
                 _bitacoraService.Registrar(
                     usuario.Id,
                     usuario.NombreUsuario,
                     "Seguridad",
-                    "LOGIN_FALLIDO",
-                    "Intento de login con contraseña incorrecta.",
-                    "WARN"
+                    "LOGIN_EXITOSO",
+                    "El usuario inició sesión correctamente.",
+                    "INFO"
                 );
 
-                return ResultadoLogin.Fallido();
+                return ResultadoLogin.Exitoso(
+                    usuario.Id,
+                    usuario.NombreUsuario,
+                    usuario.DebeCambiarPassword
+                );
             }
-
-            // Un acceso correcto limpia cualquier intento fallido anterior.
-            if (usuario.IntentosFallidosLogin > 0 ||
-                usuario.BloqueadoHasta.HasValue)
+            catch (AccesoDatosException)
             {
-                _usuarioRepositorio.RestablecerIntentosFallidosLogin(
-                    usuario.Id
-                );
+                return ResultadoLogin.ErrorBaseDatos();
             }
-
-            _sessionService.IniciarSesion(
-                usuario.Id,
-                usuario.NombreUsuario
-            );
-
-            _usuarioRepositorio.ActualizarFechaUltimoAcceso(
-                usuario.Id
-            );
-
-            _bitacoraService.Registrar(
-                usuario.Id,
-                usuario.NombreUsuario,
-                "Seguridad",
-                "LOGIN_EXITOSO",
-                "El usuario inició sesión correctamente.",
-                "INFO"
-            );
-
-            return ResultadoLogin.Exitoso(
-                usuario.Id,
-                usuario.NombreUsuario,
-                usuario.DebeCambiarPassword
-            );
         }
     }
 }
