@@ -29,6 +29,7 @@ namespace IDS_TPFinal
 
             txtNombreUsuario.ReadOnly = false;
             txtNombreCompleto.ReadOnly = false;
+            txtEmail.ReadOnly = false;
             txtPassword.ReadOnly = false;
             cmbEstado.Enabled = true;
 
@@ -48,6 +49,7 @@ namespace IDS_TPFinal
 
             txtNombreUsuario.ReadOnly = true;
             txtNombreCompleto.ReadOnly = true;
+            txtEmail.ReadOnly = true;
             txtPassword.ReadOnly = true;
             cmbEstado.Enabled = false;
 
@@ -67,6 +69,7 @@ namespace IDS_TPFinal
 
             txtNombreUsuario.ReadOnly = true;
             txtNombreCompleto.ReadOnly = false;
+            txtEmail.ReadOnly = false;
             txtPassword.ReadOnly = true;
             cmbEstado.Enabled = true;
 
@@ -91,6 +94,7 @@ namespace IDS_TPFinal
             txtId.Clear();
             txtNombreUsuario.Clear();
             txtNombreCompleto.Clear();
+            txtEmail.Clear();
             txtPassword.Clear();
             txtFechaCreacion.Clear();
             txtFechaUltimoAcceso.Clear();

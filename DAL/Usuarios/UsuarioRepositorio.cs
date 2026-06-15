@@ -32,8 +32,9 @@ namespace DAL.Usuarios
             const string sql = @"
         SELECT 
             Id, 
-            NombreUsuario, 
+            NombreUsuario,
             NombreCompleto,
+            Email,
             PasswordHash, 
             Activo, 
             DebeCambiarPassword,
@@ -87,8 +88,9 @@ namespace DAL.Usuarios
             const string sql = @"
         SELECT 
             Id, 
-            NombreUsuario, 
+            NombreUsuario,
             NombreCompleto,
+            Email,
             PasswordHash, 
             Activo, 
             DebeCambiarPassword,
@@ -136,8 +138,9 @@ namespace DAL.Usuarios
             const string sql = @"
                 SELECT 
                     Id, 
-                    NombreUsuario, 
+                    NombreUsuario,
                     NombreCompleto,
+                    Email,
                     PasswordHash, 
                     Activo, 
                     DebeCambiarPassword,
@@ -249,6 +252,7 @@ namespace DAL.Usuarios
             Id,
             NombreUsuario,
             NombreCompleto,
+            Email,
             PasswordHash,
             Activo,
             DebeCambiarPassword,
@@ -260,6 +264,7 @@ namespace DAL.Usuarios
             @Id,
             @NombreUsuario,
             @NombreCompleto,
+            @Email,
             @PasswordHash,
             @Activo,
             @DebeCambiarPassword,
@@ -288,7 +293,7 @@ namespace DAL.Usuarios
             }
         }
 
-        public void ModificarDatos(Guid idUsuario, string nombreCompleto, bool activo)
+        public void ModificarDatos(Guid idUsuario, string nombreCompleto, string email, bool activo)
         {
             if (idUsuario == Guid.Empty)
             {
@@ -301,10 +306,11 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-        UPDATE dbo.Usuario
-        SET NombreCompleto = @NombreCompleto,
-            Activo = @Activo
-        WHERE Id = @Id";
+                UPDATE dbo.Usuario
+                SET NombreCompleto = @NombreCompleto,
+                    Email = @Email,
+                    Activo = @Activo
+                WHERE Id = @Id";
 
             try
             {
@@ -313,6 +319,14 @@ namespace DAL.Usuarios
                 {
                     command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = idUsuario;
                     command.Parameters.Add("@NombreCompleto", SqlDbType.NVarChar, 150).Value = nombreCompleto.Trim();
+
+                    // El email se permite nulo porque puede haber usuarios existentes
+                    // creados antes de incorporar el control de cambios por email.
+                    command.Parameters.Add("@Email", SqlDbType.NVarChar, 255).Value =
+                        string.IsNullOrWhiteSpace(email)
+                            ? (object)DBNull.Value
+                            : email.Trim();
+
                     command.Parameters.Add("@Activo", SqlDbType.Bit).Value = activo;
 
                     connection.Open();
@@ -545,6 +559,13 @@ WHERE Id = @Id";
                 NombreCompleto = reader["NombreCompleto"] == DBNull.Value
                     ? null
                     : reader["NombreCompleto"].ToString(),
+
+                // Email del usuario.
+                // Se controla para poder registrar historial de cambios sobre esta propiedad.
+                Email = reader["Email"] == DBNull.Value
+                    ? null
+                    : reader["Email"].ToString(),
+
                 PasswordHash = reader["PasswordHash"].ToString(),
                 Activo = Convert.ToBoolean(reader["Activo"]),
                 DebeCambiarPassword = Convert.ToBoolean(reader["DebeCambiarPassword"]),
@@ -577,6 +598,10 @@ WHERE Id = @Id";
                 string.IsNullOrWhiteSpace(usuario.NombreCompleto)
                     ? (object)DBNull.Value
                     : usuario.NombreCompleto.Trim();
+            command.Parameters.Add("@Email", SqlDbType.NVarChar, 255).Value =
+                string.IsNullOrWhiteSpace(usuario.Email)
+                    ? (object)DBNull.Value
+                    : usuario.Email.Trim();
             command.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = usuario.PasswordHash;
             command.Parameters.Add("@Activo", SqlDbType.Bit).Value = usuario.Activo;
             command.Parameters.Add("@DebeCambiarPassword", SqlDbType.Bit).Value = usuario.DebeCambiarPassword;

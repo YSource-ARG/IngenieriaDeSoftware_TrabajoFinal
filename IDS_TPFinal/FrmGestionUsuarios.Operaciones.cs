@@ -11,6 +11,7 @@ namespace IDS_TPFinal
             _gestionUsuariosAppService.CrearUsuario(
                 txtNombreUsuario.Text,
                 txtNombreCompleto.Text,
+                txtEmail.Text,
                 txtPassword.Text,
                 ObtenerEstadoSeleccionado()
             );
@@ -33,6 +34,7 @@ namespace IDS_TPFinal
             _gestionUsuariosAppService.ModificarUsuario(
                 idUsuario,
                 txtNombreCompleto.Text,
+                txtEmail.Text,
                 ObtenerEstadoSeleccionado()
             );
 

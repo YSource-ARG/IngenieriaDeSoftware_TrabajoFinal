@@ -51,6 +51,7 @@ namespace IDS_TPFinal
             AplicarEtiqueta(lblId);
             AplicarEtiqueta(lblNombreUsuario);
             AplicarEtiqueta(lblNombreCompleto);
+            AplicarEtiqueta(lblEmail);
             AplicarEtiqueta(lblEstado);
             AplicarEtiqueta(lblPassword);
             AplicarEtiqueta(lblFechaCreacion);
@@ -59,6 +60,7 @@ namespace IDS_TPFinal
             TemaVisual.AplicarTextBox(txtId);
             TemaVisual.AplicarTextBox(txtNombreUsuario);
             TemaVisual.AplicarTextBox(txtNombreCompleto);
+            TemaVisual.AplicarTextBox(txtEmail);
             TemaVisual.AplicarTextBox(txtPassword);
             TemaVisual.AplicarTextBox(txtFechaCreacion);
             TemaVisual.AplicarTextBox(txtFechaUltimoAcceso);
@@ -75,6 +77,7 @@ namespace IDS_TPFinal
             AplicarBotonAccion(btnEditar, "✎\nEditar");
             AplicarBotonAccion(btnInhabilitarReactivar, "⏻\nInhabilitar/Reactivar");
             AplicarBotonAccion(btnRestablecerPassword, "🔑\nRestablecer contraseña");
+            AplicarBotonAccion(btnHistorialEmail, "✉\nHistorial email");
         }
 
         private void ConfigurarEstadoInicial()

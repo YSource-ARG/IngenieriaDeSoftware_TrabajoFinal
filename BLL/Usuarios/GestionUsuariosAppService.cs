@@ -4,6 +4,7 @@ using DAL.Usuarios;
 using SSL.Interfaces;
 using System;
 using System.Collections.Generic;
+using BLL.Integridad;
 
 namespace BLL.Usuarios
 {
@@ -14,20 +15,26 @@ namespace BLL.Usuarios
         private const string PasswordTemporalBlanqueo = "1234";
 
         private readonly IUsuarioRepositorio _usuarioRepositorio;
+        private readonly IUsuarioEmailHistorialRepositorio _usuarioEmailHistorialRepositorio;
         private readonly IPasswordHasher _passwordHasher;
         private readonly ISessionService _sessionService;
         private readonly IBitacoraService _bitacoraService;
+        private readonly IIntegridadService _integridadService;
 
         public GestionUsuariosAppService(
             IUsuarioRepositorio usuarioRepositorio,
+            IUsuarioEmailHistorialRepositorio usuarioEmailHistorialRepositorio,
             IPasswordHasher passwordHasher,
             ISessionService sessionService,
-            IBitacoraService bitacoraService)
+            IBitacoraService bitacoraService,
+            IIntegridadService integridadService)
         {
             _usuarioRepositorio = usuarioRepositorio ?? throw new ArgumentNullException(nameof(usuarioRepositorio));
+            _usuarioEmailHistorialRepositorio = usuarioEmailHistorialRepositorio ?? throw new ArgumentNullException(nameof(usuarioEmailHistorialRepositorio));
             _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
             _sessionService = sessionService ?? throw new ArgumentNullException(nameof(sessionService));
             _bitacoraService = bitacoraService ?? throw new ArgumentNullException(nameof(bitacoraService));
+            _integridadService = integridadService ?? throw new ArgumentNullException(nameof(integridadService));
         }
 
         // Se lista usuarios a través de la consulta ubicada en el repositorio de usuarios (DAL) 
@@ -42,7 +49,7 @@ namespace BLL.Usuarios
         }
 
         // Se validan y persisten los datos, se hashea la contraseña y se registra en la bitácora.
-        public void CrearUsuario(string nombreUsuario, string nombreCompleto, string passwordInicial, bool activo)
+        public void CrearUsuario(string nombreUsuario, string nombreCompleto, string email, string passwordInicial, bool activo)
         {
             ValidarDatosAltaUsuario(nombreUsuario, nombreCompleto);
 
@@ -63,6 +70,7 @@ namespace BLL.Usuarios
                 Id = Guid.NewGuid(),
                 NombreUsuario = nombreUsuarioNormalizado,
                 NombreCompleto = nombreCompleto.Trim(),
+                Email = NormalizarEmail(email),
                 PasswordHash = _passwordHasher.GenerarHash(passwordInicial),
                 Activo = activo,
                 DebeCambiarPassword = false,
@@ -80,7 +88,7 @@ namespace BLL.Usuarios
         }
 
         // Se valida y obtiene usuario, y luego se actualiza sus datos editables.
-        public void ModificarUsuario(Guid idUsuario, string nombreCompleto, bool activo)
+        public void ModificarUsuario(Guid idUsuario, string nombreCompleto, string email, bool activo)
         {
             if (idUsuario == Guid.Empty)
             {
@@ -97,17 +105,68 @@ namespace BLL.Usuarios
             }
 
             string nombreCompletoNormalizado = nombreCompleto.Trim();
+            string emailNormalizado = NormalizarEmail(email);
 
-            _usuarioRepositorio.ModificarDatos(
-                idUsuario,
-                nombreCompletoNormalizado,
-                activo
-            );
+            // Se compara el email anterior contra el nuevo antes de modificar.
+            // Si cambió, se registra el historial para cumplir el control de cambios.
+            string emailAnteriorNormalizado = NormalizarEmail(usuario.Email);
 
-            RegistrarBitacora(
-                "USUARIO_MODIFICADO",
-                $"Se modificaron los datos del usuario '{usuario.NombreUsuario}'."
-            );
+            bool cambioEmail =
+                !string.Equals(
+                    emailAnteriorNormalizado,
+                    emailNormalizado,
+                    StringComparison.OrdinalIgnoreCase
+                );
+            bool cambioDatosGenerales =
+                !string.Equals(
+                    usuario.NombreCompleto,
+                    nombreCompletoNormalizado,
+                    StringComparison.OrdinalIgnoreCase
+                )
+                    || usuario.Activo != activo;
+                    _usuarioRepositorio.ModificarDatos(
+                        idUsuario,
+                        nombreCompletoNormalizado,
+                        emailNormalizado,
+                        activo
+                );
+            if (cambioDatosGenerales)
+            {
+                _integridadService.RecalcularDigitosUsuarios(
+                    _sessionService.HaySesionActiva ? (Guid?)_sessionService.UsuarioIdActual : null,
+                    _sessionService.NombreUsuarioActual
+                );
+            }
+            if (cambioEmail)
+            {
+                UsuarioEmailHistorial historial = new UsuarioEmailHistorial
+                {
+                    Id = Guid.NewGuid(),
+                    UsuarioId = usuario.Id,
+                    EmailAnterior = emailAnteriorNormalizado,
+                    EmailNuevo = emailNormalizado,
+                    FechaCambio = DateTime.Now,
+                    UsuarioCambioId = _sessionService.HaySesionActiva
+                        ? (Guid?)_sessionService.UsuarioIdActual
+                        : null,
+                    UsuarioCambioNombre = _sessionService.NombreUsuarioActual
+                };
+
+                _usuarioEmailHistorialRepositorio.RegistrarCambio(historial);
+
+                RegistrarBitacora(
+                    "EMAIL_USUARIO_MODIFICADO",
+                    $"Se modificó el email del usuario '{usuario.NombreUsuario}'."
+                );
+            }
+
+            if (cambioDatosGenerales)
+            {
+                RegistrarBitacora(
+                    "USUARIO_MODIFICADO",
+                    $"Se modificaron los datos del usuario '{usuario.NombreUsuario}'."
+                );
+            }
         }
 
         public void CambiarEstadoUsuario(Guid idUsuario, bool activo)
@@ -202,6 +261,77 @@ namespace BLL.Usuarios
             );
         }
 
+        public List<UsuarioEmailHistorial> ListarHistorialEmail(Guid usuarioId)
+        {
+            if (usuarioId == Guid.Empty)
+            {
+                throw new ArgumentException("El identificador del usuario no puede estar vacío.", nameof(usuarioId));
+            }
+
+            Usuario usuario = _usuarioRepositorio.ObtenerPorId(usuarioId);
+
+            if (usuario == null)
+            {
+                throw new InvalidOperationException("No se encontró el usuario indicado.");
+            }
+
+            return _usuarioEmailHistorialRepositorio.ListarPorUsuario(usuarioId);
+        }
+
+        public void RestaurarEmailAnterior(Guid usuarioId, string emailARestaurar)
+        {
+            if (usuarioId == Guid.Empty)
+            {
+                throw new ArgumentException("El identificador del usuario no puede estar vacío.", nameof(usuarioId));
+            }
+
+            Usuario usuario = _usuarioRepositorio.ObtenerPorId(usuarioId);
+
+            if (usuario == null)
+            {
+                throw new InvalidOperationException("No se encontró el usuario indicado.");
+            }
+
+            string emailActualNormalizado = NormalizarEmail(usuario.Email);
+            string emailRestauradoNormalizado = NormalizarEmail(emailARestaurar);
+
+            if (string.Equals(
+                    emailActualNormalizado,
+                    emailRestauradoNormalizado,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            // Se restaura solo el email.
+            // El nombre completo y el estado se conservan como están actualmente.
+            _usuarioRepositorio.ModificarDatos(
+                usuario.Id,
+                usuario.NombreCompleto,
+                emailRestauradoNormalizado,
+                usuario.Activo
+            );
+
+            UsuarioEmailHistorial historial = new UsuarioEmailHistorial
+            {
+                Id = Guid.NewGuid(),
+                UsuarioId = usuario.Id,
+                EmailAnterior = emailActualNormalizado,
+                EmailNuevo = emailRestauradoNormalizado,
+                FechaCambio = DateTime.Now,
+                UsuarioCambioId = _sessionService.HaySesionActiva
+                    ? (Guid?)_sessionService.UsuarioIdActual
+                    : null,
+                UsuarioCambioNombre = _sessionService.NombreUsuarioActual
+            };
+
+            _usuarioEmailHistorialRepositorio.RegistrarCambio(historial);
+
+            RegistrarBitacora(
+                "EMAIL_RESTAURADO",
+                $"Se restauró el email anterior del usuario '{usuario.NombreUsuario}'."
+            );
+        }
         private void ValidarDatosAltaUsuario(string nombreUsuario, string nombreCompleto)
         {
             if (string.IsNullOrWhiteSpace(nombreUsuario))
@@ -219,7 +349,17 @@ namespace BLL.Usuarios
                 throw new ArgumentException("El nombre completo no puede estar vacío.", nameof(nombreCompleto));
             }
         }
+        private string NormalizarEmail(string email)
+        {
+            // El email se permite vacío para no romper usuarios existentes
+            // y porque el objetivo del módulo es controlar sus cambios cuando se informe.
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return null;
+            }
 
+            return email.Trim();
+        }
         // Centralización de registro de auditoria de gestión de usuario.
         private void RegistrarBitacora(string accion, string descripcion)
         {
