@@ -191,8 +191,17 @@ namespace BLL.Autenticacion
                     usuario.DebeCambiarPassword
                 );
             }
-            catch (AccesoDatosException)
+            catch (AccesoDatosException ex)
             {
+                _bitacoraService.Registrar(
+                    null,
+                    nombreUsuario,
+                    "Seguridad",
+                    "ERROR_BASE_DATOS",
+                    "No se pudo acceder a la base de datos durante el inicio de sesión. " + ex.Message,
+                    "ERROR"
+                );
+
                 return ResultadoLogin.ErrorBaseDatos();
             }
         }
