@@ -10,8 +10,9 @@ BEGIN
     (
         Id uniqueidentifier NOT NULL,
         NombreUsuario nvarchar(100) NOT NULL,
-        NombreCompleto nvarchar(150) NULL,
-        PasswordHash nvarchar(255) NOT NULL,
+        NombreCompleto nvarchar(200) NULL,
+        Email nvarchar(255) NULL,
+        PasswordHash nvarchar(500) NOT NULL,
         Activo bit NOT NULL CONSTRAINT DF_Usuario_Activo DEFAULT (1),
         DebeCambiarPassword bit NOT NULL
             CONSTRAINT DF_Usuario_DebeCambiarPassword DEFAULT (0),
@@ -26,10 +27,40 @@ BEGIN
 END
 GO
 
+-- Historial de cambios de email de usuarios.
+-- Permite conservar trazabilidad de cada modificación realizada sobre
+-- la propiedad Email, registrando valor anterior, valor nuevo, fecha
+-- y usuario que realizó el cambio.
+IF OBJECT_ID('dbo.UsuarioEmailHistorial', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.UsuarioEmailHistorial
+    (
+        Id uniqueidentifier NOT NULL,
+        UsuarioId uniqueidentifier NOT NULL,
+        EmailAnterior nvarchar(255) NULL,
+        EmailNuevo nvarchar(255) NULL,
+        FechaCambio datetime2(7) NOT NULL
+            CONSTRAINT DF_UsuarioEmailHistorial_FechaCambio DEFAULT (SYSDATETIME()),
+        UsuarioCambioId uniqueidentifier NULL,
+        UsuarioCambioNombre nvarchar(100) NULL,
+        CONSTRAINT PK_UsuarioEmailHistorial PRIMARY KEY (Id),
+        CONSTRAINT FK_UsuarioEmailHistorial_Usuario FOREIGN KEY (UsuarioId)
+            REFERENCES dbo.Usuario(Id)
+    )
+END
+GO
+
 IF COL_LENGTH('dbo.Usuario', 'NombreCompleto') IS NULL
 BEGIN
     ALTER TABLE dbo.Usuario
     ADD NombreCompleto nvarchar(150) NULL
+END
+GO
+
+IF COL_LENGTH('dbo.Usuario', 'Email') IS NULL
+BEGIN
+    ALTER TABLE dbo.Usuario
+    ADD Email nvarchar(255) NULL
 END
 GO
 

@@ -16,7 +16,7 @@ namespace DAL.Usuarios
 
         void Crear(Usuario usuario);
 
-        void ModificarDatos(Guid idUsuario, string nombreCompleto, bool activo);
+        void ModificarDatos(Guid idUsuario, string nombreCompleto, string email, bool activo);
 
         void CambiarEstado(Guid idUsuario, bool activo);
 

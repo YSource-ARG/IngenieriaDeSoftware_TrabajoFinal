@@ -26,6 +26,7 @@ namespace IDS_TPFinal
                         usuario.Id,
                         usuario.NombreUsuario,
                         usuario.NombreCompleto,
+                        usuario.Email,
                         Estado = usuario.Activo ? "Activo" : "Inactivo",
                         FechaCreacion = usuario.FechaCreacion.ToString("dd/MM/yyyy HH:mm"),
                         UltimoAcceso = usuario.FechaUltimoAcceso.HasValue
@@ -56,6 +57,7 @@ namespace IDS_TPFinal
             txtId.Text = ObtenerValorCeldaActual("Id");
             txtNombreUsuario.Text = ObtenerValorCeldaActual("NombreUsuario");
             txtNombreCompleto.Text = ObtenerValorCeldaActual("NombreCompleto");
+            txtEmail.Text = ObtenerValorCeldaActual("Email");
             txtFechaCreacion.Text = ObtenerValorCeldaActual("FechaCreacion");
             txtFechaUltimoAcceso.Text = ObtenerValorCeldaActual("UltimoAcceso");
 
@@ -81,6 +83,7 @@ namespace IDS_TPFinal
 
             ConfigurarColumna("NombreUsuario", "Usuario", 90);
             ConfigurarColumna("NombreCompleto", "Nombre completo", 150);
+            ConfigurarColumna("Email", "Email", 150);
             ConfigurarColumna("Estado", "Estado", 70);
             ConfigurarColumna("FechaCreacion", "Fecha creación", 110);
             ConfigurarColumna("UltimoAcceso", "Último acceso", 110);

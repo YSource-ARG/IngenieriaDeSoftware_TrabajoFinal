@@ -36,6 +36,7 @@ namespace BLL.Configuracion
             IConnectionFactory connectionFactory = new SqlConnectionFactory(connectionString);
 
             IUsuarioRepositorio usuarioRepositorio = new UsuarioRepositorio(connectionFactory);
+            IUsuarioEmailHistorialRepositorio usuarioEmailHistorialRepositorio = new UsuarioEmailHistorialRepositorio(connectionFactory);
             IBitacoraRepositorio bitacoraRepositorio = new BitacoraRepositorio(connectionFactory);
             IDigitoVerificadorRepositorio digitoVerificadorRepositorio = new DigitoVerificadorRepositorio(connectionFactory);
 
@@ -67,9 +68,11 @@ namespace BLL.Configuracion
 
             GestionUsuariosAppService = new GestionUsuariosAppService(
                 usuarioRepositorio,
+                usuarioEmailHistorialRepositorio,
                 passwordHasher,
                 sessionService,
-                BitacoraService
+                BitacoraService,
+                IntegridadService
             );
         }
     }
