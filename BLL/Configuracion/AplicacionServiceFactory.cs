@@ -7,6 +7,7 @@ using DAL.Usuarios;
 using SSL.Interfaces;
 using SSL.Seguridad;
 using SSL.Sesion;
+using SSL.Logging;
 using System;
 
 namespace BLL.Configuracion
@@ -36,7 +37,9 @@ namespace BLL.Configuracion
             IPasswordHasher passwordHasher = new PasswordHasherService();
             ISessionService sessionService = SessionService.ObtenerSesion();
 
-            BitacoraService = new BitacoraService(bitacoraRepositorio);
+            IBitacoraContingenciaService bitacoraContingenciaService = new BitacoraContingenciaService();
+
+            BitacoraService = new BitacoraService(bitacoraRepositorio, bitacoraContingenciaService);
 
             LoginAppService = new LoginAppService(
                 usuarioRepositorio,

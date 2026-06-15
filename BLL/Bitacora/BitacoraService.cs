@@ -1,6 +1,9 @@
 using DAL.Bitacora;
+using DAL.Excepciones;
+using SSL.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BLL.Bitacora
 {
@@ -11,8 +14,16 @@ namespace BLL.Bitacora
         private const int CantidadMaximaPermitida = 1000;
 
         private readonly IBitacoraRepositorio _bitacoraRepositorio;
+        private readonly IBitacoraContingenciaService _bitacoraContingenciaService;
 
         public BitacoraService(IBitacoraRepositorio bitacoraRepositorio)
+            : this(bitacoraRepositorio, null)
+        {
+        }
+
+        public BitacoraService(
+            IBitacoraRepositorio bitacoraRepositorio,
+            IBitacoraContingenciaService bitacoraContingenciaService)
         {
             if (bitacoraRepositorio == null)
             {
@@ -20,6 +31,7 @@ namespace BLL.Bitacora
             }
 
             _bitacoraRepositorio = bitacoraRepositorio;
+            _bitacoraContingenciaService = bitacoraContingenciaService;
         }
 
         // Crea un registro en la bitácora con los datos mínimos necesarios para auditar la acción.
@@ -37,8 +49,16 @@ namespace BLL.Bitacora
                 Tipo = tipo
             };
 
-            // Persiste dicho registro
-            _bitacoraRepositorio.Registrar(bitacora);
+            IntentarSincronizarPendientes();
+
+            try
+            {
+                _bitacoraRepositorio.Registrar(bitacora);
+            }
+            catch (AccesoDatosException)
+            {
+                GuardarEnContingencia(bitacora);
+            }
         }
 
         // Consulta los registros de la bitácora aplicando filtros de fechas y cantidades máx
@@ -58,6 +78,60 @@ namespace BLL.Bitacora
                 fechaHasta,
                 cantidadNormalizada
             );
+        }
+
+        private void IntentarSincronizarPendientes()
+        {
+            if (_bitacoraContingenciaService == null)
+            {
+                return;
+            }
+
+            List<BE.Bitacora> pendientes;
+
+            try
+            {
+                pendientes = _bitacoraContingenciaService.LeerPendientes();
+            }
+            catch
+            {
+                return;
+            }
+
+            foreach (BE.Bitacora pendiente in pendientes.OrderBy(x => x.Fecha))
+            {
+                try
+                {
+                    _bitacoraRepositorio.Registrar(pendiente);
+                    _bitacoraContingenciaService.EliminarPendiente(pendiente.Id);
+                }
+                catch (AccesoDatosException)
+                {
+                    return;
+                }
+                catch
+                {
+                    return;
+                }
+            }
+        }
+
+        private void GuardarEnContingencia(BE.Bitacora bitacora)
+        {
+            if (_bitacoraContingenciaService == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _bitacoraContingenciaService.Guardar(bitacora);
+            }
+            catch
+            {
+                // Si falla también la contingencia, no se rompe la aplicación.
+                // No hay otro medio disponible para registrar el evento.
+            }
         }
 
         // Limita cant maxima de registros devueltos para evitar problemas 
