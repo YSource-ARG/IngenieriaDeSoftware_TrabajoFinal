@@ -10,7 +10,8 @@ namespace BLL.Autenticacion
             DateTime? bloqueadoHasta,
             Guid usuarioId,
             string nombreUsuario,
-            bool debeCambiarPassword)
+            bool debeCambiarPassword,
+            bool errorAccesoDatos)
         {
             LoginExitoso = loginExitoso;
             UsuarioBloqueado = usuarioBloqueado;
@@ -18,6 +19,7 @@ namespace BLL.Autenticacion
             UsuarioId = usuarioId;
             NombreUsuario = nombreUsuario;
             DebeCambiarPassword = debeCambiarPassword;
+            ErrorAccesoDatos = errorAccesoDatos;
         }
 
         public bool LoginExitoso { get; private set; }
@@ -31,6 +33,7 @@ namespace BLL.Autenticacion
         public string NombreUsuario { get; private set; }
 
         public bool DebeCambiarPassword { get; private set; }
+        public bool ErrorAccesoDatos { get; private set; }
 
         public static ResultadoLogin Fallido()
         {
@@ -40,10 +43,22 @@ namespace BLL.Autenticacion
                 null,
                 Guid.Empty,
                 null,
+                false,
                 false
             );
         }
-
+        public static ResultadoLogin ErrorBaseDatos()
+        {
+            return new ResultadoLogin(
+                false,
+                false,
+                null,
+                Guid.Empty,
+                null,
+                false,
+                true
+            );
+        }
         public static ResultadoLogin Bloqueado(DateTime bloqueadoHasta)
         {
             return new ResultadoLogin(
@@ -52,6 +67,7 @@ namespace BLL.Autenticacion
                 bloqueadoHasta,
                 Guid.Empty,
                 null,
+                false,
                 false
             );
         }
@@ -67,7 +83,8 @@ namespace BLL.Autenticacion
                 null,
                 usuarioId,
                 nombreUsuario,
-                debeCambiarPassword
+                debeCambiarPassword,
+                false
             );
         }
     }

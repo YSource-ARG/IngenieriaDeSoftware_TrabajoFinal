@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using UI.Estilos;
 
+
 namespace UI
 {
     public partial class FrmLogin : Form
@@ -107,7 +108,19 @@ namespace UI
                 txtNombreUsuario.Text.Trim(),
                 txtPassword.Text
             );
+            if (resultadoLogin.ErrorAccesoDatos)
+            {
+                MessageBox.Show(
+                    "No fue posible conectarse con la base de datos. Verifique la conexión e intente nuevamente.",
+                    "Error de conexión",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
 
+                txtPassword.Clear();
+                txtPassword.Focus();
+                return;
+            }
             if (resultadoLogin.UsuarioBloqueado)
             {
                 string mensaje =
