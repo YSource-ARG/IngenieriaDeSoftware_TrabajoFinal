@@ -56,6 +56,28 @@ BEGIN
 END
 GO
 
+-- Bloqueo independiente del estado Activo.
+-- No se reutiliza Activo porque Activo representa una decisión administrativa
+-- y BloqueadoPorIntegridad representa un bloqueo temporal por falla de integridad.
+IF COL_LENGTH('dbo.Usuario', 'BloqueadoPorIntegridad') IS NULL
+BEGIN
+    ALTER TABLE dbo.Usuario
+    ADD BloqueadoPorIntegridad bit NOT NULL
+        CONSTRAINT DF_Usuario_BloqueadoPorIntegridad DEFAULT (0)
+END
+GO
+
+-- DVH: dígito verificador horizontal de cada usuario.
+-- Se guarda en la misma entidad protegida para detectar modificaciones externas
+-- sobre los datos del registro.
+IF COL_LENGTH('dbo.Usuario', 'DigitoVerificadorHorizontal') IS NULL
+BEGIN
+    ALTER TABLE dbo.Usuario
+    ADD DigitoVerificadorHorizontal nvarchar(256) NOT NULL
+        CONSTRAINT DF_Usuario_DigitoVerificadorHorizontal DEFAULT ('')
+END
+GO
+
 IF COL_LENGTH('dbo.Usuario', 'PasswordSalt') IS NOT NULL
 BEGIN
     ALTER TABLE dbo.Usuario DROP COLUMN PasswordSalt
@@ -168,6 +190,22 @@ BEGIN
 END
 GO
 
+-- DVV: dígito verificador vertical.
+-- Se guarda separado de la entidad Usuario porque representa la integridad
+-- del conjunto completo de registros controlados.
+IF OBJECT_ID('dbo.DigitoVerificadorVertical', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.DigitoVerificadorVertical
+    (
+        Entidad nvarchar(100) NOT NULL,
+        Valor nvarchar(256) NOT NULL,
+        FechaCalculo datetime2(7) NOT NULL
+            CONSTRAINT DF_DigitoVerificadorVertical_FechaCalculo DEFAULT (SYSDATETIME()),
+        CONSTRAINT PK_DigitoVerificadorVertical PRIMARY KEY (Entidad)
+    )
+END
+GO
+
 IF NOT EXISTS
 (
     SELECT 1
@@ -206,7 +244,8 @@ ELSE
 BEGIN
     UPDATE dbo.Usuario
     SET PasswordHash = 'A6xnQhbz4Vx2HuGl4lXwZ5U2I8iziLRFnhP5eNfIRvQ=',
-        Activo = 1
+    Activo = 1,
+    BloqueadoPorIntegridad = 0
     WHERE NombreUsuario = 'admin'
 END
 GO

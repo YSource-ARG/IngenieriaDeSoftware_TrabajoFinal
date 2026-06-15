@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using UI.Estilos;
 using BLL.Usuarios;
+using BLL.Integridad;
 
 namespace UI
 {
@@ -13,6 +14,7 @@ namespace UI
     {
         private readonly CerrarSesionAppService _cerrarSesionAppService;
         private readonly GestionUsuariosAppService _gestionUsuariosAppService;
+        private readonly IIntegridadService _integridadService;
         private readonly IBitacoraService _bitacoraService;
         private bool _cerrandoSesion;
 
@@ -21,6 +23,7 @@ namespace UI
         public FrmPrincipal(
             CerrarSesionAppService cerrarSesionAppService,
             GestionUsuariosAppService gestionUsuariosAppService,
+            IIntegridadService integridadService,
             IBitacoraService bitacoraService)
         {
             if (cerrarSesionAppService == null)
@@ -33,6 +36,11 @@ namespace UI
                 throw new ArgumentNullException(nameof(gestionUsuariosAppService));
             }
 
+            if (integridadService == null)
+            {
+                throw new ArgumentNullException(nameof(integridadService));
+            }
+
             if (bitacoraService == null)
             {
                 throw new ArgumentNullException(nameof(bitacoraService));
@@ -40,6 +48,7 @@ namespace UI
 
             _cerrarSesionAppService = cerrarSesionAppService;
             _gestionUsuariosAppService = gestionUsuariosAppService;
+            _integridadService = integridadService;
             _bitacoraService = bitacoraService;
 
             InitializeComponent();
@@ -92,6 +101,8 @@ namespace UI
             ConfigurarBotonSecundario(btnSalir);
             ConfigurarBotonSecundario(btnGestionUsuarios);
             ConfigurarBotonSecundario(btnConsultaBitacora);
+            ConfigurarBotonSecundario(btnRecalcularDigitos);
+            ConfigurarBotonSecundario(btnDesbloquearIntegridad);
         }
 
         private void ConfigurarAreaMdi()
@@ -167,6 +178,94 @@ namespace UI
             };
 
             formulario.ShowDialog(this);
+        }
+
+        private void btnRecalcularDigitos_Click(object sender, EventArgs e)
+        {
+            DialogResult confirmacion = MessageBox.Show(
+        "Esta acción recalculará los dígitos verificadores de usuarios.\n\n" +
+        "Importante: el recálculo no restaura datos modificados por fuera del sistema, " +
+        "sino que toma el estado actual de la base como nuevo estado válido.\n\n" +
+        "¿Desea continuar?",
+        "Recalcular dígitos verificadores",
+        MessageBoxButtons.YesNo,
+        MessageBoxIcon.Warning
+    );
+
+            if (confirmacion != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                // El administrador acepta el estado actual de la base
+                // y genera nuevamente los DVH de cada usuario y el DVV general.
+                _integridadService.RecalcularDigitosUsuarios(
+                    null,
+                    "admin"
+                );
+
+                MessageBox.Show(
+                    "Los dígitos verificadores fueron recalculados correctamente.",
+                    "Integridad",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "No fue posible recalcular los dígitos verificadores.\n\n" + ex.Message,
+                    "Error de integridad",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
+
+        private void btnDesbloquearIntegridad_Click(object sender, EventArgs e)
+        {
+            DialogResult confirmacion = MessageBox.Show(
+        "Esta acción desbloqueará a los usuarios que fueron bloqueados por falla de integridad.\n\n" +
+        "Se recomienda hacerlo después de recalcular los dígitos verificadores.\n\n" +
+        "¿Desea continuar?",
+        "Desbloquear usuarios por integridad",
+        MessageBoxButtons.YesNo,
+        MessageBoxIcon.Question
+    );
+
+            if (confirmacion != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                // El desbloqueo solo limpia el bloqueo preventivo por integridad.
+                // No modifica el campo Activo, porque ese estado pertenece
+                // a la administración normal de usuarios.
+                _integridadService.DesbloquearUsuariosPorIntegridad(
+                    null,
+                    "admin"
+                );
+
+                MessageBox.Show(
+                    "Los usuarios bloqueados por integridad fueron desbloqueados correctamente.",
+                    "Integridad",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "No fue posible desbloquear los usuarios por integridad.\n\n" + ex.Message,
+                    "Error de integridad",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
         }
     }
 }

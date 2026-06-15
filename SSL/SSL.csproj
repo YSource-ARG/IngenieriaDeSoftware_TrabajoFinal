@@ -41,7 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Integridad\DigitoVerificadorService.cs" />
     <Compile Include="Interfaces\IBitacoraContingenciaService.cs" />
+    <Compile Include="Interfaces\IDigitoVerificadorService.cs" />
     <Compile Include="Interfaces\IPasswordHasher.cs" />
     <Compile Include="Interfaces\ISessionService.cs" />
     <Compile Include="Logging\BitacoraContingenciaService.cs" />

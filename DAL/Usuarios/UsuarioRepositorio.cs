@@ -39,7 +39,9 @@ namespace DAL.Usuarios
             DebeCambiarPassword,
             IntentosFallidosLogin,
             BloqueadoHasta,
-            FechaCreacion, 
+            BloqueadoPorIntegridad,
+            DigitoVerificadorHorizontal,
+            FechaCreacion,
             FechaUltimoAcceso 
         FROM dbo.Usuario 
         WHERE NombreUsuario = @NombreUsuario 
@@ -92,8 +94,10 @@ namespace DAL.Usuarios
             DebeCambiarPassword,
             IntentosFallidosLogin,
             BloqueadoHasta,
-            FechaCreacion, 
-            FechaUltimoAcceso 
+            BloqueadoPorIntegridad,
+            DigitoVerificadorHorizontal,
+            FechaCreacion,
+            FechaUltimoAcceso
         FROM dbo.Usuario 
         WHERE Id = @Id";
 
@@ -139,7 +143,9 @@ namespace DAL.Usuarios
                     DebeCambiarPassword,
                     IntentosFallidosLogin,
                     BloqueadoHasta,
-                    FechaCreacion, 
+                    BloqueadoPorIntegridad,
+                    DigitoVerificadorHorizontal,
+                    FechaCreacion,
                     FechaUltimoAcceso 
                 FROM dbo.Usuario
                 WHERE (@TextoBusqueda IS NULL 
@@ -546,6 +552,16 @@ WHERE Id = @Id";
                 BloqueadoHasta = reader["BloqueadoHasta"] == DBNull.Value
                     ? (DateTime?)null
                     : Convert.ToDateTime(reader["BloqueadoHasta"]),
+
+                // Estado de bloqueo por integridad.
+                // Se mantiene separado de Activo para no perder la trazabilidad
+                // de usuarios inhabilitados administrativamente.
+                BloqueadoPorIntegridad = Convert.ToBoolean(reader["BloqueadoPorIntegridad"]),
+
+                // DVH almacenado en la entidad protegida.
+                // Se utiliza para comparar el estado guardado contra el estado recalculado.
+                DigitoVerificadorHorizontal = reader["DigitoVerificadorHorizontal"].ToString(),
+
                 FechaCreacion = Convert.ToDateTime(reader["FechaCreacion"]),
                 FechaUltimoAcceso = reader["FechaUltimoAcceso"] == DBNull.Value
                     ? (DateTime?)null

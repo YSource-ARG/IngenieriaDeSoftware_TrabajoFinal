@@ -25,6 +25,7 @@ namespace UI
                 serviceFactory.LoginAppService,
                 serviceFactory.CerrarSesionAppService,
                 serviceFactory.GestionUsuariosAppService,
+                serviceFactory.IntegridadService,
                 serviceFactory.BitacoraService
             ));
         }
