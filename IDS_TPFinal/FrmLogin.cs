@@ -5,6 +5,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using UI.Estilos;
+using BLL.Integridad;
 
 
 namespace UI
@@ -15,11 +16,13 @@ namespace UI
         private readonly CerrarSesionAppService _cerrarSesionAppService;
         private readonly GestionUsuariosAppService _gestionUsuariosAppService;
         private readonly IBitacoraService _bitacoraService;
+        private readonly IIntegridadService _integridadService;
 
         public FrmLogin(
             LoginAppService loginAppService,
             CerrarSesionAppService cerrarSesionAppService,
             GestionUsuariosAppService gestionUsuariosAppService,
+            IIntegridadService integridadService,
             IBitacoraService bitacoraService)
         {
             if (loginAppService == null)
@@ -37,6 +40,11 @@ namespace UI
                 throw new ArgumentNullException(nameof(gestionUsuariosAppService));
             }
 
+            if (integridadService == null)
+            {
+                throw new ArgumentNullException(nameof(integridadService));
+            }
+
             if (bitacoraService == null)
             {
                 throw new ArgumentNullException(nameof(bitacoraService));
@@ -45,6 +53,7 @@ namespace UI
             _loginAppService = loginAppService;
             _cerrarSesionAppService = cerrarSesionAppService;
             _gestionUsuariosAppService = gestionUsuariosAppService;
+            _integridadService = integridadService;
             _bitacoraService = bitacoraService;
 
             InitializeComponent();
@@ -104,10 +113,63 @@ namespace UI
                 return;
             }
 
+            ResultadoVerificacionIntegridad resultadoIntegridad;
+
+            try
+            {
+                // La integridad se verifica antes del login porque el usuario todavía
+                // no debe acceder al sistema si la base fue modificada por fuera.
+                // Si se detecta una falla, el servicio bloquea a los usuarios comunes
+                // y deja habilitado al administrador para recalcular los DV.
+                resultadoIntegridad = _integridadService.VerificarIntegridadUsuarios();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show(
+                    "No fue posible verificar la integridad de la base de datos. Verifique la conexión e intente nuevamente.",
+                    "Error de integridad",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+
+                txtPassword.Clear();
+                txtPassword.Focus();
+                return;
+            }
+
+            bool usuarioEsAdmin = string.Equals(txtNombreUsuario.Text.Trim(), "admin", StringComparison.OrdinalIgnoreCase);
+
+            if (!resultadoIntegridad.IntegridadCorrecta)
+            {
+                if (!usuarioEsAdmin)
+                {
+                    MessageBox.Show(
+                        "Se detectó una falla de integridad en la base de datos. " +
+                        "Por seguridad, solo el administrador puede ingresar para recalcular los dígitos verificadores.",
+                        "Integridad vulnerada",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+
+                    txtPassword.Clear();
+                    txtPassword.Focus();
+                    return;
+                }
+
+                MessageBox.Show(
+                    "Se detectó una falla de integridad en la base de datos.\n\n" +
+                    "Ingresará como administrador para recalcular los dígitos verificadores y desbloquear usuarios.",
+                    "Integridad vulnerada",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            }
+
             ResultadoLogin resultadoLogin = _loginAppService.IniciarSesion(
                 txtNombreUsuario.Text.Trim(),
                 txtPassword.Text
             );
+
             if (resultadoLogin.ErrorAccesoDatos)
             {
                 MessageBox.Show(
@@ -121,6 +183,22 @@ namespace UI
                 txtPassword.Focus();
                 return;
             }
+
+            if (resultadoLogin.BloqueadoPorIntegridad)
+            {
+                MessageBox.Show(
+                    "El usuario se encuentra bloqueado por una falla de integridad. " +
+                    "Debe ingresar el administrador para recalcular los dígitos verificadores.",
+                    "Acceso bloqueado por integridad",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+
+                txtPassword.Clear();
+                txtPassword.Focus();
+                return;
+            }
+
             if (resultadoLogin.UsuarioBloqueado)
             {
                 string mensaje =
@@ -198,11 +276,14 @@ namespace UI
             FrmPrincipal frmPrincipal = new FrmPrincipal(
                 _cerrarSesionAppService,
                 _gestionUsuariosAppService,
+                _integridadService,
                 _bitacoraService
             );
 
             this.Hide();
-            //aca el evento de cerrar con la x el formulario invoca el cierre de sesion del usuario logueado
+
+            // Acá el evento de cerrar con la X el formulario invoca el cierre de sesión
+            // del usuario logueado o cierra toda la aplicación según corresponda.
             frmPrincipal.FormClosed += (s, args) =>
             {
                 if (frmPrincipal.CerrandoSesion)

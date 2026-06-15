@@ -11,7 +11,8 @@ namespace BLL.Autenticacion
             Guid usuarioId,
             string nombreUsuario,
             bool debeCambiarPassword,
-            bool errorAccesoDatos)
+            bool errorAccesoDatos,
+            bool bloqueadoPorIntegridad)
         {
             LoginExitoso = loginExitoso;
             UsuarioBloqueado = usuarioBloqueado;
@@ -20,6 +21,7 @@ namespace BLL.Autenticacion
             NombreUsuario = nombreUsuario;
             DebeCambiarPassword = debeCambiarPassword;
             ErrorAccesoDatos = errorAccesoDatos;
+            BloqueadoPorIntegridad = bloqueadoPorIntegridad;
         }
 
         public bool LoginExitoso { get; private set; }
@@ -33,7 +35,10 @@ namespace BLL.Autenticacion
         public string NombreUsuario { get; private set; }
 
         public bool DebeCambiarPassword { get; private set; }
+
         public bool ErrorAccesoDatos { get; private set; }
+
+        public bool BloqueadoPorIntegridad { get; private set; }
 
         public static ResultadoLogin Fallido()
         {
@@ -43,6 +48,7 @@ namespace BLL.Autenticacion
                 null,
                 Guid.Empty,
                 null,
+                false,
                 false,
                 false
             );
@@ -56,6 +62,20 @@ namespace BLL.Autenticacion
                 Guid.Empty,
                 null,
                 false,
+                false,
+                true
+            );
+        }
+        public static ResultadoLogin BloqueadoPorFallaIntegridad()
+        {
+            return new ResultadoLogin(
+                false,
+                false,
+                null,
+                Guid.Empty,
+                null,
+                false,
+                false,
                 true
             );
         }
@@ -67,6 +87,7 @@ namespace BLL.Autenticacion
                 bloqueadoHasta,
                 Guid.Empty,
                 null,
+                false,
                 false,
                 false
             );
@@ -84,6 +105,7 @@ namespace BLL.Autenticacion
                 usuarioId,
                 nombreUsuario,
                 debeCambiarPassword,
+                false,
                 false
             );
         }

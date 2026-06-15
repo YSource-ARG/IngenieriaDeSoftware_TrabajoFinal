@@ -48,9 +48,7 @@ namespace BLL.Autenticacion
             _bitacoraService = bitacoraService;
         }
 
-        public ResultadoLogin IniciarSesion(
-    string nombreUsuario,
-    string passwordIngresada)
+        public ResultadoLogin IniciarSesion(string nombreUsuario, string passwordIngresada)
         {
             try
             {
@@ -75,6 +73,24 @@ namespace BLL.Autenticacion
                     );
 
                     return ResultadoLogin.Fallido();
+                }
+
+                // Si la integridad fue vulnerada, los usuarios comunes quedan bloqueados.
+                // El administrador se mantiene habilitado para poder ingresar,
+                // recalcular los dígitos verificadores y desbloquear el acceso.
+                if (usuario.BloqueadoPorIntegridad &&
+                    !string.Equals(usuario.NombreUsuario, "admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    _bitacoraService.Registrar(
+                        usuario.Id,
+                        usuario.NombreUsuario,
+                        "Seguridad",
+                        "LOGIN_BLOQUEADO_INTEGRIDAD",
+                        "Intento de acceso bloqueado por falla de integridad.",
+                        "WARN"
+                    );
+
+                    return ResultadoLogin.BloqueadoPorFallaIntegridad();
                 }
 
                 DateTime fechaActual = DateTime.Now;

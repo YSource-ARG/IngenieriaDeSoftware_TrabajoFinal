@@ -45,6 +45,8 @@ namespace UI
             this.lblResumenTitulo = new System.Windows.Forms.Label();
             this.lblDescripcion = new System.Windows.Forms.Label();
             this.lblBienvenida = new System.Windows.Forms.Label();
+            this.btnRecalcularDigitos = new System.Windows.Forms.Button();
+            this.btnDesbloquearIntegridad = new System.Windows.Forms.Button();
             this.panelHeader.SuspendLayout();
             this.panelLateral.SuspendLayout();
             this.panelContenido.SuspendLayout();
@@ -95,6 +97,8 @@ namespace UI
             // 
             // panelLateral
             // 
+            this.panelLateral.Controls.Add(this.btnDesbloquearIntegridad);
+            this.panelLateral.Controls.Add(this.btnRecalcularDigitos);
             this.panelLateral.Controls.Add(this.btnConsultaBitacora);
             this.panelLateral.Controls.Add(this.btnGestionUsuarios);
             this.panelLateral.Controls.Add(this.btnSalir);
@@ -131,7 +135,7 @@ namespace UI
             // 
             // btnSalir
             // 
-            this.btnSalir.Location = new System.Drawing.Point(11, 204);
+            this.btnSalir.Location = new System.Drawing.Point(11, 315);
             this.btnSalir.Margin = new System.Windows.Forms.Padding(2);
             this.btnSalir.Name = "btnSalir";
             this.btnSalir.Size = new System.Drawing.Size(135, 34);
@@ -142,7 +146,7 @@ namespace UI
             // 
             // btnCerrarSesion
             // 
-            this.btnCerrarSesion.Location = new System.Drawing.Point(11, 156);
+            this.btnCerrarSesion.Location = new System.Drawing.Point(11, 267);
             this.btnCerrarSesion.Margin = new System.Windows.Forms.Padding(2);
             this.btnCerrarSesion.Name = "btnCerrarSesion";
             this.btnCerrarSesion.Size = new System.Drawing.Size(135, 34);
@@ -191,7 +195,8 @@ namespace UI
             this.lblResumenTexto.Name = "lblResumenTexto";
             this.lblResumenTexto.Size = new System.Drawing.Size(291, 60);
             this.lblResumenTexto.TabIndex = 1;
-            this.lblResumenTexto.Text = "Panel para acceder a los diferentes modulos del sistema a medida que los vayamos implementando.";
+            this.lblResumenTexto.Text = "Panel para acceder a los diferentes modulos del sistema a medida que los vayamos " +
+    "implementando.";
             // 
             // lblResumenTitulo
             // 
@@ -222,6 +227,28 @@ namespace UI
             this.lblBienvenida.Size = new System.Drawing.Size(109, 13);
             this.lblBienvenida.TabIndex = 0;
             this.lblBienvenida.Text = "Bienvenido al sistema";
+            // 
+            // btnRecalcularDigitos
+            // 
+            this.btnRecalcularDigitos.Location = new System.Drawing.Point(11, 158);
+            this.btnRecalcularDigitos.Margin = new System.Windows.Forms.Padding(2);
+            this.btnRecalcularDigitos.Name = "btnRecalcularDigitos";
+            this.btnRecalcularDigitos.Size = new System.Drawing.Size(135, 34);
+            this.btnRecalcularDigitos.TabIndex = 5;
+            this.btnRecalcularDigitos.Text = "Recalcular DV";
+            this.btnRecalcularDigitos.UseVisualStyleBackColor = true;
+            this.btnRecalcularDigitos.Click += new System.EventHandler(this.btnRecalcularDigitos_Click);
+            // 
+            // btnDesbloquearIntegridad
+            // 
+            this.btnDesbloquearIntegridad.Location = new System.Drawing.Point(11, 212);
+            this.btnDesbloquearIntegridad.Margin = new System.Windows.Forms.Padding(2);
+            this.btnDesbloquearIntegridad.Name = "btnDesbloquearIntegridad";
+            this.btnDesbloquearIntegridad.Size = new System.Drawing.Size(135, 34);
+            this.btnDesbloquearIntegridad.TabIndex = 6;
+            this.btnDesbloquearIntegridad.Text = "Desbloquear integridad";
+            this.btnDesbloquearIntegridad.UseVisualStyleBackColor = true;
+            this.btnDesbloquearIntegridad.Click += new System.EventHandler(this.btnDesbloquearIntegridad_Click);
             // 
             // FrmPrincipal
             // 
@@ -267,5 +294,7 @@ namespace UI
         private System.Windows.Forms.Label lblResumenTexto;
         private System.Windows.Forms.Button btnGestionUsuarios;
         private System.Windows.Forms.Button btnConsultaBitacora;
+        private System.Windows.Forms.Button btnRecalcularDigitos;
+        private System.Windows.Forms.Button btnDesbloquearIntegridad;
     }
 }

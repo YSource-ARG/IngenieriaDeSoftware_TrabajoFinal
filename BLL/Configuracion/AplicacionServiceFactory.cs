@@ -9,6 +9,9 @@ using SSL.Seguridad;
 using SSL.Sesion;
 using SSL.Logging;
 using System;
+using BLL.Integridad;
+using DAL.Integridad;
+using SSL.Integridad;
 
 namespace BLL.Configuracion
 {
@@ -21,6 +24,7 @@ namespace BLL.Configuracion
         public GestionUsuariosAppService GestionUsuariosAppService { get; }
 
         public IBitacoraService BitacoraService { get; }
+        public IIntegridadService IntegridadService { get; }
 
         public AplicacionServiceFactory(string connectionString)
         {
@@ -33,13 +37,21 @@ namespace BLL.Configuracion
 
             IUsuarioRepositorio usuarioRepositorio = new UsuarioRepositorio(connectionFactory);
             IBitacoraRepositorio bitacoraRepositorio = new BitacoraRepositorio(connectionFactory);
+            IDigitoVerificadorRepositorio digitoVerificadorRepositorio = new DigitoVerificadorRepositorio(connectionFactory);
 
             IPasswordHasher passwordHasher = new PasswordHasherService();
             ISessionService sessionService = SessionService.ObtenerSesion();
+            IDigitoVerificadorService digitoVerificadorService = new DigitoVerificadorService();
 
             IBitacoraContingenciaService bitacoraContingenciaService = new BitacoraContingenciaService();
 
             BitacoraService = new BitacoraService(bitacoraRepositorio, bitacoraContingenciaService);
+
+            IntegridadService = new IntegridadService(
+            digitoVerificadorRepositorio,
+            digitoVerificadorService,
+            BitacoraService
+            );
 
             LoginAppService = new LoginAppService(
                 usuarioRepositorio,
