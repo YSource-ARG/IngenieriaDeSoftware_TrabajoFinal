@@ -40,6 +40,8 @@
             this.btnNuevo = new System.Windows.Forms.Button();
             this.btnGuardar = new System.Windows.Forms.Button();
             this.btnCerrar = new System.Windows.Forms.Button();
+            this.btnEliminar = new System.Windows.Forms.Button();
+            this.btnModificar = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTraducciones)).BeginInit();
             this.SuspendLayout();
             // 
@@ -129,7 +131,7 @@
             // 
             // btnNuevo
             // 
-            this.btnNuevo.Location = new System.Drawing.Point(159, 642);
+            this.btnNuevo.Location = new System.Drawing.Point(53, 653);
             this.btnNuevo.Name = "btnNuevo";
             this.btnNuevo.Size = new System.Drawing.Size(102, 36);
             this.btnNuevo.TabIndex = 7;
@@ -139,7 +141,7 @@
             // 
             // btnGuardar
             // 
-            this.btnGuardar.Location = new System.Drawing.Point(271, 642);
+            this.btnGuardar.Location = new System.Drawing.Point(170, 653);
             this.btnGuardar.Name = "btnGuardar";
             this.btnGuardar.Size = new System.Drawing.Size(102, 36);
             this.btnGuardar.TabIndex = 8;
@@ -149,7 +151,7 @@
             // 
             // btnCerrar
             // 
-            this.btnCerrar.Location = new System.Drawing.Point(384, 642);
+            this.btnCerrar.Location = new System.Drawing.Point(534, 653);
             this.btnCerrar.Name = "btnCerrar";
             this.btnCerrar.Size = new System.Drawing.Size(102, 36);
             this.btnCerrar.TabIndex = 9;
@@ -157,11 +159,35 @@
             this.btnCerrar.Text = "Cerrar";
             this.btnCerrar.UseVisualStyleBackColor = true;
             // 
+            // btnEliminar
+            // 
+            this.btnEliminar.Location = new System.Drawing.Point(409, 653);
+            this.btnEliminar.Name = "btnEliminar";
+            this.btnEliminar.Size = new System.Drawing.Size(102, 36);
+            this.btnEliminar.TabIndex = 10;
+            this.btnEliminar.Tag = "Traducciones.Eliminar";
+            this.btnEliminar.Text = "Eliminar";
+            this.btnEliminar.UseVisualStyleBackColor = true;
+            this.btnEliminar.Click += new System.EventHandler(this.btnEliminar_Click);
+            // 
+            // btnModificar
+            // 
+            this.btnModificar.Location = new System.Drawing.Point(287, 653);
+            this.btnModificar.Name = "btnModificar";
+            this.btnModificar.Size = new System.Drawing.Size(102, 36);
+            this.btnModificar.TabIndex = 11;
+            this.btnModificar.Tag = "Traducciones.Modificar";
+            this.btnModificar.Text = "Modificar";
+            this.btnModificar.UseVisualStyleBackColor = true;
+            this.btnModificar.Click += new System.EventHandler(this.btnModificar_Click);
+            // 
             // FrmGestionTraducciones
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(648, 706);
+            this.ClientSize = new System.Drawing.Size(705, 751);
+            this.Controls.Add(this.btnModificar);
+            this.Controls.Add(this.btnEliminar);
             this.Controls.Add(this.btnCerrar);
             this.Controls.Add(this.btnGuardar);
             this.Controls.Add(this.btnNuevo);
@@ -196,5 +222,7 @@
         private System.Windows.Forms.Button btnCerrar;
         private System.Windows.Forms.DataGridViewTextBoxColumn colClave;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTexto;
+        private System.Windows.Forms.Button btnEliminar;
+        private System.Windows.Forms.Button btnModificar;
     }
 }

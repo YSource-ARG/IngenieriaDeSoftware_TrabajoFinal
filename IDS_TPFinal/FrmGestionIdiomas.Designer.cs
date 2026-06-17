@@ -34,12 +34,14 @@
             this.btnGuardar = new System.Windows.Forms.Button();
             this.btnCerrar = new System.Windows.Forms.Button();
             this.dgvIdiomas = new System.Windows.Forms.DataGridView();
-            this.chkActivo = new System.Windows.Forms.CheckBox();
-            this.txtNombre = new System.Windows.Forms.TextBox();
-            this.txtCodigo = new System.Windows.Forms.TextBox();
             this.colCodigo = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colNombre = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colActivo = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.chkActivo = new System.Windows.Forms.CheckBox();
+            this.txtNombre = new System.Windows.Forms.TextBox();
+            this.txtCodigo = new System.Windows.Forms.TextBox();
+            this.btnModificar = new System.Windows.Forms.Button();
+            this.btnDesactivar = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvIdiomas)).BeginInit();
             this.SuspendLayout();
             // 
@@ -65,9 +67,9 @@
             // 
             // btnNuevo
             // 
-            this.btnNuevo.Location = new System.Drawing.Point(131, 649);
+            this.btnNuevo.Location = new System.Drawing.Point(34, 684);
             this.btnNuevo.Name = "btnNuevo";
-            this.btnNuevo.Size = new System.Drawing.Size(75, 23);
+            this.btnNuevo.Size = new System.Drawing.Size(92, 57);
             this.btnNuevo.TabIndex = 2;
             this.btnNuevo.Tag = "Idiomas.Nuevo";
             this.btnNuevo.Text = "Nuevo";
@@ -75,9 +77,9 @@
             // 
             // btnGuardar
             // 
-            this.btnGuardar.Location = new System.Drawing.Point(235, 649);
+            this.btnGuardar.Location = new System.Drawing.Point(148, 684);
             this.btnGuardar.Name = "btnGuardar";
-            this.btnGuardar.Size = new System.Drawing.Size(75, 23);
+            this.btnGuardar.Size = new System.Drawing.Size(92, 57);
             this.btnGuardar.TabIndex = 3;
             this.btnGuardar.Tag = "Idiomas.Guardar";
             this.btnGuardar.Text = "Guardar";
@@ -85,9 +87,9 @@
             // 
             // btnCerrar
             // 
-            this.btnCerrar.Location = new System.Drawing.Point(336, 649);
+            this.btnCerrar.Location = new System.Drawing.Point(494, 684);
             this.btnCerrar.Name = "btnCerrar";
-            this.btnCerrar.Size = new System.Drawing.Size(75, 23);
+            this.btnCerrar.Size = new System.Drawing.Size(92, 57);
             this.btnCerrar.TabIndex = 4;
             this.btnCerrar.Tag = "Idiomas.Cerrar";
             this.btnCerrar.Text = "Cerrar";
@@ -102,8 +104,26 @@
             this.colActivo});
             this.dgvIdiomas.Location = new System.Drawing.Point(34, 114);
             this.dgvIdiomas.Name = "dgvIdiomas";
-            this.dgvIdiomas.Size = new System.Drawing.Size(482, 507);
+            this.dgvIdiomas.Size = new System.Drawing.Size(552, 524);
             this.dgvIdiomas.TabIndex = 5;
+            // 
+            // colCodigo
+            // 
+            this.colCodigo.DataPropertyName = "Codigo";
+            this.colCodigo.HeaderText = "Código";
+            this.colCodigo.Name = "colCodigo";
+            // 
+            // colNombre
+            // 
+            this.colNombre.DataPropertyName = "Nombre";
+            this.colNombre.HeaderText = "Nombre";
+            this.colNombre.Name = "colNombre";
+            // 
+            // colActivo
+            // 
+            this.colActivo.DataPropertyName = "Activo";
+            this.colActivo.HeaderText = "Activo";
+            this.colActivo.Name = "colActivo";
             // 
             // chkActivo
             // 
@@ -130,29 +150,33 @@
             this.txtCodigo.Size = new System.Drawing.Size(100, 20);
             this.txtCodigo.TabIndex = 8;
             // 
-            // colCodigo
+            // btnModificar
             // 
-            this.colCodigo.DataPropertyName = "Codigo";
-            this.colCodigo.HeaderText = "Código";
-            this.colCodigo.Name = "colCodigo";
+            this.btnModificar.Location = new System.Drawing.Point(260, 684);
+            this.btnModificar.Name = "btnModificar";
+            this.btnModificar.Size = new System.Drawing.Size(92, 57);
+            this.btnModificar.TabIndex = 9;
+            this.btnModificar.Tag = "Idiomas.Modificar";
+            this.btnModificar.Text = "Modificar";
+            this.btnModificar.UseVisualStyleBackColor = true;
             // 
-            // colNombre
+            // btnDesactivar
             // 
-            this.colNombre.DataPropertyName = "Nombre";
-            this.colNombre.HeaderText = "Nombre";
-            this.colNombre.Name = "colNombre";
-            // 
-            // colActivo
-            // 
-            this.colActivo.DataPropertyName = "Activo";
-            this.colActivo.HeaderText = "Activo";
-            this.colActivo.Name = "colActivo";
+            this.btnDesactivar.Location = new System.Drawing.Point(380, 684);
+            this.btnDesactivar.Name = "btnDesactivar";
+            this.btnDesactivar.Size = new System.Drawing.Size(92, 57);
+            this.btnDesactivar.TabIndex = 10;
+            this.btnDesactivar.Tag = "Idiomas.Desactivar";
+            this.btnDesactivar.Text = "Desactivar";
+            this.btnDesactivar.UseVisualStyleBackColor = true;
             // 
             // FrmGestionIdiomas
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(548, 684);
+            this.ClientSize = new System.Drawing.Size(615, 793);
+            this.Controls.Add(this.btnDesactivar);
+            this.Controls.Add(this.btnModificar);
             this.Controls.Add(this.txtCodigo);
             this.Controls.Add(this.txtNombre);
             this.Controls.Add(this.chkActivo);
@@ -185,5 +209,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn colCodigo;
         private System.Windows.Forms.DataGridViewTextBoxColumn colNombre;
         private System.Windows.Forms.DataGridViewTextBoxColumn colActivo;
+        private System.Windows.Forms.Button btnModificar;
+        private System.Windows.Forms.Button btnDesactivar;
     }
 }

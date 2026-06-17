@@ -15,6 +15,7 @@ namespace UI
         private readonly IIdiomaAppService _idiomaAppService;
 
         private bool _cargandoIdiomas;
+        private Guid _traduccionSeleccionadaId = Guid.Empty;
 
         public FrmGestionTraducciones(
             GestionTraduccionesAppService gestionTraduccionesAppService,
@@ -43,6 +44,8 @@ namespace UI
             dgvTraducciones.SelectionChanged += dgvTraducciones_SelectionChanged;
             btnNuevo.Click += btnNuevo_Click;
             btnGuardar.Click += btnGuardar_Click;
+            btnModificar.Click += btnModificar_Click;
+            btnEliminar.Click += btnEliminar_Click;
             btnCerrar.Click += btnCerrar_Click;
             this.FormClosed += FrmGestionTraducciones_FormClosed;
 
@@ -83,6 +86,8 @@ namespace UI
 
             TemaVisual.AplicarBotonSecundario(btnNuevo);
             TemaVisual.AplicarBotonPrincipal(btnGuardar);
+            TemaVisual.AplicarBotonSecundario(btnModificar);
+            TemaVisual.AplicarBotonSecundario(btnEliminar);
             TemaVisual.AplicarBotonSecundario(btnCerrar);
         }
 
@@ -153,6 +158,8 @@ namespace UI
                 return;
             }
 
+            _traduccionSeleccionadaId = traduccion.Id;
+
             txtClave.Text = traduccion.Clave;
             txtTexto.Text = traduccion.Texto;
         }
@@ -219,8 +226,117 @@ namespace UI
 
         private void LimpiarCampos()
         {
+            _traduccionSeleccionadaId = Guid.Empty;
             txtClave.Clear();
             txtTexto.Clear();
+        }
+
+        private void btnModificar_Click(object sender, EventArgs e)
+        {
+            Idioma idiomaSeleccionado = ObtenerIdiomaSeleccionado();
+
+            if (idiomaSeleccionado == null)
+            {
+                MessageBox.Show(
+                    "Debe seleccionar un idioma.",
+                    "Traducciones",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            ResultadoGuardadoTraduccion resultado =
+                _gestionTraduccionesAppService.ModificarTraduccion(
+                    _traduccionSeleccionadaId,
+                    txtClave.Text,
+                    txtTexto.Text
+                );
+
+            MessageBox.Show(
+                resultado.Mensaje,
+                "Traducciones",
+                MessageBoxButtons.OK,
+                resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning
+            );
+
+            if (!resultado.Exitoso)
+            {
+                return;
+            }
+
+            CargarTraducciones();
+
+            if (_idiomaAppService.IdiomaActual != null &&
+                _idiomaAppService.IdiomaActual.Id == idiomaSeleccionado.Id)
+            {
+                _idiomaAppService.CambiarIdioma(idiomaSeleccionado.Codigo);
+            }
+        }
+
+        private void btnEliminar_Click(object sender, EventArgs e)
+        {
+            Idioma idiomaSeleccionado = ObtenerIdiomaSeleccionado();
+
+            if (idiomaSeleccionado == null)
+            {
+                MessageBox.Show(
+                    "Debe seleccionar un idioma.",
+                    "Traducciones",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            if (_traduccionSeleccionadaId == Guid.Empty)
+            {
+                MessageBox.Show(
+                    "Debe seleccionar una traducción.",
+                    "Traducciones",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                "¿Está seguro que desea eliminar la traducción seleccionada?",
+                "Eliminar traducción",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (confirmacion != DialogResult.Yes)
+            {
+                return;
+            }
+
+            ResultadoGuardadoTraduccion resultado =
+                _gestionTraduccionesAppService.EliminarTraduccion(_traduccionSeleccionadaId);
+
+            MessageBox.Show(
+                resultado.Mensaje,
+                "Traducciones",
+                MessageBoxButtons.OK,
+                resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning
+            );
+
+            if (!resultado.Exitoso)
+            {
+                return;
+            }
+
+            CargarTraducciones();
+
+            if (_idiomaAppService.IdiomaActual != null &&
+                _idiomaAppService.IdiomaActual.Id == idiomaSeleccionado.Id)
+            {
+                _idiomaAppService.CambiarIdioma(idiomaSeleccionado.Codigo);
+            }
         }
     }
 }

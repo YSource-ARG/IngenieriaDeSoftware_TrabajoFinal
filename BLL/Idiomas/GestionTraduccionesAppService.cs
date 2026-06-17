@@ -86,5 +86,53 @@ namespace BLL.Idiomas
                 return ResultadoGuardadoTraduccion.Error("No se pudo guardar la traducción. Verifique la conexión con la base de datos.");
             }
         }
+
+        public ResultadoGuardadoTraduccion ModificarTraduccion(Guid id, string clave, string texto)
+        {
+            if (id == Guid.Empty)
+            {
+                return ResultadoGuardadoTraduccion.Error("Debe seleccionar una traducción.");
+            }
+
+            if (string.IsNullOrWhiteSpace(clave))
+            {
+                return ResultadoGuardadoTraduccion.Error("Debe ingresar una clave de traducción.");
+            }
+
+            if (string.IsNullOrWhiteSpace(texto))
+            {
+                return ResultadoGuardadoTraduccion.Error("Debe ingresar el texto traducido.");
+            }
+
+            try
+            {
+                _traduccionRepositorio.Modificar(id, clave, texto);
+
+                return ResultadoGuardadoTraduccion.Ok("La traducción fue modificada correctamente.");
+            }
+            catch (AccesoDatosException)
+            {
+                return ResultadoGuardadoTraduccion.Error("No se pudo modificar la traducción. Verifique la conexión con la base de datos o que la clave no esté duplicada.");
+            }
+        }
+
+        public ResultadoGuardadoTraduccion EliminarTraduccion(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return ResultadoGuardadoTraduccion.Error("Debe seleccionar una traducción.");
+            }
+
+            try
+            {
+                _traduccionRepositorio.Eliminar(id);
+
+                return ResultadoGuardadoTraduccion.Ok("La traducción fue eliminada correctamente.");
+            }
+            catch (AccesoDatosException)
+            {
+                return ResultadoGuardadoTraduccion.Error("No se pudo eliminar la traducción. Verifique la conexión con la base de datos.");
+            }
+        }
     }
 }

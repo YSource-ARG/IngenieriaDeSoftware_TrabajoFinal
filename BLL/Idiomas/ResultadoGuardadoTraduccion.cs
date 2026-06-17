@@ -16,6 +16,11 @@
             return new ResultadoGuardadoTraduccion(true, "La traducción fue guardada correctamente.");
         }
 
+        public static ResultadoGuardadoTraduccion Ok(string mensaje)
+        {
+            return new ResultadoGuardadoTraduccion(true, mensaje);
+        }
+
         public static ResultadoGuardadoTraduccion Error(string mensaje)
         {
             return new ResultadoGuardadoTraduccion(false, mensaje);

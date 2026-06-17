@@ -11,5 +11,9 @@ namespace DAL.Idiomas
         List<Traduccion> ListarDetallePorIdioma(Guid idiomaId);
 
         void Guardar(Guid idiomaId, string clave, string texto);
+
+        void Modificar(Guid id, string clave, string texto);
+
+        void Eliminar(Guid id);
     }
 }

@@ -30,12 +30,12 @@ namespace DAL.Idiomas
             }
 
             const string sql = @"
-SELECT
-    Clave,
-    Texto
-FROM dbo.Traduccion
-WHERE IdiomaId = @IdiomaId
-ORDER BY Clave";
+                SELECT
+                    Clave,
+                    Texto
+                FROM dbo.Traduccion
+                WHERE IdiomaId = @IdiomaId
+                ORDER BY Clave";
 
             Dictionary<string, string> traducciones =
                 new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -83,14 +83,14 @@ ORDER BY Clave";
             }
 
             const string sql = @"
-SELECT
-    Id,
-    Clave,
-    IdiomaId,
-    Texto
-FROM dbo.Traduccion
-WHERE IdiomaId = @IdiomaId
-ORDER BY Clave";
+                SELECT
+                    Id,
+                    Clave,
+                    IdiomaId,
+                    Texto
+                FROM dbo.Traduccion
+                WHERE IdiomaId = @IdiomaId
+                ORDER BY Clave";
 
             List<Traduccion> traducciones = new List<Traduccion>();
 
@@ -142,36 +142,36 @@ ORDER BY Clave";
             }
 
             const string sql = @"
-IF EXISTS
-(
-    SELECT 1
-    FROM dbo.Traduccion
-    WHERE IdiomaId = @IdiomaId
-      AND Clave = @Clave
-)
-BEGIN
-    UPDATE dbo.Traduccion
-    SET Texto = @Texto
-    WHERE IdiomaId = @IdiomaId
-      AND Clave = @Clave
-END
-ELSE
-BEGIN
-    INSERT INTO dbo.Traduccion
-    (
-        Id,
-        Clave,
-        IdiomaId,
-        Texto
-    )
-    VALUES
-    (
-        NEWID(),
-        @Clave,
-        @IdiomaId,
-        @Texto
-    )
-END";
+                IF EXISTS
+                (
+                    SELECT 1
+                    FROM dbo.Traduccion
+                    WHERE IdiomaId = @IdiomaId
+                      AND Clave = @Clave
+                )
+                BEGIN
+                    UPDATE dbo.Traduccion
+                    SET Texto = @Texto
+                    WHERE IdiomaId = @IdiomaId
+                      AND Clave = @Clave
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO dbo.Traduccion
+                    (
+                        Id,
+                        Clave,
+                        IdiomaId,
+                        Texto
+                    )
+                    VALUES
+                    (
+                        NEWID(),
+                        @Clave,
+                        @IdiomaId,
+                        @Texto
+                    )
+                END";
 
             try
             {
@@ -189,6 +189,75 @@ END";
             catch (SqlException ex)
             {
                 throw new AccesoDatosException("No se pudo guardar la traducción.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
+            }
+        }
+
+        public void Modificar(Guid id, string clave, string texto)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException("El id de la traducción no puede estar vacío.", nameof(id));
+            }
+
+            const string sql = @"
+                UPDATE dbo.Traduccion
+                SET
+                    Clave = @Clave,
+                    Texto = @Texto
+                WHERE Id = @Id";
+
+            try
+            {
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
+                    command.Parameters.Add("@Clave", SqlDbType.NVarChar, 200).Value = clave.Trim();
+                    command.Parameters.Add("@Texto", SqlDbType.NVarChar, 500).Value = texto.Trim();
+
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudo modificar la traducción.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
+            }
+        }
+
+        public void Eliminar(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException("El id de la traducción no puede estar vacío.", nameof(id));
+            }
+
+            const string sql = @"
+                DELETE FROM dbo.Traduccion
+                WHERE Id = @Id";
+
+            try
+            {
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
+
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudo eliminar la traducción.", ex);
             }
             catch (InvalidOperationException ex)
             {

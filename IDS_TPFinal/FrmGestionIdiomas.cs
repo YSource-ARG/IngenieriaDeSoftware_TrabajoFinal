@@ -3,6 +3,7 @@ using BLL.Idiomas;
 using System;
 using System.Windows.Forms;
 using UI.Idiomas;
+using System.Drawing;
 
 namespace UI
 {
@@ -18,7 +19,9 @@ namespace UI
 
             ConfigurarTagsTraduccion();
             ConfigurarGrilla();
+            AplicarEstiloVisual();
         }
+
 
         public FrmGestionIdiomas(
             GestionIdiomasAppService gestionIdiomasAppService,
@@ -179,6 +182,80 @@ namespace UI
             }
 
             base.OnFormClosed(e);
+        }
+
+        private void AplicarEstiloVisual()
+        {
+            Color fondo = Color.FromArgb(13, 17, 23);
+            Color panel = Color.FromArgb(22, 27, 34);
+            Color borde = Color.FromArgb(48, 54, 61);
+            Color texto = Color.FromArgb(240, 246, 252);
+            Color azul = Color.FromArgb(59, 113, 221);
+
+            BackColor = fondo;
+            ForeColor = texto;
+
+            lblCodigo.ForeColor = texto;
+            lblNombre.ForeColor = texto;
+
+            chkActivo.ForeColor = texto;
+            chkActivo.BackColor = fondo;
+            chkActivo.UseVisualStyleBackColor = false;
+
+            txtCodigo.BackColor = panel;
+            txtCodigo.ForeColor = texto;
+            txtCodigo.BorderStyle = BorderStyle.FixedSingle;
+
+            txtNombre.BackColor = panel;
+            txtNombre.ForeColor = texto;
+            txtNombre.BorderStyle = BorderStyle.FixedSingle;
+
+            dgvIdiomas.BackgroundColor = panel;
+            dgvIdiomas.BorderStyle = BorderStyle.FixedSingle;
+            dgvIdiomas.EnableHeadersVisualStyles = false;
+            dgvIdiomas.GridColor = borde;
+
+            dgvIdiomas.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(31, 36, 43);
+            dgvIdiomas.ColumnHeadersDefaultCellStyle.ForeColor = texto;
+            dgvIdiomas.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(31, 36, 43);
+            dgvIdiomas.ColumnHeadersDefaultCellStyle.SelectionForeColor = texto;
+
+            dgvIdiomas.DefaultCellStyle.BackColor = panel;
+            dgvIdiomas.DefaultCellStyle.ForeColor = texto;
+            dgvIdiomas.DefaultCellStyle.SelectionBackColor = azul;
+            dgvIdiomas.DefaultCellStyle.SelectionForeColor = Color.White;
+
+            dgvIdiomas.RowHeadersDefaultCellStyle.BackColor = panel;
+            dgvIdiomas.RowHeadersDefaultCellStyle.ForeColor = texto;
+            dgvIdiomas.RowHeadersDefaultCellStyle.SelectionBackColor = azul;
+            dgvIdiomas.RowHeadersDefaultCellStyle.SelectionForeColor = Color.White;
+
+            ConfigurarBotonSecundario(btnNuevo);
+            ConfigurarBotonPrincipal(btnGuardar);
+            ConfigurarBotonSecundario(btnCerrar);
+        }
+
+        private void ConfigurarBotonPrincipal(Button boton)
+        {
+            boton.FlatStyle = FlatStyle.Flat;
+            boton.FlatAppearance.BorderSize = 0;
+            boton.BackColor = Color.FromArgb(59, 113, 221);
+            boton.ForeColor = Color.White;
+            boton.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            boton.Cursor = Cursors.Hand;
+            boton.UseVisualStyleBackColor = false;
+        }
+
+        private void ConfigurarBotonSecundario(Button boton)
+        {
+            boton.FlatStyle = FlatStyle.Flat;
+            boton.FlatAppearance.BorderSize = 1;
+            boton.FlatAppearance.BorderColor = Color.FromArgb(48, 54, 61);
+            boton.BackColor = Color.FromArgb(22, 27, 34);
+            boton.ForeColor = Color.FromArgb(240, 246, 252);
+            boton.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            boton.Cursor = Cursors.Hand;
+            boton.UseVisualStyleBackColor = false;
         }
     }
 }
