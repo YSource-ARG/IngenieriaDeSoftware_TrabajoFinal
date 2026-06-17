@@ -43,9 +43,7 @@ namespace UI
             cboIdiomas.SelectedIndexChanged += cboIdiomas_SelectedIndexChanged;
             dgvTraducciones.SelectionChanged += dgvTraducciones_SelectionChanged;
             btnNuevo.Click += btnNuevo_Click;
-            btnGuardar.Click += btnGuardar_Click;
-            btnModificar.Click += btnModificar_Click;
-            btnEliminar.Click += btnEliminar_Click;
+            btnGuardar.Click += btnGuardar_Click;            
             btnCerrar.Click += btnCerrar_Click;
             this.FormClosed += FrmGestionTraducciones_FormClosed;
 

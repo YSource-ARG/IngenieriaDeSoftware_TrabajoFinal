@@ -59,6 +59,8 @@ namespace UI
 
             btnNuevo.Tag = "Idiomas.Nuevo";
             btnGuardar.Tag = "Idiomas.Guardar";
+            btnModificar.Tag = "Idiomas.Modificar";
+            btnDesactivar.Tag = "Idiomas.Desactivar";
             btnCerrar.Tag = "Idiomas.Cerrar";
 
             colCodigo.Tag = "Idiomas.Grilla.Codigo";
@@ -84,7 +86,7 @@ namespace UI
         private void SuscribirEventos()
         {
             btnNuevo.Click += btnNuevo_Click;
-            btnGuardar.Click += btnGuardar_Click;
+            btnGuardar.Click += btnGuardar_Click;            
             btnCerrar.Click += btnCerrar_Click;
             dgvIdiomas.SelectionChanged += dgvIdiomas_SelectionChanged;
         }
@@ -101,6 +103,9 @@ namespace UI
             txtCodigo.Clear();
             txtNombre.Clear();
             chkActivo.Checked = true;
+
+            ActualizarTextoBotonEstado();
+
             txtCodigo.Focus();
         }
 
@@ -117,6 +122,7 @@ namespace UI
         public void ActualizarIdioma()
         {
             TraducirFormularioActual();
+            ActualizarTextoBotonEstado();
         }
 
         private void dgvIdiomas_SelectionChanged(object sender, EventArgs e)
@@ -137,6 +143,8 @@ namespace UI
             txtCodigo.Text = idioma.Codigo;
             txtNombre.Text = idioma.Nombre;
             chkActivo.Checked = idioma.Activo;
+
+            ActualizarTextoBotonEstado();
         }
 
         private void btnNuevo_Click(object sender, EventArgs e)
@@ -233,6 +241,8 @@ namespace UI
             ConfigurarBotonSecundario(btnNuevo);
             ConfigurarBotonPrincipal(btnGuardar);
             ConfigurarBotonSecundario(btnCerrar);
+            ConfigurarBotonSecundario(btnModificar);
+            ConfigurarBotonSecundario(btnDesactivar);
         }
 
         private void ConfigurarBotonPrincipal(Button boton)
@@ -256,6 +266,124 @@ namespace UI
             boton.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             boton.Cursor = Cursors.Hand;
             boton.UseVisualStyleBackColor = false;
+        }
+
+        private void btnModificar_Click(object sender, EventArgs e)
+        {
+            if (_idiomaSeleccionadoId == Guid.Empty)
+            {
+                MessageBox.Show(
+                    "Debe seleccionar un idioma.",
+                    "Idiomas",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            ResultadoGuardadoIdioma resultado = _gestionIdiomasAppService.GuardarIdioma(
+                _idiomaSeleccionadoId,
+                txtCodigo.Text,
+                txtNombre.Text,
+                chkActivo.Checked
+            );
+
+            MessageBox.Show(
+                resultado.Mensaje,
+                "Idiomas",
+                MessageBoxButtons.OK,
+                resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning
+            );
+
+            if (!resultado.Exitoso)
+            {
+                return;
+            }
+
+            CargarIdiomas();
+            LimpiarFormulario();
+        }
+
+        private void btnDesactivar_Click(object sender, EventArgs e)
+        {
+            if (_idiomaSeleccionadoId == Guid.Empty)
+            {
+                MessageBox.Show(
+                    "Debe seleccionar un idioma.",
+                    "Idiomas",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            bool nuevoEstado = !chkActivo.Checked;
+
+            string accion = nuevoEstado ? "activar" : "desactivar";
+
+            DialogResult confirmacion = MessageBox.Show(
+                "¿Está seguro que desea " + accion + " el idioma seleccionado?",
+                "Cambiar estado del idioma",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (confirmacion != DialogResult.Yes)
+            {
+                return;
+            }
+
+            ResultadoGuardadoIdioma resultado = _gestionIdiomasAppService.GuardarIdioma(
+                _idiomaSeleccionadoId,
+                txtCodigo.Text,
+                txtNombre.Text,
+                nuevoEstado
+            );
+
+            MessageBox.Show(
+                resultado.Mensaje,
+                "Idiomas",
+                MessageBoxButtons.OK,
+                resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning
+            );
+
+            if (!resultado.Exitoso)
+            {
+                return;
+            }
+
+            CargarIdiomas();
+            LimpiarFormulario();
+        }
+
+        private void ActualizarTextoBotonEstado()
+        {
+            if (_idiomaSeleccionadoId == Guid.Empty)
+            {
+                btnDesactivar.Enabled = false;
+                btnDesactivar.Text = _idiomaAppService != null
+                    ? _idiomaAppService.Traducir("Idiomas.Desactivar")
+                    : "Desactivar";
+
+                return;
+            }
+
+            btnDesactivar.Enabled = true;
+
+            if (chkActivo.Checked)
+            {
+                btnDesactivar.Text = _idiomaAppService != null
+                    ? _idiomaAppService.Traducir("Idiomas.Desactivar")
+                    : "Desactivar";
+            }
+            else
+            {
+                btnDesactivar.Text = _idiomaAppService != null
+                    ? _idiomaAppService.Traducir("Idiomas.Activar")
+                    : "Activar";
+            }
         }
     }
 }

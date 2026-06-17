@@ -159,6 +159,7 @@
             this.btnModificar.Tag = "Idiomas.Modificar";
             this.btnModificar.Text = "Modificar";
             this.btnModificar.UseVisualStyleBackColor = true;
+            this.btnModificar.Click += new System.EventHandler(this.btnModificar_Click);
             // 
             // btnDesactivar
             // 
@@ -169,6 +170,7 @@
             this.btnDesactivar.Tag = "Idiomas.Desactivar";
             this.btnDesactivar.Text = "Desactivar";
             this.btnDesactivar.UseVisualStyleBackColor = true;
+            this.btnDesactivar.Click += new System.EventHandler(this.btnDesactivar_Click);
             // 
             // FrmGestionIdiomas
             // 
