@@ -22,6 +22,7 @@ namespace UI
         private readonly IBitacoraService _bitacoraService;
         private readonly IIntegridadService _integridadService;
         private readonly IIdiomaAppService _idiomaAppService;
+        private readonly GestionTraduccionesAppService _gestionTraduccionesAppService;
         private bool _cargandoIdiomasLogin;
 
         public FrmLogin(
@@ -30,7 +31,8 @@ namespace UI
             GestionUsuariosAppService gestionUsuariosAppService,
             IIntegridadService integridadService,
             IBitacoraService bitacoraService,
-            IIdiomaAppService idiomaAppService)
+            IIdiomaAppService idiomaAppService,
+            GestionTraduccionesAppService gestionTraduccionesAppService)
         {
             if (loginAppService == null)
             {
@@ -62,12 +64,18 @@ namespace UI
                 throw new ArgumentNullException(nameof(idiomaAppService));
             }
 
+            if (gestionTraduccionesAppService == null)
+            {
+                throw new ArgumentNullException(nameof(gestionTraduccionesAppService));
+            }
+
             _loginAppService = loginAppService;
             _cerrarSesionAppService = cerrarSesionAppService;
             _gestionUsuariosAppService = gestionUsuariosAppService;
             _integridadService = integridadService;
             _bitacoraService = bitacoraService;
             _idiomaAppService = idiomaAppService;
+            _gestionTraduccionesAppService = gestionTraduccionesAppService;
 
             InitializeComponent();
 
@@ -295,7 +303,9 @@ namespace UI
                 _cerrarSesionAppService,
                 _gestionUsuariosAppService,
                 _integridadService,
-                _bitacoraService
+                _bitacoraService,
+                _idiomaAppService,
+                _gestionTraduccionesAppService
             );
 
             this.Hide();

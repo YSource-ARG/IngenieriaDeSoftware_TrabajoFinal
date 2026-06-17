@@ -7,15 +7,19 @@ using System.Windows.Forms;
 using UI.Estilos;
 using BLL.Usuarios;
 using BLL.Integridad;
+using BLL.Idiomas;
+using UI.Idiomas;
 
 namespace UI
 {
-    public partial class FrmPrincipal : Form
+    public partial class FrmPrincipal : Form, IObservadorIdioma
     {
         private readonly CerrarSesionAppService _cerrarSesionAppService;
         private readonly GestionUsuariosAppService _gestionUsuariosAppService;
         private readonly IIntegridadService _integridadService;
         private readonly IBitacoraService _bitacoraService;
+        private readonly IIdiomaAppService _idiomaAppService;
+        private readonly GestionTraduccionesAppService _gestionTraduccionesAppService;
         private bool _cerrandoSesion;
 
         public bool CerrandoSesion => _cerrandoSesion;
@@ -24,7 +28,9 @@ namespace UI
             CerrarSesionAppService cerrarSesionAppService,
             GestionUsuariosAppService gestionUsuariosAppService,
             IIntegridadService integridadService,
-            IBitacoraService bitacoraService)
+            IBitacoraService bitacoraService,
+            IIdiomaAppService idiomaAppService,
+            GestionTraduccionesAppService gestionTraduccionesAppService)
         {
             if (cerrarSesionAppService == null)
             {
@@ -46,15 +52,40 @@ namespace UI
                 throw new ArgumentNullException(nameof(bitacoraService));
             }
 
+            if (idiomaAppService == null)
+            {
+                throw new ArgumentNullException(nameof(idiomaAppService));
+            }
+
+            if (gestionTraduccionesAppService == null)
+            {
+                throw new ArgumentNullException(nameof(gestionTraduccionesAppService));
+            }
+
             _cerrarSesionAppService = cerrarSesionAppService;
             _gestionUsuariosAppService = gestionUsuariosAppService;
             _integridadService = integridadService;
             _bitacoraService = bitacoraService;
+            _idiomaAppService = idiomaAppService;
+            _gestionTraduccionesAppService = gestionTraduccionesAppService;
 
             InitializeComponent();
             AplicarEstiloVisual();
+            _idiomaAppService.Suscribir(this);
+            ActualizarIdioma();
+
+            this.FormClosed += FrmPrincipal_FormClosed;
         }
 
+        public void ActualizarIdioma()
+        {
+            TraductorControles.TraducirFormulario(this, _idiomaAppService);
+        }
+
+        private void FrmPrincipal_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            _idiomaAppService.Desuscribir(this);
+        }
         private void FrmPrincipal_Load(object sender, EventArgs e)
         {
             ConfigurarAreaMdi();
@@ -101,6 +132,7 @@ namespace UI
             ConfigurarBotonSecundario(btnSalir);
             ConfigurarBotonSecundario(btnGestionUsuarios);
             ConfigurarBotonSecundario(btnConsultaBitacora);
+            ConfigurarBotonSecundario(btnGestionTraducciones);
             ConfigurarBotonSecundario(btnRecalcularDigitos);
             ConfigurarBotonSecundario(btnDesbloquearIntegridad);
         }
@@ -266,6 +298,16 @@ namespace UI
                     MessageBoxIcon.Error
                 );
             }
+        }
+
+        private void btnGestionTraducciones_Click(object sender, EventArgs e)
+        {
+            FrmGestionTraducciones frmGestionTraducciones = new FrmGestionTraducciones(
+                _gestionTraduccionesAppService,
+                _idiomaAppService
+            );
+
+            MostrarFormularioDialogoCentrado(frmGestionTraducciones);
         }
     }
 }

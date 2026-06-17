@@ -27,8 +27,9 @@ namespace UI
                 serviceFactory.GestionUsuariosAppService,
                 serviceFactory.IntegridadService,
                 serviceFactory.BitacoraService,
-                serviceFactory.IdiomaAppService
+                serviceFactory.IdiomaAppService,
+                serviceFactory.GestionTraduccionesAppService
             ));
-        }
+                    }
     }
 }

@@ -31,6 +31,8 @@ namespace BLL.Configuracion
 
         public IIntegridadService IntegridadService { get; }
 
+        public GestionTraduccionesAppService GestionTraduccionesAppService { get; }
+
         public AplicacionServiceFactory(string connectionString)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
@@ -55,7 +57,9 @@ namespace BLL.Configuracion
             IBitacoraContingenciaService bitacoraContingenciaService = new BitacoraContingenciaService();
 
             IdiomaAppService = new IdiomaAppService(idiomaRepositorio, traduccionRepositorio);
-            
+
+            GestionTraduccionesAppService = new GestionTraduccionesAppService(idiomaRepositorio, traduccionRepositorio);
+
             BitacoraService = new BitacoraService(bitacoraRepositorio, bitacoraContingenciaService);
 
             IntegridadService = new IntegridadService(
