@@ -34,6 +34,8 @@ namespace UI
             this.lblTitulo = new System.Windows.Forms.Label();
             this.lblMarca = new System.Windows.Forms.Label();
             this.panelLateral = new System.Windows.Forms.Panel();
+            this.btnGestionIdiomas = new System.Windows.Forms.Button();
+            this.btnGestionTraducciones = new System.Windows.Forms.Button();
             this.btnDesbloquearIntegridad = new System.Windows.Forms.Button();
             this.btnRecalcularDigitos = new System.Windows.Forms.Button();
             this.btnConsultaBitacora = new System.Windows.Forms.Button();
@@ -47,7 +49,6 @@ namespace UI
             this.lblResumenTitulo = new System.Windows.Forms.Label();
             this.lblDescripcion = new System.Windows.Forms.Label();
             this.lblBienvenida = new System.Windows.Forms.Label();
-            this.btnGestionTraducciones = new System.Windows.Forms.Button();
             this.panelHeader.SuspendLayout();
             this.panelLateral.SuspendLayout();
             this.panelContenido.SuspendLayout();
@@ -101,6 +102,7 @@ namespace UI
             // 
             // panelLateral
             // 
+            this.panelLateral.Controls.Add(this.btnGestionIdiomas);
             this.panelLateral.Controls.Add(this.btnGestionTraducciones);
             this.panelLateral.Controls.Add(this.btnDesbloquearIntegridad);
             this.panelLateral.Controls.Add(this.btnRecalcularDigitos);
@@ -115,6 +117,30 @@ namespace UI
             this.panelLateral.Name = "panelLateral";
             this.panelLateral.Size = new System.Drawing.Size(165, 585);
             this.panelLateral.TabIndex = 1;
+            // 
+            // btnGestionIdiomas
+            // 
+            this.btnGestionIdiomas.Location = new System.Drawing.Point(11, 328);
+            this.btnGestionIdiomas.Margin = new System.Windows.Forms.Padding(2);
+            this.btnGestionIdiomas.Name = "btnGestionIdiomas";
+            this.btnGestionIdiomas.Size = new System.Drawing.Size(135, 34);
+            this.btnGestionIdiomas.TabIndex = 8;
+            this.btnGestionIdiomas.Tag = "Principal.GestionIdiomas";
+            this.btnGestionIdiomas.Text = "Idiomas";
+            this.btnGestionIdiomas.UseVisualStyleBackColor = true;
+            this.btnGestionIdiomas.Click += new System.EventHandler(this.btnGestionIdiomas_Click);
+            // 
+            // btnGestionTraducciones
+            // 
+            this.btnGestionTraducciones.Location = new System.Drawing.Point(11, 274);
+            this.btnGestionTraducciones.Margin = new System.Windows.Forms.Padding(2);
+            this.btnGestionTraducciones.Name = "btnGestionTraducciones";
+            this.btnGestionTraducciones.Size = new System.Drawing.Size(135, 34);
+            this.btnGestionTraducciones.TabIndex = 7;
+            this.btnGestionTraducciones.Tag = "Principal.GestionTraducciones";
+            this.btnGestionTraducciones.Text = "Traducciones";
+            this.btnGestionTraducciones.UseVisualStyleBackColor = true;
+            this.btnGestionTraducciones.Click += new System.EventHandler(this.btnGestionTraducciones_Click);
             // 
             // btnDesbloquearIntegridad
             // 
@@ -166,7 +192,7 @@ namespace UI
             // 
             // btnSalir
             // 
-            this.btnSalir.Location = new System.Drawing.Point(11, 369);
+            this.btnSalir.Location = new System.Drawing.Point(11, 422);
             this.btnSalir.Margin = new System.Windows.Forms.Padding(2);
             this.btnSalir.Name = "btnSalir";
             this.btnSalir.Size = new System.Drawing.Size(135, 34);
@@ -178,7 +204,7 @@ namespace UI
             // 
             // btnCerrarSesion
             // 
-            this.btnCerrarSesion.Location = new System.Drawing.Point(11, 322);
+            this.btnCerrarSesion.Location = new System.Drawing.Point(11, 375);
             this.btnCerrarSesion.Margin = new System.Windows.Forms.Padding(2);
             this.btnCerrarSesion.Name = "btnCerrarSesion";
             this.btnCerrarSesion.Size = new System.Drawing.Size(135, 34);
@@ -266,18 +292,6 @@ namespace UI
             this.lblBienvenida.Tag = "Principal.Bienvenida";
             this.lblBienvenida.Text = "Bienvenido al sistema";
             // 
-            // btnGestionTraducciones
-            // 
-            this.btnGestionTraducciones.Location = new System.Drawing.Point(11, 274);
-            this.btnGestionTraducciones.Margin = new System.Windows.Forms.Padding(2);
-            this.btnGestionTraducciones.Name = "btnGestionTraducciones";
-            this.btnGestionTraducciones.Size = new System.Drawing.Size(135, 34);
-            this.btnGestionTraducciones.TabIndex = 7;
-            this.btnGestionTraducciones.Tag = "Principal.GestionTraducciones";
-            this.btnGestionTraducciones.Text = "Traducciones";
-            this.btnGestionTraducciones.UseVisualStyleBackColor = true;
-            this.btnGestionTraducciones.Click += new System.EventHandler(this.btnGestionTraducciones_Click);
-            // 
             // FrmPrincipal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -326,5 +340,6 @@ namespace UI
         private System.Windows.Forms.Button btnRecalcularDigitos;
         private System.Windows.Forms.Button btnDesbloquearIntegridad;
         private System.Windows.Forms.Button btnGestionTraducciones;
+        private System.Windows.Forms.Button btnGestionIdiomas;
     }
 }

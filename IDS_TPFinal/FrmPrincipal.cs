@@ -20,6 +20,7 @@ namespace UI
         private readonly IBitacoraService _bitacoraService;
         private readonly IIdiomaAppService _idiomaAppService;
         private readonly GestionTraduccionesAppService _gestionTraduccionesAppService;
+        private readonly GestionIdiomasAppService _gestionIdiomasAppService;
         private bool _cerrandoSesion;
 
         public bool CerrandoSesion => _cerrandoSesion;
@@ -30,7 +31,8 @@ namespace UI
             IIntegridadService integridadService,
             IBitacoraService bitacoraService,
             IIdiomaAppService idiomaAppService,
-            GestionTraduccionesAppService gestionTraduccionesAppService)
+            GestionTraduccionesAppService gestionTraduccionesAppService,
+            GestionIdiomasAppService gestionIdiomasAppService)
         {
             if (cerrarSesionAppService == null)
             {
@@ -62,12 +64,18 @@ namespace UI
                 throw new ArgumentNullException(nameof(gestionTraduccionesAppService));
             }
 
+            if (gestionIdiomasAppService == null)
+            {
+                throw new ArgumentNullException(nameof(gestionIdiomasAppService));
+            }
+
             _cerrarSesionAppService = cerrarSesionAppService;
             _gestionUsuariosAppService = gestionUsuariosAppService;
             _integridadService = integridadService;
             _bitacoraService = bitacoraService;
             _idiomaAppService = idiomaAppService;
             _gestionTraduccionesAppService = gestionTraduccionesAppService;
+            _gestionIdiomasAppService = gestionIdiomasAppService;
 
             InitializeComponent();
             AplicarEstiloVisual();
@@ -135,6 +143,7 @@ namespace UI
             ConfigurarBotonSecundario(btnGestionTraducciones);
             ConfigurarBotonSecundario(btnRecalcularDigitos);
             ConfigurarBotonSecundario(btnDesbloquearIntegridad);
+            ConfigurarBotonSecundario(btnGestionIdiomas);
         }
 
         private void ConfigurarAreaMdi()
@@ -308,6 +317,16 @@ namespace UI
             );
 
             MostrarFormularioDialogoCentrado(frmGestionTraducciones);
+        }
+
+        private void btnGestionIdiomas_Click(object sender, EventArgs e)
+        {
+            FrmGestionIdiomas frmGestionIdiomas = new FrmGestionIdiomas(
+                _gestionIdiomasAppService,
+                _idiomaAppService
+            );
+
+            MostrarFormularioDialogoCentrado(frmGestionIdiomas);
         }
     }
 }

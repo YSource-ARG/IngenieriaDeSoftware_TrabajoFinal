@@ -33,6 +33,8 @@ namespace BLL.Configuracion
 
         public GestionTraduccionesAppService GestionTraduccionesAppService { get; }
 
+        public GestionIdiomasAppService GestionIdiomasAppService { get; }
+
         public AplicacionServiceFactory(string connectionString)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
@@ -57,7 +59,7 @@ namespace BLL.Configuracion
             IBitacoraContingenciaService bitacoraContingenciaService = new BitacoraContingenciaService();
 
             IdiomaAppService = new IdiomaAppService(idiomaRepositorio, traduccionRepositorio);
-
+            GestionIdiomasAppService = new GestionIdiomasAppService(idiomaRepositorio);
             GestionTraduccionesAppService = new GestionTraduccionesAppService(idiomaRepositorio, traduccionRepositorio);
 
             BitacoraService = new BitacoraService(bitacoraRepositorio, bitacoraContingenciaService);
