@@ -280,3 +280,189 @@ BEGIN
     WHERE NombreUsuario = 'admin'
 END
 GO
+
+-- Multiidioma - Idiomas disponibles del sistema.
+-- Permite agregar nuevos idiomas sin modificar la estructura de la base.
+IF OBJECT_ID('dbo.Idioma', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Idioma
+    (
+        Id uniqueidentifier NOT NULL,
+        Codigo nvarchar(10) NOT NULL,
+        Nombre nvarchar(100) NOT NULL,
+        Activo bit NOT NULL
+            CONSTRAINT DF_Idioma_Activo DEFAULT (1),
+        CONSTRAINT PK_Idioma PRIMARY KEY (Id),
+        CONSTRAINT UQ_Idioma_Codigo UNIQUE (Codigo)
+    )
+END
+GO
+
+-- Multiidioma - Traducciones por clave e idioma.
+-- Cada control visible usa una clave estable en Tag, por ejemplo Login.Usuario.
+IF OBJECT_ID('dbo.Traduccion', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Traduccion
+    (
+        Id uniqueidentifier NOT NULL,
+        Clave nvarchar(200) NOT NULL,
+        IdiomaId uniqueidentifier NOT NULL,
+        Texto nvarchar(500) NOT NULL,
+        CONSTRAINT PK_Traduccion PRIMARY KEY (Id),
+        CONSTRAINT FK_Traduccion_Idioma FOREIGN KEY (IdiomaId)
+            REFERENCES dbo.Idioma(Id),
+        CONSTRAINT UQ_Traduccion_Clave_Idioma UNIQUE (Clave, IdiomaId)
+    )
+END
+GO
+
+-- Idioma base del sistema.
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM dbo.Idioma
+    WHERE Codigo = 'es-AR'
+)
+BEGIN
+    INSERT INTO dbo.Idioma
+    (
+        Id,
+        Codigo,
+        Nombre,
+        Activo
+    )
+    VALUES
+    (
+        NEWID(),
+        'es-AR',
+        'Espanol Argentina',
+        1
+    )
+END
+GO
+
+DECLARE @IdiomaEs uniqueidentifier;
+DECLARE @IdiomaEn uniqueidentifier;
+
+SELECT @IdiomaEs = Id
+FROM dbo.Idioma
+WHERE Codigo = 'es-AR';
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Idioma WHERE Codigo = 'en-US')
+BEGIN
+    INSERT INTO dbo.Idioma
+    (
+        Id,
+        Codigo,
+        Nombre,
+        Activo
+    )
+    VALUES
+    (
+        NEWID(),
+        'en-US',
+        'English',
+        1
+    )
+END
+
+SELECT @IdiomaEn = Id
+FROM dbo.Idioma
+WHERE Codigo = 'en-US';
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.TituloVentana' AND IdiomaId = @IdiomaEs)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.TituloVentana', @IdiomaEs, 'Acceso al sistema');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.Titulo' AND IdiomaId = @IdiomaEs)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.Titulo', @IdiomaEs, 'Iniciar sesión');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.Subtitulo' AND IdiomaId = @IdiomaEs)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.Subtitulo', @IdiomaEs, 'Ingresá tus credenciales para acceder al sistema.');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.Idioma' AND IdiomaId = @IdiomaEs)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.Idioma', @IdiomaEs, 'Idioma');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.Usuario' AND IdiomaId = @IdiomaEs)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.Usuario', @IdiomaEs, 'Usuario');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.Password' AND IdiomaId = @IdiomaEs)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.Password', @IdiomaEs, 'Contraseña');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.Ingresar' AND IdiomaId = @IdiomaEs)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.Ingresar', @IdiomaEs, 'Ingresar');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.MensajeSeguridad' AND IdiomaId = @IdiomaEs)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.MensajeSeguridad', @IdiomaEs, 'Acceso protegido.');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.TituloVentana' AND IdiomaId = @IdiomaEn)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.TituloVentana', @IdiomaEn, 'System access');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.Titulo' AND IdiomaId = @IdiomaEn)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.Titulo', @IdiomaEn, 'Sign in');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.Subtitulo' AND IdiomaId = @IdiomaEn)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.Subtitulo', @IdiomaEn, 'Enter your credentials to access the system.');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.Idioma' AND IdiomaId = @IdiomaEn)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.Idioma', @IdiomaEn, 'Language');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.Usuario' AND IdiomaId = @IdiomaEn)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.Usuario', @IdiomaEn, 'User');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.Password' AND IdiomaId = @IdiomaEn)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.Password', @IdiomaEn, 'Password');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.Ingresar' AND IdiomaId = @IdiomaEn)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.Ingresar', @IdiomaEn, 'Log in');
+END
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Traduccion WHERE Clave = 'Login.MensajeSeguridad' AND IdiomaId = @IdiomaEn)
+BEGIN
+    INSERT INTO dbo.Traduccion (Id, Clave, IdiomaId, Texto)
+    VALUES (NEWID(), 'Login.MensajeSeguridad', @IdiomaEn, 'Protected access.');
+END
+GO

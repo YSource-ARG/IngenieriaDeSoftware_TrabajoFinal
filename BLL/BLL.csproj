@@ -47,6 +47,10 @@
     <Compile Include="Bitacora\BitacoraService.cs" />
     <Compile Include="Bitacora\IBitacoraService.cs" />
     <Compile Include="Configuracion\AplicacionServiceFactory.cs" />
+    <Compile Include="Idiomas\IdiomaAppService.cs" />
+    <Compile Include="Idiomas\IIdiomaAppService.cs" />
+    <Compile Include="Idiomas\IObservadorIdioma.cs" />
+    <Compile Include="Idiomas\ResultadoCambioIdioma.cs" />
     <Compile Include="Integridad\IIntegridadService.cs" />
     <Compile Include="Integridad\IntegridadService.cs" />
     <Compile Include="Integridad\ResultadoVerificacionIntegridad.cs" />

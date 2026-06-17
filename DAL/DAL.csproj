@@ -46,6 +46,10 @@
     <Compile Include="Bitacora\BitacoraRepositorio.cs" />
     <Compile Include="Bitacora\IBitacoraRepositorio.cs" />
     <Compile Include="Excepciones\AccesoDatosException.cs" />
+    <Compile Include="Idiomas\IdiomaRepositorio.cs" />
+    <Compile Include="Idiomas\IIdiomaRepositorio.cs" />
+    <Compile Include="Idiomas\ITraduccionRepositorio.cs" />
+    <Compile Include="Idiomas\TraduccionRepositorio.cs" />
     <Compile Include="Integridad\DigitoVerificadorRepositorio.cs" />
     <Compile Include="Integridad\IDigitoVerificadorRepositorio.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

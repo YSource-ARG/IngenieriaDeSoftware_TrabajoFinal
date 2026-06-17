@@ -6,24 +6,31 @@ using System.Drawing;
 using System.Windows.Forms;
 using UI.Estilos;
 using BLL.Integridad;
+using BE;
+using BLL.Idiomas;
+using System.Collections.Generic;
+using UI.Idiomas;
 
 
 namespace UI
 {
-    public partial class FrmLogin : Form
+    public partial class FrmLogin : Form, IObservadorIdioma
     {
         private readonly LoginAppService _loginAppService;
         private readonly CerrarSesionAppService _cerrarSesionAppService;
         private readonly GestionUsuariosAppService _gestionUsuariosAppService;
         private readonly IBitacoraService _bitacoraService;
         private readonly IIntegridadService _integridadService;
+        private readonly IIdiomaAppService _idiomaAppService;
+        private bool _cargandoIdiomasLogin;
 
         public FrmLogin(
             LoginAppService loginAppService,
             CerrarSesionAppService cerrarSesionAppService,
             GestionUsuariosAppService gestionUsuariosAppService,
             IIntegridadService integridadService,
-            IBitacoraService bitacoraService)
+            IBitacoraService bitacoraService,
+            IIdiomaAppService idiomaAppService)
         {
             if (loginAppService == null)
             {
@@ -50,20 +57,31 @@ namespace UI
                 throw new ArgumentNullException(nameof(bitacoraService));
             }
 
+            if (idiomaAppService == null)
+            {
+                throw new ArgumentNullException(nameof(idiomaAppService));
+            }
+
             _loginAppService = loginAppService;
             _cerrarSesionAppService = cerrarSesionAppService;
             _gestionUsuariosAppService = gestionUsuariosAppService;
             _integridadService = integridadService;
             _bitacoraService = bitacoraService;
+            _idiomaAppService = idiomaAppService;
 
             InitializeComponent();
 
             this.AcceptButton = btnIngresar;
 
-            AplicarEstiloVisual();
+            AplicarEstiloVisual();            
+            _idiomaAppService.Suscribir(this);
+            CargarIdiomasLogin();
+            ActualizarIdioma();
 
             this.Shown += FrmLogin_Shown;
             this.Resize += FrmLogin_Resize;
+            this.FormClosed += FrmLogin_FormClosed;
+            cboIdiomaLogin.SelectedIndexChanged += cboIdiomaLogin_SelectedIndexChanged;
         }
 
         private void FrmLogin_Shown(object sender, EventArgs e)
@@ -301,6 +319,90 @@ namespace UI
             frmPrincipal.Show();
         }
 
+        public void ActualizarIdioma()
+        {
+            TraductorControles.TraducirFormulario(this, _idiomaAppService);
+        }
+
+        private void FrmLogin_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            _idiomaAppService.Desuscribir(this);
+        }        
+
+        private void CargarIdiomasLogin()
+        {
+            _cargandoIdiomasLogin = true;
+
+            List<Idioma> idiomas = _idiomaAppService.ListarIdiomasActivos();
+
+            cboIdiomaLogin.DataSource = null;
+            cboIdiomaLogin.DisplayMember = "Nombre";
+            cboIdiomaLogin.ValueMember = "Codigo";
+            cboIdiomaLogin.DataSource = idiomas;
+            cboIdiomaLogin.Enabled = idiomas.Count > 0;
+
+            if (idiomas.Count > 0)
+            {
+                if (ExisteIdioma(idiomas, "es-AR"))
+                {
+                    cboIdiomaLogin.SelectedValue = "es-AR";
+                }
+                else
+                {
+                    cboIdiomaLogin.SelectedIndex = 0;
+                }
+            }
+
+            _cargandoIdiomasLogin = false;
+
+            CambiarIdiomaDesdeLogin(false);
+        }
+
+        private bool ExisteIdioma(List<Idioma> idiomas, string codigo)
+        {
+            foreach (Idioma idioma in idiomas)
+            {
+                if (string.Equals(idioma.Codigo, codigo, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void cboIdiomaLogin_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_cargandoIdiomasLogin)
+            {
+                return;
+            }
+
+            CambiarIdiomaDesdeLogin(true);
+        }
+
+        private void CambiarIdiomaDesdeLogin(bool mostrarMensajeError)
+        {
+            if (cboIdiomaLogin.SelectedValue == null)
+            {
+                return;
+            }
+
+            string codigo = cboIdiomaLogin.SelectedValue.ToString();
+
+            ResultadoCambioIdioma resultado = _idiomaAppService.CambiarIdioma(codigo);
+
+            if (!resultado.Exitoso && mostrarMensajeError)
+            {
+                MessageBox.Show(
+                    resultado.Mensaje,
+                    "Idioma",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            }
+        }
+
         private void AplicarEstiloVisual()
         {
             TemaVisual.AplicarFormularioOscuro(this);
@@ -310,44 +412,25 @@ namespace UI
             this.MaximizeBox = false;
 
             TemaVisual.AplicarPanelPrincipal(panelLogin);
+
             TemaVisual.AplicarTextBox(txtNombreUsuario);
             TemaVisual.AplicarTextBox(txtPassword);
+
+            cboIdiomaLogin.BackColor = TemaVisual.FondoInput;
+            cboIdiomaLogin.ForeColor = TemaVisual.TextoPrincipal;
+            cboIdiomaLogin.FlatStyle = FlatStyle.Flat;
+            cboIdiomaLogin.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
+
             TemaVisual.AplicarBotonPrincipal(btnIngresar);
 
             TemaVisual.AplicarTitulo(lblTitulo);
             TemaVisual.AplicarTextoSecundario(lblSubtitulo);
+            TemaVisual.AplicarTextoSecundario(lblIdiomaLogin);
             TemaVisual.AplicarTextoSecundario(lblUsuario);
             TemaVisual.AplicarTextoSecundario(lblPassword);
             TemaVisual.AplicarTextoSecundario(lblMensajeSeguridad);
 
-            panelLogin.Size = new Size(380, 380);
-
-            AlinearControlesLogin();
             CentrarPanelLogin();
-        }
-
-        private void AlinearControlesLogin()
-        {
-            int anchoControl = 285;
-            int margenIzquierdo = (panelLogin.Width - anchoControl) / 2;
-
-            lblTitulo.Left = margenIzquierdo;
-            lblSubtitulo.Left = margenIzquierdo;
-
-            lblUsuario.Left = margenIzquierdo;
-            txtNombreUsuario.Left = margenIzquierdo;
-
-            lblPassword.Left = margenIzquierdo;
-            txtPassword.Left = margenIzquierdo;
-
-            btnIngresar.Left = margenIzquierdo;
-            lblMensajeSeguridad.Left = margenIzquierdo;
-
-            txtNombreUsuario.Width = anchoControl;
-            txtPassword.Width = anchoControl;
-            btnIngresar.Width = anchoControl;
-            lblSubtitulo.Width = anchoControl;
-            lblMensajeSeguridad.Width = anchoControl;
-        }
+        }        
     }
 }
