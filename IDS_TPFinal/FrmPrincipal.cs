@@ -94,6 +94,7 @@ namespace UI
         {
             _idiomaAppService.Desuscribir(this);
         }
+
         private void FrmPrincipal_Load(object sender, EventArgs e)
         {
             ConfigurarAreaMdi();
@@ -177,6 +178,7 @@ namespace UI
             boton.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             boton.Cursor = Cursors.Hand;
         }
+
         // Al cerrarse el formulario principal, se decide si volver al login
         // porque el usuario cerró sesión, o cerrar toda la aplicación.
         private void btnCerrarSesion_Click(object sender, EventArgs e)
@@ -193,13 +195,21 @@ namespace UI
 
         private void btnGestionUsuarios_Click(object sender, EventArgs e)
         {
-            FrmGestionUsuarios frmGestionUsuarios = new FrmGestionUsuarios(_gestionUsuariosAppService);
+            FrmGestionUsuarios frmGestionUsuarios = new FrmGestionUsuarios(
+                _gestionUsuariosAppService,
+                _idiomaAppService
+            );
+
             MostrarFormularioDialogoCentrado(frmGestionUsuarios);
         }
 
         private void btnConsultaBitacora_Click(object sender, EventArgs e)
         {
-            FrmConsultaBitacora frmConsultaBitacora = new FrmConsultaBitacora(_bitacoraService);
+            FrmConsultaBitacora frmConsultaBitacora = new FrmConsultaBitacora(
+                _bitacoraService,
+                _idiomaAppService
+            );
+
             MostrarFormularioDialogoCentrado(frmConsultaBitacora);
         }
 
@@ -223,15 +233,16 @@ namespace UI
 
         private void btnRecalcularDigitos_Click(object sender, EventArgs e)
         {
-            DialogResult confirmacion = MessageBox.Show(
-        "Esta acción recalculará los dígitos verificadores de usuarios.\n\n" +
-        "Importante: el recálculo no restaura datos modificados por fuera del sistema, " +
-        "sino que toma el estado actual de la base como nuevo estado válido.\n\n" +
-        "¿Desea continuar?",
-        "Recalcular dígitos verificadores",
-        MessageBoxButtons.YesNo,
-        MessageBoxIcon.Warning
-    );
+            DialogResult confirmacion = MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                "Mensajes.Principal.ConfirmarRecalcularDigitos",
+                "Esta acción recalculará los dígitos verificadores de usuarios.\n\nImportante: el recálculo no restaura datos modificados por fuera del sistema, sino que toma el estado actual de la base como nuevo estado válido.\n\n¿Desea continuar?",
+                "Mensajes.Titulos.RecalcularDigitos",
+                "Recalcular dígitos verificadores",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning
+            );
 
             if (confirmacion != DialogResult.Yes)
             {
@@ -247,17 +258,25 @@ namespace UI
                     "admin"
                 );
 
-                MessageBox.Show(
+                MensajeTraducido.Mostrar(
+                    this,
+                    _idiomaAppService,
+                    "Mensajes.Principal.RecalculoDigitosCorrecto",
                     "Los dígitos verificadores fueron recalculados correctamente.",
+                    "Mensajes.Titulos.Integridad",
                     "Integridad",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show(
-                    "No fue posible recalcular los dígitos verificadores.\n\n" + ex.Message,
+                MensajeTraducido.Mostrar(
+                    this,
+                    _idiomaAppService,
+                    "Mensajes.Principal.ErrorRecalcularDigitos",
+                    "No fue posible recalcular los dígitos verificadores. Verifique el estado de la base e intente nuevamente.",
+                    "Mensajes.Titulos.ErrorIntegridad",
                     "Error de integridad",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
@@ -267,14 +286,16 @@ namespace UI
 
         private void btnDesbloquearIntegridad_Click(object sender, EventArgs e)
         {
-            DialogResult confirmacion = MessageBox.Show(
-        "Esta acción desbloqueará a los usuarios que fueron bloqueados por falla de integridad.\n\n" +
-        "Se recomienda hacerlo después de recalcular los dígitos verificadores.\n\n" +
-        "¿Desea continuar?",
-        "Desbloquear usuarios por integridad",
-        MessageBoxButtons.YesNo,
-        MessageBoxIcon.Question
-    );
+            DialogResult confirmacion = MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                "Mensajes.Principal.ConfirmarDesbloquearIntegridad",
+                "Esta acción desbloqueará a los usuarios que fueron bloqueados por falla de integridad.\n\nSe recomienda hacerlo después de recalcular los dígitos verificadores.\n\n¿Desea continuar?",
+                "Mensajes.Titulos.DesbloquearIntegridad",
+                "Desbloquear usuarios por integridad",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
 
             if (confirmacion != DialogResult.Yes)
             {
@@ -291,17 +312,25 @@ namespace UI
                     "admin"
                 );
 
-                MessageBox.Show(
+                MensajeTraducido.Mostrar(
+                    this,
+                    _idiomaAppService,
+                    "Mensajes.Principal.DesbloqueoIntegridadCorrecto",
                     "Los usuarios bloqueados por integridad fueron desbloqueados correctamente.",
+                    "Mensajes.Titulos.Integridad",
                     "Integridad",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show(
-                    "No fue posible desbloquear los usuarios por integridad.\n\n" + ex.Message,
+                MensajeTraducido.Mostrar(
+                    this,
+                    _idiomaAppService,
+                    "Mensajes.Principal.ErrorDesbloquearIntegridad",
+                    "No fue posible desbloquear los usuarios por integridad. Verifique el estado de la base e intente nuevamente.",
+                    "Mensajes.Titulos.ErrorIntegridad",
                     "Error de integridad",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error

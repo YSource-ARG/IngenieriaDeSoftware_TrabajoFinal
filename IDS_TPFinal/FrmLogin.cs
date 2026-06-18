@@ -117,14 +117,34 @@ namespace UI
             panelLogin.Top = (this.ClientSize.Height - panelLogin.Height) / 2;
         }
 
+        private DialogResult MostrarMensajeTraducido(
+            string claveMensaje,
+            string mensajePorDefecto,
+            string claveTitulo,
+            string tituloPorDefecto,
+            MessageBoxIcon icono)
+        {
+            return MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                claveMensaje,
+                mensajePorDefecto,
+                claveTitulo,
+                tituloPorDefecto,
+                MessageBoxButtons.OK,
+                icono
+            );
+        }
+
         private void btnIngresar_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtNombreUsuario.Text))
             {
-                MessageBox.Show(
+                MostrarMensajeTraducido(
+                    "Mensajes.Login.UsuarioRequerido",
                     "Por favor, ingrese su nombre de usuario.",
+                    "Mensajes.Titulos.Login",
                     "Login",
-                    MessageBoxButtons.OK,
                     MessageBoxIcon.Warning
                 );
 
@@ -135,10 +155,11 @@ namespace UI
 
             if (string.IsNullOrWhiteSpace(txtPassword.Text))
             {
-                MessageBox.Show(
+                MostrarMensajeTraducido(
+                    "Mensajes.Login.PasswordRequerido",
                     "Por favor, ingrese su contraseña.",
+                    "Mensajes.Titulos.Login",
                     "Login",
-                    MessageBoxButtons.OK,
                     MessageBoxIcon.Warning
                 );
 
@@ -159,10 +180,11 @@ namespace UI
             }
             catch (Exception)
             {
-                MessageBox.Show(
+                MostrarMensajeTraducido(
+                    "Mensajes.Login.ErrorVerificarIntegridad",
                     "No fue posible verificar la integridad de la base de datos. Verifique la conexión e intente nuevamente.",
+                    "Mensajes.Titulos.ErrorIntegridad",
                     "Error de integridad",
-                    MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
 
@@ -177,11 +199,11 @@ namespace UI
             {
                 if (!usuarioEsAdmin)
                 {
-                    MessageBox.Show(
-                        "Se detectó una falla de integridad en la base de datos. " +
-                        "Por seguridad, solo el administrador puede ingresar para recalcular los dígitos verificadores.",
+                    MostrarMensajeTraducido(
+                        "Mensajes.Login.IntegridadVulneradaUsuario",
+                        "Se detectó una falla de integridad en la base de datos. Por seguridad, solo el administrador puede ingresar para recalcular los dígitos verificadores.",
+                        "Mensajes.Titulos.IntegridadVulnerada",
                         "Integridad vulnerada",
-                        MessageBoxButtons.OK,
                         MessageBoxIcon.Error
                     );
 
@@ -190,11 +212,11 @@ namespace UI
                     return;
                 }
 
-                MessageBox.Show(
-                    "Se detectó una falla de integridad en la base de datos.\n\n" +
-                    "Ingresará como administrador para recalcular los dígitos verificadores y desbloquear usuarios.",
+                MostrarMensajeTraducido(
+                    "Mensajes.Login.IntegridadVulneradaAdmin",
+                    "Se detectó una falla de integridad en la base de datos.\n\nIngresará como administrador para recalcular los dígitos verificadores y desbloquear usuarios.",
+                    "Mensajes.Titulos.IntegridadVulnerada",
                     "Integridad vulnerada",
-                    MessageBoxButtons.OK,
                     MessageBoxIcon.Warning
                 );
             }
@@ -206,10 +228,11 @@ namespace UI
 
             if (resultadoLogin.ErrorAccesoDatos)
             {
-                MessageBox.Show(
+                MostrarMensajeTraducido(
+                    "Mensajes.Login.ErrorConexion",
                     "No fue posible conectarse con la base de datos. Verifique la conexión e intente nuevamente.",
+                    "Mensajes.Titulos.ErrorConexion",
                     "Error de conexión",
-                    MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
 
@@ -220,11 +243,11 @@ namespace UI
 
             if (resultadoLogin.BloqueadoPorIntegridad)
             {
-                MessageBox.Show(
-                    "El usuario se encuentra bloqueado por una falla de integridad. " +
-                    "Debe ingresar el administrador para recalcular los dígitos verificadores.",
+                MostrarMensajeTraducido(
+                    "Mensajes.Login.UsuarioBloqueadoPorIntegridad",
+                    "El usuario se encuentra bloqueado por una falla de integridad. Debe ingresar el administrador para recalcular los dígitos verificadores.",
+                    "Mensajes.Titulos.AccesoBloqueadoIntegridad",
                     "Acceso bloqueado por integridad",
-                    MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
 
@@ -235,9 +258,11 @@ namespace UI
 
             if (resultadoLogin.UsuarioBloqueado)
             {
-                string mensaje =
-                    "El acceso fue bloqueado temporalmente por varios intentos fallidos. " +
-                    "Intente nuevamente en unos minutos.";
+                string mensaje = MensajeTraducido.TraducirConFallback(
+                    _idiomaAppService,
+                    "Mensajes.Login.UsuarioBloqueado",
+                    "El acceso fue bloqueado temporalmente por varios intentos fallidos. Intente nuevamente en unos minutos."
+                );
 
                 if (resultadoLogin.BloqueadoHasta.HasValue)
                 {
@@ -249,14 +274,25 @@ namespace UI
                         (int)Math.Ceiling(tiempoRestante.TotalMinutes)
                     );
 
-                    mensaje =
-                        $"El acceso fue bloqueado temporalmente. " +
-                        $"Intente nuevamente en aproximadamente {minutosRestantes} minuto(s).";
+                    string plantillaMensaje = MensajeTraducido.TraducirConFallback(
+                        _idiomaAppService,
+                        "Mensajes.Login.UsuarioBloqueadoConMinutos",
+                        "El acceso fue bloqueado temporalmente. Intente nuevamente en aproximadamente {0} minuto(s)."
+                    );
+
+                    mensaje = string.Format(plantillaMensaje, minutosRestantes);
                 }
 
+                string titulo = MensajeTraducido.TraducirConFallback(
+                    _idiomaAppService,
+                    "Mensajes.Titulos.AccesoBloqueado",
+                    "Acceso bloqueado"
+                );
+
                 MessageBox.Show(
+                    this,
                     mensaje,
-                    "Acceso bloqueado",
+                    titulo,
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning
                 );
@@ -268,10 +304,11 @@ namespace UI
 
             if (!resultadoLogin.LoginExitoso)
             {
-                MessageBox.Show(
+                MostrarMensajeTraducido(
+                    "Mensajes.Login.CredencialesInvalidas",
                     "Usuario o contraseña incorrectos.",
+                    "Mensajes.Titulos.Login",
                     "Login",
-                    MessageBoxButtons.OK,
                     MessageBoxIcon.Warning
                 );
 
@@ -297,7 +334,8 @@ namespace UI
             using (FrmCambioPasswordObligatorio frmCambioPassword = new FrmCambioPasswordObligatorio(
                 _gestionUsuariosAppService,
                 resultadoLogin.UsuarioId,
-                resultadoLogin.NombreUsuario))
+                resultadoLogin.NombreUsuario,
+                _idiomaAppService))
             {
                 DialogResult resultado = frmCambioPassword.ShowDialog(this);
 
@@ -413,8 +451,12 @@ namespace UI
 
             if (!resultado.Exitoso && mostrarMensajeError)
             {
-                MessageBox.Show(
+                MensajeTraducido.Mostrar(
+                    this,
+                    _idiomaAppService,
+                    "Mensajes.Idioma.ErrorCambio",
                     resultado.Mensaje,
+                    "Mensajes.Titulos.Idioma",
                     "Idioma",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning

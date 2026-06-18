@@ -1,17 +1,17 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+﻿using BLL.Idiomas;
 using BLL.Usuarios;
 using System;
 using System.Linq;
 using System.Windows.Forms;
 using UI.Estilos;
+using UI.Idiomas;
 
 namespace IDS_TPFinal
 {
     public partial class FrmHistorialEmailUsuario : Form
     {
         private readonly GestionUsuariosAppService _gestionUsuariosAppService;
+        private readonly IIdiomaAppService _idiomaAppService;
         private readonly Guid _usuarioId;
         private readonly string _nombreUsuario;
 
@@ -23,7 +23,17 @@ namespace IDS_TPFinal
         public FrmHistorialEmailUsuario(
             GestionUsuariosAppService gestionUsuariosAppService,
             Guid usuarioId,
-            string nombreUsuario) : this()
+            string nombreUsuario)
+            : this(gestionUsuariosAppService, usuarioId, nombreUsuario, null)
+        {
+        }
+
+        public FrmHistorialEmailUsuario(
+            GestionUsuariosAppService gestionUsuariosAppService,
+            Guid usuarioId,
+            string nombreUsuario,
+            IIdiomaAppService idiomaAppService)
+            : this()
         {
             if (gestionUsuariosAppService == null)
             {
@@ -38,6 +48,7 @@ namespace IDS_TPFinal
             _gestionUsuariosAppService = gestionUsuariosAppService;
             _usuarioId = usuarioId;
             _nombreUsuario = nombreUsuario;
+            _idiomaAppService = idiomaAppService;
 
             this.Load += FrmHistorialEmailUsuario_Load;
         }
@@ -88,11 +99,11 @@ namespace IDS_TPFinal
         {
             if (dgvHistorialEmail.CurrentRow == null)
             {
-                MessageBox.Show(
+                MostrarAdvertencia(
+                    "Mensajes.HistorialEmail.SeleccionarRegistro",
                     "Debe seleccionar un registro del historial.",
-                    "Historial de email",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
+                    "Mensajes.Titulos.HistorialEmail",
+                    "Historial de email"
                 );
 
                 return;
@@ -102,11 +113,21 @@ namespace IDS_TPFinal
                 dgvHistorialEmail.CurrentRow.Cells["EmailAnterior"].Value
             );
 
-            DialogResult confirmacion = MessageBox.Show(
-                $"¿Desea restaurar el email anterior del usuario '{_nombreUsuario}'?\n\n" +
-                $"Email a restaurar: {emailAnterior}",
+            string plantillaConfirmacion = TraducirMensaje(
+                "Mensajes.HistorialEmail.ConfirmarRestaurar",
+                "¿Desea restaurar el email anterior del usuario '{0}'?\n\nEmail a restaurar: {1}"
+            );
+
+            string mensajeConfirmacion = string.Format(
+                plantillaConfirmacion,
+                _nombreUsuario,
+                emailAnterior
+            );
+
+            DialogResult confirmacion = MostrarConfirmacion(
+                mensajeConfirmacion,
+                "Mensajes.Titulos.RestaurarEmail",
                 "Restaurar email",
-                MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question
             );
 
@@ -124,24 +145,102 @@ namespace IDS_TPFinal
                     emailAnterior
                 );
 
-                MessageBox.Show(
+                MostrarInformacion(
+                    "Mensajes.HistorialEmail.EmailRestaurado",
                     "El email fue restaurado correctamente.",
-                    "Historial de email",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
+                    "Mensajes.Titulos.HistorialEmail",
+                    "Historial de email"
                 );
 
                 CargarHistorial();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show(
-                    "No fue posible restaurar el email.\n\n" + ex.Message,
-                    "Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
+                MostrarError(
+                    "Mensajes.HistorialEmail.ErrorRestaurar",
+                    "No fue posible restaurar el email. Verifique los datos e intente nuevamente.",
+                    "Mensajes.Titulos.Error",
+                    "Error"
                 );
             }
+        }
+
+        private string TraducirMensaje(string clave, string textoPorDefecto)
+        {
+            return MensajeTraducido.TraducirConFallback(
+                _idiomaAppService,
+                clave,
+                textoPorDefecto
+            );
+        }
+
+        private void MostrarInformacion(
+            string claveMensaje,
+            string mensajePorDefecto,
+            string claveTitulo,
+            string tituloPorDefecto)
+        {
+            MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                claveMensaje,
+                mensajePorDefecto,
+                claveTitulo,
+                tituloPorDefecto,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
+        private void MostrarAdvertencia(
+            string claveMensaje,
+            string mensajePorDefecto,
+            string claveTitulo,
+            string tituloPorDefecto)
+        {
+            MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                claveMensaje,
+                mensajePorDefecto,
+                claveTitulo,
+                tituloPorDefecto,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            );
+        }
+
+        private void MostrarError(
+            string claveMensaje,
+            string mensajePorDefecto,
+            string claveTitulo,
+            string tituloPorDefecto)
+        {
+            MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                claveMensaje,
+                mensajePorDefecto,
+                claveTitulo,
+                tituloPorDefecto,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+
+        private DialogResult MostrarConfirmacion(
+            string mensaje,
+            string claveTitulo,
+            string tituloPorDefecto,
+            MessageBoxIcon icono)
+        {
+            return MessageBox.Show(
+                this,
+                mensaje,
+                TraducirMensaje(claveTitulo, tituloPorDefecto),
+                MessageBoxButtons.YesNo,
+                icono
+            );
         }
 
         private void btnCerrar_Click(object sender, EventArgs e)

@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Forms;
+using UI.Idiomas;
 
 namespace IDS_TPFinal
 {
@@ -135,23 +136,78 @@ namespace IDS_TPFinal
             return idUsuario;
         }
 
-        private void MostrarAdvertencia(string mensaje, string titulo)
+        private string TraducirMensaje(string clave, string textoPorDefecto)
+        {
+            if (string.IsNullOrWhiteSpace(clave))
+            {
+                return textoPorDefecto;
+            }
+
+            return MensajeTraducido.TraducirConFallback(
+                _idiomaAppService,
+                clave,
+                textoPorDefecto
+            );
+        }
+
+        private void MostrarInformacion(
+            string claveMensaje,
+            string mensaje,
+            string claveTitulo,
+            string titulo)
         {
             MessageBox.Show(
-                mensaje,
-                titulo,
+                this,
+                TraducirMensaje(claveMensaje, mensaje),
+                TraducirMensaje(claveTitulo, titulo),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
+        private void MostrarAdvertencia(
+            string claveMensaje,
+            string mensaje,
+            string claveTitulo,
+            string titulo)
+        {
+            MessageBox.Show(
+                this,
+                TraducirMensaje(claveMensaje, mensaje),
+                TraducirMensaje(claveTitulo, titulo),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning
             );
         }
 
-        private void MostrarError(string mensaje, string titulo)
+        private void MostrarError(
+            string claveMensaje,
+            string mensaje,
+            string claveTitulo,
+            string titulo)
         {
             MessageBox.Show(
-                mensaje,
-                titulo,
+                this,
+                TraducirMensaje(claveMensaje, mensaje),
+                TraducirMensaje(claveTitulo, titulo),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error
+            );
+        }
+
+        private DialogResult MostrarConfirmacion(
+            string claveMensaje,
+            string mensaje,
+            string claveTitulo,
+            string titulo,
+            MessageBoxIcon icono)
+        {
+            return MessageBox.Show(
+                this,
+                TraducirMensaje(claveMensaje, mensaje),
+                TraducirMensaje(claveTitulo, titulo),
+                MessageBoxButtons.YesNo,
+                icono
             );
         }
     }

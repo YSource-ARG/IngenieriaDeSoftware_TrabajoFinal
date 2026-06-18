@@ -22,7 +22,6 @@ namespace UI
             AplicarEstiloVisual();
         }
 
-
         public FrmGestionIdiomas(
             GestionIdiomasAppService gestionIdiomasAppService,
             IIdiomaAppService idiomaAppService) : this()
@@ -86,7 +85,7 @@ namespace UI
         private void SuscribirEventos()
         {
             btnNuevo.Click += btnNuevo_Click;
-            btnGuardar.Click += btnGuardar_Click;            
+            btnGuardar.Click += btnGuardar_Click;
             btnCerrar.Click += btnCerrar_Click;
             dgvIdiomas.SelectionChanged += dgvIdiomas_SelectionChanged;
         }
@@ -154,6 +153,11 @@ namespace UI
 
         private void btnGuardar_Click(object sender, EventArgs e)
         {
+            if (!ValidarDatosIdioma())
+            {
+                return;
+            }
+
             ResultadoGuardadoIdioma resultado = _gestionIdiomasAppService.GuardarIdioma(
                 _idiomaSeleccionadoId,
                 txtCodigo.Text,
@@ -161,17 +165,24 @@ namespace UI
                 chkActivo.Checked
             );
 
-            MessageBox.Show(
-                resultado.Mensaje,
-                "Idiomas",
-                MessageBoxButtons.OK,
-                resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning
-            );
-
             if (!resultado.Exitoso)
             {
+                MostrarAdvertencia(
+                    "Mensajes.Idiomas.ErrorGuardar",
+                    "No fue posible guardar el idioma. Verifique los datos e intente nuevamente.",
+                    "Mensajes.Titulos.Idiomas",
+                    "Idiomas"
+                );
+
                 return;
             }
+
+            MostrarInformacion(
+                "Mensajes.Idiomas.IdiomaGuardado",
+                "Idioma guardado correctamente.",
+                "Mensajes.Titulos.Idiomas",
+                "Idiomas"
+            );
 
             CargarIdiomas();
             LimpiarFormulario();
@@ -272,13 +283,18 @@ namespace UI
         {
             if (_idiomaSeleccionadoId == Guid.Empty)
             {
-                MessageBox.Show(
+                MostrarAdvertencia(
+                    "Mensajes.Idiomas.DebeSeleccionarIdioma",
                     "Debe seleccionar un idioma.",
-                    "Idiomas",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
+                    "Mensajes.Titulos.Idiomas",
+                    "Idiomas"
                 );
 
+                return;
+            }
+
+            if (!ValidarDatosIdioma())
+            {
                 return;
             }
 
@@ -289,17 +305,24 @@ namespace UI
                 chkActivo.Checked
             );
 
-            MessageBox.Show(
-                resultado.Mensaje,
-                "Idiomas",
-                MessageBoxButtons.OK,
-                resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning
-            );
-
             if (!resultado.Exitoso)
             {
+                MostrarAdvertencia(
+                    "Mensajes.Idiomas.ErrorModificar",
+                    "No fue posible modificar el idioma. Verifique los datos e intente nuevamente.",
+                    "Mensajes.Titulos.Idiomas",
+                    "Idiomas"
+                );
+
                 return;
             }
+
+            MostrarInformacion(
+                "Mensajes.Idiomas.IdiomaModificado",
+                "Idioma modificado correctamente.",
+                "Mensajes.Titulos.Idiomas",
+                "Idiomas"
+            );
 
             CargarIdiomas();
             LimpiarFormulario();
@@ -309,11 +332,11 @@ namespace UI
         {
             if (_idiomaSeleccionadoId == Guid.Empty)
             {
-                MessageBox.Show(
+                MostrarAdvertencia(
+                    "Mensajes.Idiomas.DebeSeleccionarIdioma",
                     "Debe seleccionar un idioma.",
-                    "Idiomas",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
+                    "Mensajes.Titulos.Idiomas",
+                    "Idiomas"
                 );
 
                 return;
@@ -321,13 +344,19 @@ namespace UI
 
             bool nuevoEstado = !chkActivo.Checked;
 
-            string accion = nuevoEstado ? "activar" : "desactivar";
+            string claveConfirmacion = nuevoEstado
+                ? "Mensajes.Idiomas.ConfirmarActivar"
+                : "Mensajes.Idiomas.ConfirmarDesactivar";
 
-            DialogResult confirmacion = MessageBox.Show(
-                "¿Está seguro que desea " + accion + " el idioma seleccionado?",
-                "Cambiar estado del idioma",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
+            string mensajeConfirmacion = nuevoEstado
+                ? "¿Está seguro que desea activar el idioma seleccionado?"
+                : "¿Está seguro que desea desactivar el idioma seleccionado?";
+
+            DialogResult confirmacion = MostrarConfirmacion(
+                claveConfirmacion,
+                mensajeConfirmacion,
+                "Mensajes.Titulos.CambiarEstadoIdioma",
+                "Cambiar estado del idioma"
             );
 
             if (confirmacion != DialogResult.Yes)
@@ -342,20 +371,133 @@ namespace UI
                 nuevoEstado
             );
 
-            MessageBox.Show(
-                resultado.Mensaje,
-                "Idiomas",
-                MessageBoxButtons.OK,
-                resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning
-            );
-
             if (!resultado.Exitoso)
             {
+                MostrarAdvertencia(
+                    "Mensajes.Idiomas.ErrorCambiarEstado",
+                    "No fue posible cambiar el estado del idioma. Verifique los datos e intente nuevamente.",
+                    "Mensajes.Titulos.Idiomas",
+                    "Idiomas"
+                );
+
                 return;
+            }
+
+            if (nuevoEstado)
+            {
+                MostrarInformacion(
+                    "Mensajes.Idiomas.IdiomaActivado",
+                    "Idioma activado correctamente.",
+                    "Mensajes.Titulos.Idiomas",
+                    "Idiomas"
+                );
+            }
+            else
+            {
+                MostrarInformacion(
+                    "Mensajes.Idiomas.IdiomaDesactivado",
+                    "Idioma desactivado correctamente.",
+                    "Mensajes.Titulos.Idiomas",
+                    "Idiomas"
+                );
             }
 
             CargarIdiomas();
             LimpiarFormulario();
+        }
+
+        private bool ValidarDatosIdioma()
+        {
+            if (string.IsNullOrWhiteSpace(txtCodigo.Text))
+            {
+                MostrarAdvertencia(
+                    "Mensajes.Idiomas.CodigoRequerido",
+                    "Debe ingresar el código del idioma.",
+                    "Mensajes.Titulos.Validacion",
+                    "Validación"
+                );
+
+                txtCodigo.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtNombre.Text))
+            {
+                MostrarAdvertencia(
+                    "Mensajes.Idiomas.NombreRequerido",
+                    "Debe ingresar el nombre del idioma.",
+                    "Mensajes.Titulos.Validacion",
+                    "Validación"
+                );
+
+                txtNombre.Focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        private void MostrarInformacion(
+            string claveMensaje,
+            string mensajePorDefecto,
+            string claveTitulo,
+            string tituloPorDefecto)
+        {
+            MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                claveMensaje,
+                mensajePorDefecto,
+                claveTitulo,
+                tituloPorDefecto,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
+        private void MostrarAdvertencia(
+            string claveMensaje,
+            string mensajePorDefecto,
+            string claveTitulo,
+            string tituloPorDefecto)
+        {
+            MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                claveMensaje,
+                mensajePorDefecto,
+                claveTitulo,
+                tituloPorDefecto,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            );
+        }
+
+        private DialogResult MostrarConfirmacion(
+            string claveMensaje,
+            string mensajePorDefecto,
+            string claveTitulo,
+            string tituloPorDefecto)
+        {
+            return MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                claveMensaje,
+                mensajePorDefecto,
+                claveTitulo,
+                tituloPorDefecto,
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+        }
+
+        private string TraducirTexto(string clave, string textoPorDefecto)
+        {
+            return MensajeTraducido.TraducirConFallback(
+                _idiomaAppService,
+                clave,
+                textoPorDefecto
+            );
         }
 
         private void ActualizarTextoBotonEstado()
@@ -363,9 +505,7 @@ namespace UI
             if (_idiomaSeleccionadoId == Guid.Empty)
             {
                 btnDesactivar.Enabled = false;
-                btnDesactivar.Text = _idiomaAppService != null
-                    ? _idiomaAppService.Traducir("Idiomas.Desactivar")
-                    : "Desactivar";
+                btnDesactivar.Text = TraducirTexto("Idiomas.Desactivar", "Desactivar");
 
                 return;
             }
@@ -374,15 +514,11 @@ namespace UI
 
             if (chkActivo.Checked)
             {
-                btnDesactivar.Text = _idiomaAppService != null
-                    ? _idiomaAppService.Traducir("Idiomas.Desactivar")
-                    : "Desactivar";
+                btnDesactivar.Text = TraducirTexto("Idiomas.Desactivar", "Desactivar");
             }
             else
             {
-                btnDesactivar.Text = _idiomaAppService != null
-                    ? _idiomaAppService.Traducir("Idiomas.Activar")
-                    : "Activar";
+                btnDesactivar.Text = TraducirTexto("Idiomas.Activar", "Activar");
             }
         }
     }

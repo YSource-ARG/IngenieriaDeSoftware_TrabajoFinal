@@ -80,6 +80,8 @@ namespace BLL.Usuarios
 
             _usuarioRepositorio.Crear(usuario);
 
+            RecalcularIntegridadUsuarios();
+
             // Registro para auditoría
             RegistrarBitacora(
                 "USUARIO_CREADO",
@@ -130,12 +132,9 @@ namespace BLL.Usuarios
                         emailNormalizado,
                         activo
                 );
-            if (cambioDatosGenerales)
+            if (cambioDatosGenerales || cambioEmail)
             {
-                _integridadService.RecalcularDigitosUsuarios(
-                    _sessionService.HaySesionActiva ? (Guid?)_sessionService.UsuarioIdActual : null,
-                    _sessionService.NombreUsuarioActual
-                );
+                RecalcularIntegridadUsuarios();
             }
             if (cambioEmail)
             {
@@ -185,6 +184,8 @@ namespace BLL.Usuarios
 
             _usuarioRepositorio.CambiarEstado(idUsuario, activo);
 
+            RecalcularIntegridadUsuarios();
+
             RegistrarBitacora(
                 activo ? "USUARIO_REACTIVADO" : "USUARIO_INHABILITADO",
                 activo
@@ -214,6 +215,8 @@ namespace BLL.Usuarios
                 passwordTemporalHash,
                 true
             );
+
+            RecalcularIntegridadUsuarios();
 
             RegistrarBitacora(
                 "PASSWORD_BLANQUEADA",
@@ -254,6 +257,8 @@ namespace BLL.Usuarios
                 nuevoPasswordHash,
                 false
             );
+
+            RecalcularIntegridadUsuarios();
 
             RegistrarBitacora(
                 "PASSWORD_CAMBIADA",
@@ -312,6 +317,8 @@ namespace BLL.Usuarios
                 usuario.Activo
             );
 
+            RecalcularIntegridadUsuarios();
+
             UsuarioEmailHistorial historial = new UsuarioEmailHistorial
             {
                 Id = Guid.NewGuid(),
@@ -332,6 +339,15 @@ namespace BLL.Usuarios
                 $"Se restauró el email anterior del usuario '{usuario.NombreUsuario}'."
             );
         }
+
+        private void RecalcularIntegridadUsuarios()
+        {
+            _integridadService.RecalcularDigitosUsuarios(
+                _sessionService.HaySesionActiva ? (Guid?)_sessionService.UsuarioIdActual : null,
+                _sessionService.NombreUsuarioActual
+            );
+        }
+
         private void ValidarDatosAltaUsuario(string nombreUsuario, string nombreCompleto)
         {
             if (string.IsNullOrWhiteSpace(nombreUsuario))
@@ -349,6 +365,7 @@ namespace BLL.Usuarios
                 throw new ArgumentException("El nombre completo no puede estar vacío.", nameof(nombreCompleto));
             }
         }
+
         private string NormalizarEmail(string email)
         {
             // El email se permite vacío para no romper usuarios existentes
@@ -360,6 +377,7 @@ namespace BLL.Usuarios
 
             return email.Trim();
         }
+
         // Centralización de registro de auditoria de gestión de usuario.
         private void RegistrarBitacora(string accion, string descripcion)
         {
