@@ -7,7 +7,7 @@ using UI.Idiomas;
 
 namespace UI
 {
-    public partial class FrmCambioPasswordObligatorio : Form
+    public partial class FrmCambioPasswordObligatorio : Form, IObservadorIdioma
     {
         private readonly GestionUsuariosAppService _gestionUsuariosAppService;
         private readonly IIdiomaAppService _idiomaAppService;
@@ -38,13 +38,61 @@ namespace UI
             _idiomaAppService = idiomaAppService;
 
             InitializeComponent();
-            ConfigurarDescripcion();
+            ConfigurarTagsTraduccion();
             AplicarEstiloVisual();
+
+            if (_idiomaAppService != null)
+            {
+                _idiomaAppService.Suscribir(this);
+                ActualizarIdioma();
+            }
+            else
+            {
+                ConfigurarDescripcion();
+            }
+        }
+
+        private void ConfigurarTagsTraduccion()
+        {
+            this.Tag = "CambioPassword.TituloVentana";
+
+            lblTitulo.Tag = "CambioPassword.Titulo";
+            lblNuevaPassword.Tag = "CambioPassword.NuevaPassword";
+            lblConfirmarPassword.Tag = "CambioPassword.ConfirmarPassword";
+
+            btnConfirmar.Tag = "CambioPassword.Confirmar";
+            btnCancelar.Tag = "CambioPassword.Cancelar";
+        }
+
+        public void ActualizarIdioma()
+        {
+            if (_idiomaAppService == null)
+            {
+                return;
+            }
+
+            TraductorControles.TraducirFormulario(this, _idiomaAppService);
+            ConfigurarDescripcion();
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (_idiomaAppService != null)
+            {
+                _idiomaAppService.Desuscribir(this);
+            }
+
+            base.OnFormClosed(e);
         }
 
         private void ConfigurarDescripcion()
         {
-            lblDescripcion.Text = $"Usuario: {_nombreUsuario}{Environment.NewLine}Debe definir una nueva contraseña antes de continuar.";
+            lblDescripcion.Text = FormatearTexto(
+                "CambioPassword.Descripcion",
+                "Usuario: {0}{1}Debe definir una nueva contraseña antes de continuar.",
+                _nombreUsuario,
+                Environment.NewLine
+            );
         }
 
         private void AplicarEstiloVisual()
@@ -147,6 +195,32 @@ namespace UI
             }
 
             return true;
+        }
+
+        private string TraducirTexto(string clave, string textoPorDefecto)
+        {
+            return MensajeTraducido.TraducirConFallback(
+                _idiomaAppService,
+                clave,
+                textoPorDefecto
+            );
+        }
+
+        private string FormatearTexto(
+            string clave,
+            string textoPorDefecto,
+            params object[] valores)
+        {
+            string plantilla = TraducirTexto(clave, textoPorDefecto);
+
+            try
+            {
+                return string.Format(plantilla, valores);
+            }
+            catch (FormatException)
+            {
+                return string.Format(textoPorDefecto, valores);
+            }
         }
 
         private void MostrarInformacion(
