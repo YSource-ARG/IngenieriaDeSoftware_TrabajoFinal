@@ -3,22 +3,33 @@ using System;
 using System.Linq;
 using System.Windows.Forms;
 using UI.Estilos;
+using BLL.Idiomas;
+using UI.Idiomas;
 
 namespace IDS_TPFinal
 {
     public partial class FrmConsultaBitacora : Form
     {
         private readonly IBitacoraService _bitacoraService;
+        private readonly IIdiomaAppService _idiomaAppService;
 
         public FrmConsultaBitacora()
         {
             InitializeComponent();
         }
 
-        public FrmConsultaBitacora(IBitacoraService bitacoraService)
+        public FrmConsultaBitacora(IBitacoraService bitacoraService) : this(bitacoraService, null)
+        {
+        }
+
+        public FrmConsultaBitacora(
+            IBitacoraService bitacoraService,
+            IIdiomaAppService idiomaAppService)
         {
             _bitacoraService = bitacoraService
                 ?? throw new ArgumentNullException(nameof(bitacoraService));
+
+            _idiomaAppService = idiomaAppService;
 
             InitializeComponent();
             AplicarEstiloVisual();
@@ -101,10 +112,14 @@ namespace IDS_TPFinal
                 ConfigurarColumnas();
                 lblCantidadRegistros.Text = $"Registros encontrados: {registros.Count}";
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show(
-                    ex.Message,
+                MensajeTraducido.Mostrar(
+                    this,
+                    _idiomaAppService,
+                    "Mensajes.Bitacora.ErrorConsulta",
+                    "No se pudo consultar la bitácora. Verifique los filtros e intente nuevamente.",
+                    "Mensajes.Titulos.NoPudoConsultarBitacora",
                     "No se pudo consultar la bitácora",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning

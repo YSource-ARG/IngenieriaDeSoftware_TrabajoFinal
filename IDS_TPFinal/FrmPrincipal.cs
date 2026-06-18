@@ -199,7 +199,11 @@ namespace UI
 
         private void btnConsultaBitacora_Click(object sender, EventArgs e)
         {
-            FrmConsultaBitacora frmConsultaBitacora = new FrmConsultaBitacora(_bitacoraService);
+            FrmConsultaBitacora frmConsultaBitacora = new FrmConsultaBitacora(
+                _bitacoraService,
+                _idiomaAppService
+            );
+
             MostrarFormularioDialogoCentrado(frmConsultaBitacora);
         }
 
