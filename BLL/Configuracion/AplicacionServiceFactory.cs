@@ -12,6 +12,8 @@ using System;
 using BLL.Integridad;
 using DAL.Integridad;
 using SSL.Integridad;
+using BLL.Idiomas;
+using DAL.Idiomas;
 
 namespace BLL.Configuracion
 {
@@ -23,8 +25,15 @@ namespace BLL.Configuracion
 
         public GestionUsuariosAppService GestionUsuariosAppService { get; }
 
+        public IIdiomaAppService IdiomaAppService { get; }
+
         public IBitacoraService BitacoraService { get; }
+
         public IIntegridadService IntegridadService { get; }
+
+        public GestionTraduccionesAppService GestionTraduccionesAppService { get; }
+
+        public GestionIdiomasAppService GestionIdiomasAppService { get; }
 
         public AplicacionServiceFactory(string connectionString)
         {
@@ -39,12 +48,19 @@ namespace BLL.Configuracion
             IUsuarioEmailHistorialRepositorio usuarioEmailHistorialRepositorio = new UsuarioEmailHistorialRepositorio(connectionFactory);
             IBitacoraRepositorio bitacoraRepositorio = new BitacoraRepositorio(connectionFactory);
             IDigitoVerificadorRepositorio digitoVerificadorRepositorio = new DigitoVerificadorRepositorio(connectionFactory);
+            
+            IIdiomaRepositorio idiomaRepositorio = new IdiomaRepositorio(connectionFactory);
+            ITraduccionRepositorio traduccionRepositorio = new TraduccionRepositorio(connectionFactory);
 
             IPasswordHasher passwordHasher = new PasswordHasherService();
             ISessionService sessionService = SessionService.ObtenerSesion();
             IDigitoVerificadorService digitoVerificadorService = new DigitoVerificadorService();
 
             IBitacoraContingenciaService bitacoraContingenciaService = new BitacoraContingenciaService();
+
+            IdiomaAppService = new IdiomaAppService(idiomaRepositorio, traduccionRepositorio);
+            GestionIdiomasAppService = new GestionIdiomasAppService(idiomaRepositorio);
+            GestionTraduccionesAppService = new GestionTraduccionesAppService(idiomaRepositorio, traduccionRepositorio);
 
             BitacoraService = new BitacoraService(bitacoraRepositorio, bitacoraContingenciaService);
 

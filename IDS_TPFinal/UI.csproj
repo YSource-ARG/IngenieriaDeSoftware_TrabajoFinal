@@ -63,6 +63,18 @@
     <Compile Include="FrmConsultaBitacora.Designer.cs">
       <DependentUpon>FrmConsultaBitacora.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmGestionIdiomas.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmGestionIdiomas.Designer.cs">
+      <DependentUpon>FrmGestionIdiomas.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmGestionTraducciones.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmGestionTraducciones.Designer.cs">
+      <DependentUpon>FrmGestionTraducciones.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmGestionUsuarios.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -106,6 +118,7 @@
     <Compile Include="FrmPrincipal.Designer.cs">
       <DependentUpon>FrmPrincipal.cs</DependentUpon>
     </Compile>
+    <Compile Include="Idiomas\TraductorControles.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FrmCambioPasswordObligatorio.resx">
@@ -113,6 +126,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FrmConsultaBitacora.resx">
       <DependentUpon>FrmConsultaBitacora.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmGestionIdiomas.resx">
+      <DependentUpon>FrmGestionIdiomas.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmGestionTraducciones.resx">
+      <DependentUpon>FrmGestionTraducciones.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrmGestionUsuarios.resx">
       <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>

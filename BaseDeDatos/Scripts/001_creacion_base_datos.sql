@@ -280,3 +280,89 @@ BEGIN
     WHERE NombreUsuario = 'admin'
 END
 GO
+
+-- Multiidioma - Idiomas disponibles del sistema.
+-- Permite agregar nuevos idiomas sin modificar la estructura de la base.
+IF OBJECT_ID('dbo.Idioma', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Idioma
+    (
+        Id uniqueidentifier NOT NULL,
+        Codigo nvarchar(10) NOT NULL,
+        Nombre nvarchar(100) NOT NULL,
+        Activo bit NOT NULL
+            CONSTRAINT DF_Idioma_Activo DEFAULT (1),
+        CONSTRAINT PK_Idioma PRIMARY KEY (Id),
+        CONSTRAINT UQ_Idioma_Codigo UNIQUE (Codigo)
+    )
+END
+GO
+
+-- Multiidioma - Traducciones por clave e idioma.
+-- Cada control visible usa una clave estable en Tag, por ejemplo Login.Usuario.
+IF OBJECT_ID('dbo.Traduccion', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Traduccion
+    (
+        Id uniqueidentifier NOT NULL,
+        Clave nvarchar(200) NOT NULL,
+        IdiomaId uniqueidentifier NOT NULL,
+        Texto nvarchar(500) NOT NULL,
+        CONSTRAINT PK_Traduccion PRIMARY KEY (Id),
+        CONSTRAINT FK_Traduccion_Idioma FOREIGN KEY (IdiomaId)
+            REFERENCES dbo.Idioma(Id),
+        CONSTRAINT UQ_Traduccion_Clave_Idioma UNIQUE (Clave, IdiomaId)
+    )
+END
+GO
+
+-- Idioma base del sistema.
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM dbo.Idioma
+    WHERE Codigo = 'es-AR'
+)
+BEGIN
+    INSERT INTO dbo.Idioma
+    (
+        Id,
+        Codigo,
+        Nombre,
+        Activo
+    )
+    VALUES
+    (
+        NEWID(),
+        'es-AR',
+        'Espanol Argentina',
+        1
+    )
+END
+GO
+
+-- Idioma adicional inicial.
+-- Las traducciones se administran desde el ABM de traducciones.
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM dbo.Idioma
+    WHERE Codigo = 'en-US'
+)
+BEGIN
+    INSERT INTO dbo.Idioma
+    (
+        Id,
+        Codigo,
+        Nombre,
+        Activo
+    )
+    VALUES
+    (
+        NEWID(),
+        'en-US',
+        'English',
+        1
+    )
+END
+GO

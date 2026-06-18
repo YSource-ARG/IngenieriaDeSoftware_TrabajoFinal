@@ -34,6 +34,10 @@ namespace UI
             this.lblTitulo = new System.Windows.Forms.Label();
             this.lblMarca = new System.Windows.Forms.Label();
             this.panelLateral = new System.Windows.Forms.Panel();
+            this.btnGestionIdiomas = new System.Windows.Forms.Button();
+            this.btnGestionTraducciones = new System.Windows.Forms.Button();
+            this.btnDesbloquearIntegridad = new System.Windows.Forms.Button();
+            this.btnRecalcularDigitos = new System.Windows.Forms.Button();
             this.btnConsultaBitacora = new System.Windows.Forms.Button();
             this.btnGestionUsuarios = new System.Windows.Forms.Button();
             this.btnSalir = new System.Windows.Forms.Button();
@@ -45,8 +49,6 @@ namespace UI
             this.lblResumenTitulo = new System.Windows.Forms.Label();
             this.lblDescripcion = new System.Windows.Forms.Label();
             this.lblBienvenida = new System.Windows.Forms.Label();
-            this.btnRecalcularDigitos = new System.Windows.Forms.Button();
-            this.btnDesbloquearIntegridad = new System.Windows.Forms.Button();
             this.panelHeader.SuspendLayout();
             this.panelLateral.SuspendLayout();
             this.panelContenido.SuspendLayout();
@@ -73,6 +75,7 @@ namespace UI
             this.lblSubtitulo.Name = "lblSubtitulo";
             this.lblSubtitulo.Size = new System.Drawing.Size(140, 13);
             this.lblSubtitulo.TabIndex = 2;
+            this.lblSubtitulo.Tag = "Principal.Subtitulo";
             this.lblSubtitulo.Text = "Gestión principal del sistema";
             // 
             // lblTitulo
@@ -83,6 +86,7 @@ namespace UI
             this.lblTitulo.Name = "lblTitulo";
             this.lblTitulo.Size = new System.Drawing.Size(76, 13);
             this.lblTitulo.TabIndex = 1;
+            this.lblTitulo.Tag = "Principal.Titulo";
             this.lblTitulo.Text = "Panel principal";
             // 
             // lblMarca
@@ -93,10 +97,13 @@ namespace UI
             this.lblMarca.Name = "lblMarca";
             this.lblMarca.Size = new System.Drawing.Size(22, 13);
             this.lblMarca.TabIndex = 0;
+            this.lblMarca.Tag = "Principal.Marca";
             this.lblMarca.Text = "BG";
             // 
             // panelLateral
             // 
+            this.panelLateral.Controls.Add(this.btnGestionIdiomas);
+            this.panelLateral.Controls.Add(this.btnGestionTraducciones);
             this.panelLateral.Controls.Add(this.btnDesbloquearIntegridad);
             this.panelLateral.Controls.Add(this.btnRecalcularDigitos);
             this.panelLateral.Controls.Add(this.btnConsultaBitacora);
@@ -111,13 +118,62 @@ namespace UI
             this.panelLateral.Size = new System.Drawing.Size(165, 585);
             this.panelLateral.TabIndex = 1;
             // 
+            // btnGestionIdiomas
+            // 
+            this.btnGestionIdiomas.Location = new System.Drawing.Point(11, 328);
+            this.btnGestionIdiomas.Margin = new System.Windows.Forms.Padding(2);
+            this.btnGestionIdiomas.Name = "btnGestionIdiomas";
+            this.btnGestionIdiomas.Size = new System.Drawing.Size(135, 34);
+            this.btnGestionIdiomas.TabIndex = 8;
+            this.btnGestionIdiomas.Tag = "Principal.GestionIdiomas";
+            this.btnGestionIdiomas.Text = "Idiomas";
+            this.btnGestionIdiomas.UseVisualStyleBackColor = true;
+            this.btnGestionIdiomas.Click += new System.EventHandler(this.btnGestionIdiomas_Click);
+            // 
+            // btnGestionTraducciones
+            // 
+            this.btnGestionTraducciones.Location = new System.Drawing.Point(11, 274);
+            this.btnGestionTraducciones.Margin = new System.Windows.Forms.Padding(2);
+            this.btnGestionTraducciones.Name = "btnGestionTraducciones";
+            this.btnGestionTraducciones.Size = new System.Drawing.Size(135, 34);
+            this.btnGestionTraducciones.TabIndex = 7;
+            this.btnGestionTraducciones.Tag = "Principal.GestionTraducciones";
+            this.btnGestionTraducciones.Text = "Traducciones";
+            this.btnGestionTraducciones.UseVisualStyleBackColor = true;
+            this.btnGestionTraducciones.Click += new System.EventHandler(this.btnGestionTraducciones_Click);
+            // 
+            // btnDesbloquearIntegridad
+            // 
+            this.btnDesbloquearIntegridad.Location = new System.Drawing.Point(11, 223);
+            this.btnDesbloquearIntegridad.Margin = new System.Windows.Forms.Padding(2);
+            this.btnDesbloquearIntegridad.Name = "btnDesbloquearIntegridad";
+            this.btnDesbloquearIntegridad.Size = new System.Drawing.Size(135, 34);
+            this.btnDesbloquearIntegridad.TabIndex = 6;
+            this.btnDesbloquearIntegridad.Tag = "Principal.DesbloquearIntegridad";
+            this.btnDesbloquearIntegridad.Text = "Desbloquear integridad";
+            this.btnDesbloquearIntegridad.UseVisualStyleBackColor = true;
+            this.btnDesbloquearIntegridad.Click += new System.EventHandler(this.btnDesbloquearIntegridad_Click);
+            // 
+            // btnRecalcularDigitos
+            // 
+            this.btnRecalcularDigitos.Location = new System.Drawing.Point(11, 174);
+            this.btnRecalcularDigitos.Margin = new System.Windows.Forms.Padding(2);
+            this.btnRecalcularDigitos.Name = "btnRecalcularDigitos";
+            this.btnRecalcularDigitos.Size = new System.Drawing.Size(135, 34);
+            this.btnRecalcularDigitos.TabIndex = 5;
+            this.btnRecalcularDigitos.Tag = "Principal.RecalcularDigitos";
+            this.btnRecalcularDigitos.Text = "Recalcular DV";
+            this.btnRecalcularDigitos.UseVisualStyleBackColor = true;
+            this.btnRecalcularDigitos.Click += new System.EventHandler(this.btnRecalcularDigitos_Click);
+            // 
             // btnConsultaBitacora
             // 
-            this.btnConsultaBitacora.Location = new System.Drawing.Point(11, 108);
+            this.btnConsultaBitacora.Location = new System.Drawing.Point(11, 118);
             this.btnConsultaBitacora.Margin = new System.Windows.Forms.Padding(2);
             this.btnConsultaBitacora.Name = "btnConsultaBitacora";
             this.btnConsultaBitacora.Size = new System.Drawing.Size(135, 34);
             this.btnConsultaBitacora.TabIndex = 4;
+            this.btnConsultaBitacora.Tag = "Principal.ConsultaBitacora";
             this.btnConsultaBitacora.Text = "Bitácora";
             this.btnConsultaBitacora.UseVisualStyleBackColor = true;
             this.btnConsultaBitacora.Click += new System.EventHandler(this.btnConsultaBitacora_Click);
@@ -129,28 +185,31 @@ namespace UI
             this.btnGestionUsuarios.Name = "btnGestionUsuarios";
             this.btnGestionUsuarios.Size = new System.Drawing.Size(135, 34);
             this.btnGestionUsuarios.TabIndex = 3;
+            this.btnGestionUsuarios.Tag = "Principal.GestionUsuarios";
             this.btnGestionUsuarios.Text = "Gestión de usuarios";
             this.btnGestionUsuarios.UseVisualStyleBackColor = true;
             this.btnGestionUsuarios.Click += new System.EventHandler(this.btnGestionUsuarios_Click);
             // 
             // btnSalir
             // 
-            this.btnSalir.Location = new System.Drawing.Point(11, 315);
+            this.btnSalir.Location = new System.Drawing.Point(11, 422);
             this.btnSalir.Margin = new System.Windows.Forms.Padding(2);
             this.btnSalir.Name = "btnSalir";
             this.btnSalir.Size = new System.Drawing.Size(135, 34);
             this.btnSalir.TabIndex = 2;
+            this.btnSalir.Tag = "Principal.Salir";
             this.btnSalir.Text = "Salir";
             this.btnSalir.UseVisualStyleBackColor = true;
             this.btnSalir.Click += new System.EventHandler(this.btnSalir_Click);
             // 
             // btnCerrarSesion
             // 
-            this.btnCerrarSesion.Location = new System.Drawing.Point(11, 267);
+            this.btnCerrarSesion.Location = new System.Drawing.Point(11, 375);
             this.btnCerrarSesion.Margin = new System.Windows.Forms.Padding(2);
             this.btnCerrarSesion.Name = "btnCerrarSesion";
             this.btnCerrarSesion.Size = new System.Drawing.Size(135, 34);
             this.btnCerrarSesion.TabIndex = 1;
+            this.btnCerrarSesion.Tag = "Principal.CerrarSesion";
             this.btnCerrarSesion.Text = "Cerrar sesión";
             this.btnCerrarSesion.UseVisualStyleBackColor = true;
             this.btnCerrarSesion.Click += new System.EventHandler(this.btnCerrarSesion_Click);
@@ -163,6 +222,7 @@ namespace UI
             this.lblSeccion.Name = "lblSeccion";
             this.lblSeccion.Size = new System.Drawing.Size(65, 13);
             this.lblSeccion.TabIndex = 0;
+            this.lblSeccion.Tag = "Principal.Seccion";
             this.lblSeccion.Text = "Navegación";
             // 
             // panelContenido
@@ -195,6 +255,7 @@ namespace UI
             this.lblResumenTexto.Name = "lblResumenTexto";
             this.lblResumenTexto.Size = new System.Drawing.Size(291, 60);
             this.lblResumenTexto.TabIndex = 1;
+            this.lblResumenTexto.Tag = "Principal.ResumenTexto";
             this.lblResumenTexto.Text = "Panel para acceder a los diferentes modulos del sistema a medida que los vayamos " +
     "implementando.";
             // 
@@ -206,6 +267,7 @@ namespace UI
             this.lblResumenTitulo.Name = "lblResumenTitulo";
             this.lblResumenTitulo.Size = new System.Drawing.Size(95, 13);
             this.lblResumenTitulo.TabIndex = 0;
+            this.lblResumenTitulo.Tag = "Principal.ResumenTitulo";
             this.lblResumenTitulo.Text = "Estado del sistema";
             // 
             // lblDescripcion
@@ -216,6 +278,7 @@ namespace UI
             this.lblDescripcion.Name = "lblDescripcion";
             this.lblDescripcion.Size = new System.Drawing.Size(306, 13);
             this.lblDescripcion.TabIndex = 1;
+            this.lblDescripcion.Tag = "Principal.Descripcion";
             this.lblDescripcion.Text = "La sesión fue iniciada correctamente. Este es el panel principal.";
             // 
             // lblBienvenida
@@ -226,29 +289,8 @@ namespace UI
             this.lblBienvenida.Name = "lblBienvenida";
             this.lblBienvenida.Size = new System.Drawing.Size(109, 13);
             this.lblBienvenida.TabIndex = 0;
+            this.lblBienvenida.Tag = "Principal.Bienvenida";
             this.lblBienvenida.Text = "Bienvenido al sistema";
-            // 
-            // btnRecalcularDigitos
-            // 
-            this.btnRecalcularDigitos.Location = new System.Drawing.Point(11, 158);
-            this.btnRecalcularDigitos.Margin = new System.Windows.Forms.Padding(2);
-            this.btnRecalcularDigitos.Name = "btnRecalcularDigitos";
-            this.btnRecalcularDigitos.Size = new System.Drawing.Size(135, 34);
-            this.btnRecalcularDigitos.TabIndex = 5;
-            this.btnRecalcularDigitos.Text = "Recalcular DV";
-            this.btnRecalcularDigitos.UseVisualStyleBackColor = true;
-            this.btnRecalcularDigitos.Click += new System.EventHandler(this.btnRecalcularDigitos_Click);
-            // 
-            // btnDesbloquearIntegridad
-            // 
-            this.btnDesbloquearIntegridad.Location = new System.Drawing.Point(11, 212);
-            this.btnDesbloquearIntegridad.Margin = new System.Windows.Forms.Padding(2);
-            this.btnDesbloquearIntegridad.Name = "btnDesbloquearIntegridad";
-            this.btnDesbloquearIntegridad.Size = new System.Drawing.Size(135, 34);
-            this.btnDesbloquearIntegridad.TabIndex = 6;
-            this.btnDesbloquearIntegridad.Text = "Desbloquear integridad";
-            this.btnDesbloquearIntegridad.UseVisualStyleBackColor = true;
-            this.btnDesbloquearIntegridad.Click += new System.EventHandler(this.btnDesbloquearIntegridad_Click);
             // 
             // FrmPrincipal
             // 
@@ -262,6 +304,7 @@ namespace UI
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "FrmPrincipal";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Tag = "Principal.TituloVentana";
             this.Text = "FrmPrincipal";
             this.Load += new System.EventHandler(this.FrmPrincipal_Load);
             this.panelHeader.ResumeLayout(false);
@@ -296,5 +339,7 @@ namespace UI
         private System.Windows.Forms.Button btnConsultaBitacora;
         private System.Windows.Forms.Button btnRecalcularDigitos;
         private System.Windows.Forms.Button btnDesbloquearIntegridad;
+        private System.Windows.Forms.Button btnGestionTraducciones;
+        private System.Windows.Forms.Button btnGestionIdiomas;
     }
 }
