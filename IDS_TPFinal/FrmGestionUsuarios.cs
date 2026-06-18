@@ -61,11 +61,12 @@ namespace IDS_TPFinal
             string nombreUsuario = txtNombreUsuario.Text;
 
             FrmHistorialEmailUsuario frmHistorialEmailUsuario =
-                new FrmHistorialEmailUsuario(
-                    _gestionUsuariosAppService,
-                    idUsuario,
-                    nombreUsuario
-                );
+            new FrmHistorialEmailUsuario(
+                _gestionUsuariosAppService,
+                idUsuario,
+                nombreUsuario,
+                _idiomaAppService
+            );
 
             frmHistorialEmailUsuario.ShowDialog(this);
 
