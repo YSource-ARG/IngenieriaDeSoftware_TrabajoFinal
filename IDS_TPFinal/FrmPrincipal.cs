@@ -193,7 +193,7 @@ namespace UI
 
         private void btnGestionUsuarios_Click(object sender, EventArgs e)
         {
-            FrmGestionUsuarios frmGestionUsuarios = new FrmGestionUsuarios(_gestionUsuariosAppService);
+            FrmGestionUsuarios frmGestionUsuarios = new FrmGestionUsuarios(_gestionUsuariosAppService, _idiomaAppService);
             MostrarFormularioDialogoCentrado(frmGestionUsuarios);
         }
 

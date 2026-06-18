@@ -8,6 +8,11 @@ namespace IDS_TPFinal
         // Inicia el "Alta de usuario" tomando los datos ingresados
         private void CrearUsuario()
         {
+            if (!ValidarDatosAltaUsuario())
+            {
+                return;
+            }
+
             _gestionUsuariosAppService.CrearUsuario(
                 txtNombreUsuario.Text,
                 txtNombreCompleto.Text,
@@ -16,14 +21,72 @@ namespace IDS_TPFinal
                 ObtenerEstadoSeleccionado()
             );
 
-            MessageBox.Show(
+            MostrarInformacion(
+                "Mensajes.Usuarios.UsuarioCreado",
                 "Usuario creado correctamente.",
-                "Gestión de usuarios",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
+                "Mensajes.Titulos.GestionUsuarios",
+                "Gestión de usuarios"
             );
 
             CargarUsuarios();
+        }
+
+
+        private bool ValidarDatosAltaUsuario()
+        {
+            if (string.IsNullOrWhiteSpace(txtNombreUsuario.Text))
+            {
+                MostrarAdvertencia(
+                    "Mensajes.Usuarios.NombreUsuarioRequerido",
+                    "El nombre de usuario no puede estar vacío.",
+                    "Mensajes.Titulos.Validacion",
+                    "Validación"
+                );
+
+                txtNombreUsuario.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtNombreCompleto.Text))
+            {
+                MostrarAdvertencia(
+                    "Mensajes.Usuarios.NombreCompletoRequerido",
+                    "El nombre completo no puede estar vacío.",
+                    "Mensajes.Titulos.Validacion",
+                    "Validación"
+                );
+
+                txtNombreCompleto.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtEmail.Text))
+            {
+                MostrarAdvertencia(
+                    "Mensajes.Usuarios.EmailRequerido",
+                    "El email no puede estar vacío.",
+                    "Mensajes.Titulos.Validacion",
+                    "Validación"
+                );
+
+                txtEmail.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtPassword.Text))
+            {
+                MostrarAdvertencia(
+                    "Mensajes.Usuarios.PasswordRequerida",
+                    "La contraseña no puede estar vacía.",
+                    "Mensajes.Titulos.Validacion",
+                    "Validación"
+                );
+
+                txtPassword.Focus();
+                return false;
+            }
+
+            return true;
         }
 
         // Inicia la "Modificación de Usuario" en base a los datos ingresados para el usuario seleccionado.
@@ -38,11 +101,11 @@ namespace IDS_TPFinal
                 ObtenerEstadoSeleccionado()
             );
 
-            MessageBox.Show(
+            MostrarInformacion(
+                "Mensajes.Usuarios.UsuarioModificado",
                 "Usuario modificado correctamente.",
-                "Gestión de usuarios",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
+                "Mensajes.Titulos.GestionUsuarios",
+                "Gestión de usuarios"
             );
 
             CargarUsuarios();
@@ -55,13 +118,26 @@ namespace IDS_TPFinal
             bool usuarioActivo = ObtenerEstadoSeleccionado();
             bool nuevoEstado = !usuarioActivo;
 
-            string accion = nuevoEstado ? "reactivar" : "inhabilitar";
             string nombreUsuario = txtNombreUsuario.Text;
 
-            DialogResult respuesta = MessageBox.Show(
-                $"¿Confirmás que querés {accion} el usuario '{nombreUsuario}'?",
+            string claveConfirmacion = nuevoEstado
+                ? "Mensajes.Usuarios.ConfirmarReactivar"
+                : "Mensajes.Usuarios.ConfirmarInhabilitar";
+
+            string mensajeConfirmacionPorDefecto = nuevoEstado
+                ? "¿Confirmás que querés reactivar el usuario '{0}'?"
+                : "¿Confirmás que querés inhabilitar el usuario '{0}'?";
+
+            string mensajeConfirmacion = string.Format(
+                TraducirMensaje(claveConfirmacion, mensajeConfirmacionPorDefecto),
+                nombreUsuario
+            );
+
+            DialogResult respuesta = MostrarConfirmacion(
+                null,
+                mensajeConfirmacion,
+                "Mensajes.Titulos.ConfirmarCambioEstado",
                 "Confirmar cambio de estado",
-                MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question
             );
 
@@ -72,13 +148,19 @@ namespace IDS_TPFinal
 
             _gestionUsuariosAppService.CambiarEstadoUsuario(idUsuario, nuevoEstado);
 
-            MessageBox.Show(
-                nuevoEstado
-                    ? "Usuario reactivado correctamente."
-                    : "Usuario inhabilitado correctamente.",
-                "Gestión de usuarios",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
+            string claveResultado = nuevoEstado
+                ? "Mensajes.Usuarios.UsuarioReactivado"
+                : "Mensajes.Usuarios.UsuarioInhabilitado";
+
+            string mensajeResultado = nuevoEstado
+                ? "Usuario reactivado correctamente."
+                : "Usuario inhabilitado correctamente.";
+
+            MostrarInformacion(
+                claveResultado,
+                mensajeResultado,
+                "Mensajes.Titulos.GestionUsuarios",
+                "Gestión de usuarios"
             );
 
             CargarUsuarios();
@@ -90,10 +172,19 @@ namespace IDS_TPFinal
             Guid idUsuario = ObtenerIdUsuarioSeleccionado();
             string nombreUsuario = txtNombreUsuario.Text;
 
-            DialogResult respuesta = MessageBox.Show(
-                $"¿Confirmás que querés blanquear la contraseña del usuario '{nombreUsuario}'?",
+            string mensajeConfirmacion = string.Format(
+                TraducirMensaje(
+                    "Mensajes.Usuarios.ConfirmarBlanquearPassword",
+                    "¿Confirmás que querés blanquear la contraseña del usuario '{0}'?"
+                ),
+                nombreUsuario
+            );
+
+            DialogResult respuesta = MostrarConfirmacion(
+                null,
+                mensajeConfirmacion,
+                "Mensajes.Titulos.ConfirmarBlanqueoPassword",
                 "Confirmar blanqueo de contraseña",
-                MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question
             );
 
@@ -104,11 +195,20 @@ namespace IDS_TPFinal
 
             string passwordTemporal = _gestionUsuariosAppService.BlanquearPassword(idUsuario);
 
-            MessageBox.Show(
-                $"Contraseña blanqueada correctamente.\n\nUsuario: {nombreUsuario}\nContraseña temporal: {passwordTemporal}\n\nAl ingresar, el usuario deberá cambiar su contraseña.",
-                "Gestión de usuarios",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
+            string mensajeResultado = string.Format(
+                TraducirMensaje(
+                    "Mensajes.Usuarios.PasswordBlanqueada",
+                    "Contraseña blanqueada correctamente.\n\nUsuario: {0}\nContraseña temporal: {1}\n\nAl ingresar, el usuario deberá cambiar su contraseña."
+                ),
+                nombreUsuario,
+                passwordTemporal
+            );
+
+            MostrarInformacion(
+                null,
+                mensajeResultado,
+                "Mensajes.Titulos.GestionUsuarios",
+                "Gestión de usuarios"
             );
 
             CargarUsuarios();

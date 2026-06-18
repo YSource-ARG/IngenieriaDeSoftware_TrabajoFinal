@@ -24,7 +24,9 @@ namespace IDS_TPFinal
                 if (_gestionUsuariosAppService == null)
                 {
                     MostrarError(
+                        "Mensajes.Usuarios.ServicioGestionNoRecibido",
                         "El formulario no recibió el servicio de gestión de usuarios.",
+                        "Mensajes.Titulos.ErrorConfiguracion",
                         "Error de configuración"
                     );
 
@@ -44,13 +46,20 @@ namespace IDS_TPFinal
                 }
 
                 MostrarAdvertencia(
+                    "Mensajes.Usuarios.OperacionGuardarNoDisponible",
                     "Seleccioná una operación válida antes de guardar.",
+                    "Mensajes.Titulos.OperacionNoDisponible",
                     "Operación no disponible"
                 );
             }
             catch (Exception ex)
             {
-                MostrarAdvertencia(ex.Message, "No se pudo guardar el usuario");
+                MostrarAdvertencia(
+                    null,
+                    ex.Message,
+                    "Mensajes.Titulos.NoPudoGuardarUsuario",
+                    "No se pudo guardar el usuario"
+                );
             }
         }
 
@@ -64,7 +73,9 @@ namespace IDS_TPFinal
             if (!HayUsuarioSeleccionado())
             {
                 MostrarAdvertencia(
+                    "Mensajes.Usuarios.SeleccionarUsuarioEditar",
                     "Seleccioná un usuario de la grilla antes de editar.",
+                    "Mensajes.Titulos.UsuarioNoSeleccionado",
                     "Usuario no seleccionado"
                 );
 
@@ -82,7 +93,9 @@ namespace IDS_TPFinal
                 if (_modoActual == ModoFormularioUsuario.Edicion)
                 {
                     MostrarAdvertencia(
+                        "Mensajes.Usuarios.EdicionEnCursoCambioEstado",
                         "Terminá la edición actual guardando o cancelando antes de cambiar el estado del usuario.",
+                        "Mensajes.Titulos.EdicionEnCurso",
                         "Edición en curso"
                     );
 
@@ -92,7 +105,9 @@ namespace IDS_TPFinal
                 if (!HayUsuarioSeleccionado())
                 {
                     MostrarAdvertencia(
+                        "Mensajes.Usuarios.SeleccionarUsuarioCambiarEstado",
                         "Seleccioná un usuario de la grilla antes de cambiar su estado.",
+                        "Mensajes.Titulos.UsuarioNoSeleccionado",
                         "Usuario no seleccionado"
                     );
 
@@ -103,7 +118,12 @@ namespace IDS_TPFinal
             }
             catch (Exception ex)
             {
-                MostrarAdvertencia(ex.Message, "No se pudo cambiar el estado del usuario");
+                MostrarAdvertencia(
+                    null,
+                    ex.Message,
+                    "Mensajes.Titulos.NoPudoCambiarEstadoUsuario",
+                    "No se pudo cambiar el estado del usuario"
+                );
             }
         }
 
@@ -114,7 +134,9 @@ namespace IDS_TPFinal
                 if (!HayUsuarioSeleccionado())
                 {
                     MostrarAdvertencia(
+                        "Mensajes.Usuarios.SeleccionarUsuarioBlanquearPassword",
                         "Seleccioná un usuario de la grilla antes de blanquear su contraseña.",
+                        "Mensajes.Titulos.UsuarioNoSeleccionado",
                         "Usuario no seleccionado"
                     );
 
@@ -125,7 +147,12 @@ namespace IDS_TPFinal
             }
             catch (Exception ex)
             {
-                MostrarAdvertencia(ex.Message, "No se pudo blanquear la contraseña");
+                MostrarAdvertencia(
+                    null,
+                    ex.Message,
+                    "Mensajes.Titulos.NoPudoBlanquearPassword",
+                    "No se pudo blanquear la contraseña"
+                );
             }
         }
 
