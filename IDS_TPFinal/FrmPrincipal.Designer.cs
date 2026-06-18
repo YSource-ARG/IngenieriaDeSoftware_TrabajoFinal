@@ -30,6 +30,8 @@ namespace UI
         private void InitializeComponent()
         {
             this.panelHeader = new System.Windows.Forms.Panel();
+            this.cboIdiomaPrincipal = new System.Windows.Forms.ComboBox();
+            this.lblIdiomaPrincipal = new System.Windows.Forms.Label();
             this.lblSubtitulo = new System.Windows.Forms.Label();
             this.lblTitulo = new System.Windows.Forms.Label();
             this.lblMarca = new System.Windows.Forms.Label();
@@ -67,6 +69,25 @@ namespace UI
             this.panelHeader.Size = new System.Drawing.Size(735, 77);
             this.panelHeader.TabIndex = 0;
             // 
+            // cboIdiomaPrincipal
+            // 
+            this.cboIdiomaPrincipal.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboIdiomaPrincipal.FormattingEnabled = true;
+            this.cboIdiomaPrincipal.Location = new System.Drawing.Point(18, 552);
+            this.cboIdiomaPrincipal.Name = "cboIdiomaPrincipal";
+            this.cboIdiomaPrincipal.Size = new System.Drawing.Size(121, 21);
+            this.cboIdiomaPrincipal.TabIndex = 4;
+            // 
+            // lblIdiomaPrincipal
+            // 
+            this.lblIdiomaPrincipal.AutoSize = true;
+            this.lblIdiomaPrincipal.Location = new System.Drawing.Point(15, 535);
+            this.lblIdiomaPrincipal.Name = "lblIdiomaPrincipal";
+            this.lblIdiomaPrincipal.Size = new System.Drawing.Size(38, 13);
+            this.lblIdiomaPrincipal.TabIndex = 3;
+            this.lblIdiomaPrincipal.Tag = "Principal.Idioma";
+            this.lblIdiomaPrincipal.Text = "Idioma";
+            // 
             // lblSubtitulo
             // 
             this.lblSubtitulo.AutoSize = true;
@@ -102,6 +123,8 @@ namespace UI
             // 
             // panelLateral
             // 
+            this.panelLateral.Controls.Add(this.cboIdiomaPrincipal);
+            this.panelLateral.Controls.Add(this.lblIdiomaPrincipal);
             this.panelLateral.Controls.Add(this.btnGestionIdiomas);
             this.panelLateral.Controls.Add(this.btnGestionTraducciones);
             this.panelLateral.Controls.Add(this.btnDesbloquearIntegridad);
@@ -341,5 +364,7 @@ namespace UI
         private System.Windows.Forms.Button btnDesbloquearIntegridad;
         private System.Windows.Forms.Button btnGestionTraducciones;
         private System.Windows.Forms.Button btnGestionIdiomas;
+        private System.Windows.Forms.ComboBox cboIdiomaPrincipal;
+        private System.Windows.Forms.Label lblIdiomaPrincipal;
     }
 }
