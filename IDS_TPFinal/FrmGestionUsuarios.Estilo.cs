@@ -12,6 +12,7 @@ namespace IDS_TPFinal
             AplicarEstiloVisual();
             ConfigurarEstadoInicial();
             CargarUsuarios();
+            ActualizarIdioma();
         }
 
         private void AplicarEstiloVisual()
@@ -73,11 +74,11 @@ namespace IDS_TPFinal
             TemaVisual.AplicarBotonSecundario(btnCancelar);
             TemaVisual.AplicarBotonSecundario(btnCerrar);
 
-            AplicarBotonAccion(btnNuevo, "+\nNuevo");
-            AplicarBotonAccion(btnEditar, "✎\nEditar");
-            AplicarBotonAccion(btnInhabilitarReactivar, "⏻\nInhabilitar/Reactivar");
-            AplicarBotonAccion(btnRestablecerPassword, "🔑\nRestablecer contraseña");
-            AplicarBotonAccion(btnHistorialEmail, "✉\nHistorial email");
+            AplicarBotonAccion(btnNuevo, "+\n" + TraducirMensaje("Usuarios.Nuevo", "Nuevo"));
+            AplicarBotonAccion(btnEditar, "✎\n" + TraducirMensaje("Usuarios.Editar", "Editar"));
+            AplicarBotonAccion(btnInhabilitarReactivar, "⏻\n" + TraducirMensaje("Usuarios.InhabilitarReactivar", "Inhabilitar/Reactivar"));
+            AplicarBotonAccion(btnRestablecerPassword, "🔑\n" + TraducirMensaje("Usuarios.RestablecerPassword", "Restablecer contraseña"));
+            AplicarBotonAccion(btnHistorialEmail, "✉\n" + TraducirMensaje("Usuarios.HistorialEmail", "Historial email"));
         }
 
         private void ConfigurarEstadoInicial()
@@ -88,14 +89,31 @@ namespace IDS_TPFinal
 
             txtPassword.UseSystemPasswordChar = true;
 
-            cmbEstado.Items.Clear();
-            cmbEstado.Items.Add("Activo");
-            cmbEstado.Items.Add("Inactivo");
+            ConfigurarEstadoCombo();
+        }
 
-            if (cmbEstado.Items.Count > 0)
-            {
-                cmbEstado.SelectedIndex = 0;
-            }
+        private void ConfigurarEstadoCombo()
+        {
+            bool estadoSeleccionado = ObtenerEstadoSeleccionado();
+
+            cmbEstado.Items.Clear();
+            cmbEstado.DisplayMember = "Texto";
+
+            cmbEstado.Items.Add(
+                new EstadoUsuarioCombo(
+                    true,
+                    TraducirMensaje("Usuarios.Estado.Activo", "Activo")
+                )
+            );
+
+            cmbEstado.Items.Add(
+                new EstadoUsuarioCombo(
+                    false,
+                    TraducirMensaje("Usuarios.Estado.Inactivo", "Inactivo")
+                )
+            );
+
+            SeleccionarEstadoCombo(estadoSeleccionado);
         }
 
         private void AplicarPanel(Panel panel)

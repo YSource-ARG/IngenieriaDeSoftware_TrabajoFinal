@@ -1,3 +1,4 @@
+using BE;
 using BLL.Autenticacion;
 using BLL.Bitacora;
 using IDS_TPFinal;
@@ -21,7 +22,9 @@ namespace UI
         private readonly IIdiomaAppService _idiomaAppService;
         private readonly GestionTraduccionesAppService _gestionTraduccionesAppService;
         private readonly GestionIdiomasAppService _gestionIdiomasAppService;
+
         private bool _cerrandoSesion;
+        private bool _cargandoIdiomasPrincipal;
 
         public bool CerrandoSesion => _cerrandoSesion;
 
@@ -79,6 +82,10 @@ namespace UI
 
             InitializeComponent();
             AplicarEstiloVisual();
+
+            CargarIdiomasPrincipal();
+            cboIdiomaPrincipal.SelectedIndexChanged += cboIdiomaPrincipal_SelectedIndexChanged;
+
             _idiomaAppService.Suscribir(this);
             ActualizarIdioma();
 
@@ -88,6 +95,100 @@ namespace UI
         public void ActualizarIdioma()
         {
             TraductorControles.TraducirFormulario(this, _idiomaAppService);
+            SeleccionarIdiomaActualEnCombo();
+        }
+
+        private void CargarIdiomasPrincipal()
+        {
+            _cargandoIdiomasPrincipal = true;
+
+            try
+            {
+                var idiomas = _idiomaAppService.ListarIdiomasActivos();
+
+                cboIdiomaPrincipal.DataSource = null;
+                cboIdiomaPrincipal.DisplayMember = "Nombre";
+                cboIdiomaPrincipal.ValueMember = "Codigo";
+                cboIdiomaPrincipal.DataSource = idiomas;
+                cboIdiomaPrincipal.Enabled = idiomas.Count > 0;
+
+                SeleccionarIdiomaActualEnCombo();
+            }
+            finally
+            {
+                _cargandoIdiomasPrincipal = false;
+            }
+        }
+
+        private void SeleccionarIdiomaActualEnCombo()
+        {
+            if (_idiomaAppService == null || _idiomaAppService.IdiomaActual == null)
+            {
+                return;
+            }
+
+            if (cboIdiomaPrincipal == null)
+            {
+                return;
+            }
+
+            bool estadoAnterior = _cargandoIdiomasPrincipal;
+            _cargandoIdiomasPrincipal = true;
+
+            try
+            {
+                foreach (object item in cboIdiomaPrincipal.Items)
+                {
+                    Idioma idioma = item as Idioma;
+
+                    if (idioma != null && idioma.Id == _idiomaAppService.IdiomaActual.Id)
+                    {
+                        cboIdiomaPrincipal.SelectedItem = idioma;
+                        return;
+                    }
+                }
+            }
+            finally
+            {
+                _cargandoIdiomasPrincipal = estadoAnterior;
+            }
+        }
+
+        private void cboIdiomaPrincipal_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_cargandoIdiomasPrincipal)
+            {
+                return;
+            }
+
+            Idioma idiomaSeleccionado = cboIdiomaPrincipal.SelectedItem as Idioma;
+
+            if (idiomaSeleccionado == null)
+            {
+                return;
+            }
+
+            if (_idiomaAppService.IdiomaActual != null &&
+                _idiomaAppService.IdiomaActual.Id == idiomaSeleccionado.Id)
+            {
+                return;
+            }
+
+            var resultado = _idiomaAppService.CambiarIdioma(idiomaSeleccionado.Codigo);
+
+            if (!resultado.Exitoso)
+            {
+                MensajeTraducido.Mostrar(
+                    this,
+                    _idiomaAppService,
+                    "Mensajes.Idioma.ErrorCambio",
+                    resultado.Mensaje,
+                    "Mensajes.Titulos.Idioma",
+                    "Idioma",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            }
         }
 
         private void FrmPrincipal_FormClosed(object sender, FormClosedEventArgs e)
@@ -137,6 +238,15 @@ namespace UI
             lblResumenTexto.ForeColor = TemaVisual.TextoSecundario;
             lblResumenTexto.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
 
+            lblIdiomaPrincipal.ForeColor = TemaVisual.TextoSecundario;
+            lblIdiomaPrincipal.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+
+            cboIdiomaPrincipal.DropDownStyle = ComboBoxStyle.DropDownList;
+            cboIdiomaPrincipal.BackColor = TemaVisual.FondoInput;
+            cboIdiomaPrincipal.ForeColor = TemaVisual.TextoPrincipal;
+            cboIdiomaPrincipal.FlatStyle = FlatStyle.Flat;
+            cboIdiomaPrincipal.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+
             ConfigurarBotonPrincipal(btnCerrarSesion);
             ConfigurarBotonSecundario(btnSalir);
             ConfigurarBotonSecundario(btnGestionUsuarios);
@@ -179,8 +289,6 @@ namespace UI
             boton.Cursor = Cursors.Hand;
         }
 
-        // Al cerrarse el formulario principal, se decide si volver al login
-        // porque el usuario cerró sesión, o cerrar toda la aplicación.
         private void btnCerrarSesion_Click(object sender, EventArgs e)
         {
             _cerrarSesionAppService.CerrarSesion();
@@ -251,8 +359,6 @@ namespace UI
 
             try
             {
-                // El administrador acepta el estado actual de la base
-                // y genera nuevamente los DVH de cada usuario y el DVV general.
                 _integridadService.RecalcularDigitosUsuarios(
                     null,
                     "admin"
@@ -304,9 +410,6 @@ namespace UI
 
             try
             {
-                // El desbloqueo solo limpia el bloqueo preventivo por integridad.
-                // No modifica el campo Activo, porque ese estado pertenece
-                // a la administración normal de usuarios.
                 _integridadService.DesbloquearUsuariosPorIntegridad(
                     null,
                     "admin"

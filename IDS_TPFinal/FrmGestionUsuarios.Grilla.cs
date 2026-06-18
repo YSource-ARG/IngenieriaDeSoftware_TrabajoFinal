@@ -5,7 +5,6 @@ namespace IDS_TPFinal
 {
     public partial class FrmGestionUsuarios
     {
-        // Se consulta los usuarios mediante GestionUsuariosAppService y los muestra en la grilla
         private void CargarUsuarios()
         {
             if (_gestionUsuariosAppService == null)
@@ -17,7 +16,6 @@ namespace IDS_TPFinal
 
             try
             {
-                // Se pide los usuarios a GestionUsuariosAppServices en la BLL
                 var usuarios = _gestionUsuariosAppService.ListarUsuarios(null, null);
 
                 dgvUsuarios.DataSource = usuarios
@@ -27,7 +25,10 @@ namespace IDS_TPFinal
                         usuario.NombreUsuario,
                         usuario.NombreCompleto,
                         usuario.Email,
-                        Estado = usuario.Activo ? "Activo" : "Inactivo",
+                        usuario.Activo,
+                        Estado = usuario.Activo
+                            ? TraducirMensaje("Usuarios.Estado.Activo", "Activo")
+                            : TraducirMensaje("Usuarios.Estado.Inactivo", "Inactivo"),
                         FechaCreacion = usuario.FechaCreacion.ToString("dd/MM/yyyy HH:mm"),
                         UltimoAcceso = usuario.FechaUltimoAcceso.HasValue
                             ? usuario.FechaUltimoAcceso.Value.ToString("dd/MM/yyyy HH:mm")
@@ -46,7 +47,6 @@ namespace IDS_TPFinal
             }
         }
 
-        // Lógica para extrar y plasmar datos de un usuario seleccionado de la grilla
         private void CargarUsuarioSeleccionadoEnFormulario()
         {
             if (dgvUsuarios.CurrentRow == null)
@@ -61,12 +61,19 @@ namespace IDS_TPFinal
             txtFechaCreacion.Text = ObtenerValorCeldaActual("FechaCreacion");
             txtFechaUltimoAcceso.Text = ObtenerValorCeldaActual("UltimoAcceso");
 
-            string estado = ObtenerValorCeldaActual("Estado");
+            bool activo = true;
 
-            if (estado == "Activo" || estado == "Inactivo")
+            if (dgvUsuarios.Columns.Contains("Activo"))
             {
-                cmbEstado.SelectedItem = estado;
+                object valorActivo = dgvUsuarios.CurrentRow.Cells["Activo"].Value;
+
+                if (valorActivo is bool)
+                {
+                    activo = (bool)valorActivo;
+                }
             }
+
+            SeleccionarEstadoCombo(activo);
 
             txtPassword.Clear();
             AplicarModoConsulta();
@@ -81,12 +88,46 @@ namespace IDS_TPFinal
 
             dgvUsuarios.Columns["Id"].Visible = false;
 
-            ConfigurarColumna("NombreUsuario", "Usuario", 90);
-            ConfigurarColumna("NombreCompleto", "Nombre completo", 150);
-            ConfigurarColumna("Email", "Email", 150);
-            ConfigurarColumna("Estado", "Estado", 70);
-            ConfigurarColumna("FechaCreacion", "Fecha creación", 110);
-            ConfigurarColumna("UltimoAcceso", "Último acceso", 110);
+            if (dgvUsuarios.Columns.Contains("Activo"))
+            {
+                dgvUsuarios.Columns["Activo"].Visible = false;
+            }
+
+            ConfigurarColumna(
+                "NombreUsuario",
+                TraducirMensaje("Usuarios.Grilla.Usuario", "Usuario"),
+                90
+            );
+
+            ConfigurarColumna(
+                "NombreCompleto",
+                TraducirMensaje("Usuarios.Grilla.NombreCompleto", "Nombre completo"),
+                150
+            );
+
+            ConfigurarColumna(
+                "Email",
+                TraducirMensaje("Usuarios.Grilla.Email", "Email"),
+                150
+            );
+
+            ConfigurarColumna(
+                "Estado",
+                TraducirMensaje("Usuarios.Grilla.Estado", "Estado"),
+                70
+            );
+
+            ConfigurarColumna(
+                "FechaCreacion",
+                TraducirMensaje("Usuarios.Grilla.FechaCreacion", "Fecha creación"),
+                110
+            );
+
+            ConfigurarColumna(
+                "UltimoAcceso",
+                TraducirMensaje("Usuarios.Grilla.UltimoAcceso", "Último acceso"),
+                110
+            );
         }
 
         private void ConfigurarColumna(string nombreColumna, string textoCabecera, float anchoRelativo)

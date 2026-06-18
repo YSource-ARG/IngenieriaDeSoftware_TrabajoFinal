@@ -8,7 +8,7 @@ using UI.Idiomas;
 
 namespace IDS_TPFinal
 {
-    public partial class FrmHistorialEmailUsuario : Form
+    public partial class FrmHistorialEmailUsuario : Form, IObservadorIdioma
     {
         private readonly GestionUsuariosAppService _gestionUsuariosAppService;
         private readonly IIdiomaAppService _idiomaAppService;
@@ -50,13 +50,52 @@ namespace IDS_TPFinal
             _nombreUsuario = nombreUsuario;
             _idiomaAppService = idiomaAppService;
 
+            ConfigurarTagsTraduccion();
+
+            if (_idiomaAppService != null)
+            {
+                _idiomaAppService.Suscribir(this);
+                ActualizarIdioma();
+            }
+
             this.Load += FrmHistorialEmailUsuario_Load;
+        }
+
+        private void ConfigurarTagsTraduccion()
+        {
+            this.Tag = "HistorialEmail.TituloVentana";
+
+            lblTitulo.Tag = "HistorialEmail.Titulo";
+            btnRestaurarEmail.Tag = "HistorialEmail.RestaurarEmailSeleccionado";
+            btnCerrar.Tag = "HistorialEmail.Cerrar";
+        }
+
+        public void ActualizarIdioma()
+        {
+            if (_idiomaAppService == null)
+            {
+                return;
+            }
+
+            TraductorControles.TraducirFormulario(this, _idiomaAppService);
+            ConfigurarColumnas();
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (_idiomaAppService != null)
+            {
+                _idiomaAppService.Desuscribir(this);
+            }
+
+            base.OnFormClosed(e);
         }
 
         private void FrmHistorialEmailUsuario_Load(object sender, EventArgs e)
         {
             AplicarEstiloVisual();
             CargarHistorial();
+            ActualizarIdioma();
         }
 
         private void CargarHistorial()
@@ -73,26 +112,56 @@ namespace IDS_TPFinal
                 .ToList();
 
             dgvHistorialEmail.DataSource = historial;
+            ConfigurarColumnas();
+        }
 
-            if (dgvHistorialEmail.Columns.Contains("EmailAnterior"))
+        private void ConfigurarColumnas()
+        {
+            if (dgvHistorialEmail.Columns.Count == 0)
             {
-                dgvHistorialEmail.Columns["EmailAnterior"].HeaderText = "Email anterior";
+                return;
             }
 
-            if (dgvHistorialEmail.Columns.Contains("EmailNuevo"))
+            ConfigurarColumna(
+                "EmailAnterior",
+                "HistorialEmail.Grilla.EmailAnterior",
+                "Email anterior"
+            );
+
+            ConfigurarColumna(
+                "EmailNuevo",
+                "HistorialEmail.Grilla.EmailNuevo",
+                "Email nuevo"
+            );
+
+            ConfigurarColumna(
+                "FechaCambio",
+                "HistorialEmail.Grilla.FechaCambio",
+                "Fecha cambio"
+            );
+
+            ConfigurarColumna(
+                "UsuarioCambio",
+                "HistorialEmail.Grilla.UsuarioCambio",
+                "Usuario que cambió"
+            );
+        }
+
+        private void ConfigurarColumna(
+            string nombreColumna,
+            string claveTraduccion,
+            string textoPorDefecto)
+        {
+            if (!dgvHistorialEmail.Columns.Contains(nombreColumna))
             {
-                dgvHistorialEmail.Columns["EmailNuevo"].HeaderText = "Email nuevo";
+                return;
             }
 
-            if (dgvHistorialEmail.Columns.Contains("FechaCambio"))
-            {
-                dgvHistorialEmail.Columns["FechaCambio"].HeaderText = "Fecha cambio";
-            }
-
-            if (dgvHistorialEmail.Columns.Contains("UsuarioCambio"))
-            {
-                dgvHistorialEmail.Columns["UsuarioCambio"].HeaderText = "Usuario que cambió";
-            }
+            dgvHistorialEmail.Columns[nombreColumna].Tag = claveTraduccion;
+            dgvHistorialEmail.Columns[nombreColumna].HeaderText = TraducirMensaje(
+                claveTraduccion,
+                textoPorDefecto
+            );
         }
 
         private void btnRestaurarEmail_Click(object sender, EventArgs e)

@@ -1,17 +1,19 @@
 using BLL.Bitacora;
+using BLL.Idiomas;
 using System;
 using System.Linq;
 using System.Windows.Forms;
 using UI.Estilos;
-using BLL.Idiomas;
 using UI.Idiomas;
 
 namespace IDS_TPFinal
 {
-    public partial class FrmConsultaBitacora : Form
+    public partial class FrmConsultaBitacora : Form, IObservadorIdioma
     {
         private readonly IBitacoraService _bitacoraService;
         private readonly IIdiomaAppService _idiomaAppService;
+
+        private int _cantidadRegistrosActual;
 
         public FrmConsultaBitacora()
         {
@@ -32,12 +34,77 @@ namespace IDS_TPFinal
             _idiomaAppService = idiomaAppService;
 
             InitializeComponent();
+            ConfigurarTagsTraduccion();
             AplicarEstiloVisual();
+
+            if (_idiomaAppService != null)
+            {
+                _idiomaAppService.Suscribir(this);
+                ActualizarIdioma();
+            }
+        }
+
+        private void ConfigurarTagsTraduccion()
+        {
+            this.Tag = "Bitacora.TituloVentana";
+
+            lblTitulo.Tag = "Bitacora.Titulo";
+            lblModulo.Tag = "Bitacora.Modulo";
+            lblTipo.Tag = "Bitacora.Tipo";
+            lblFechaDesde.Tag = "Bitacora.FechaDesde";
+            lblFechaHasta.Tag = "Bitacora.FechaHasta";
+            lblCantidadRegistros.Tag = "Bitacora.RegistrosEncontrados";
+
+            btnBuscar.Tag = "Bitacora.Buscar";
+            btnLimpiar.Tag = "Bitacora.Limpiar";
+            btnCerrar.Tag = "Bitacora.Cerrar";
+        }
+
+        public void ActualizarIdioma()
+        {
+            if (_idiomaAppService == null)
+            {
+                return;
+            }
+
+            int indiceModulo = cmbModulo.SelectedIndex;
+            int indiceTipo = cmbTipo.SelectedIndex;
+
+            TraductorControles.TraducirFormulario(this, _idiomaAppService);
+
+            CargarOpcionesModulo();
+
+            if (indiceModulo >= 0 && indiceModulo < cmbModulo.Items.Count)
+            {
+                cmbModulo.SelectedIndex = indiceModulo;
+            }
+
+            if (indiceTipo >= 0 && indiceTipo < cmbTipo.Items.Count)
+            {
+                cmbTipo.SelectedIndex = indiceTipo;
+            }
+
+            ConfigurarColumnas();
+            ActualizarCantidadRegistros();
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (_idiomaAppService != null)
+            {
+                _idiomaAppService.Desuscribir(this);
+            }
+
+            base.OnFormClosed(e);
         }
 
         private void FrmConsultaBitacora_Load(object sender, EventArgs e)
         {
             CargarOpcionesModulo();
+
+            dtpFechaDesde.Value = DateTime.Today.AddDays(-7);
+            dtpFechaHasta.Value = DateTime.Today;
+
             CargarBitacora();
         }
 
@@ -48,10 +115,11 @@ namespace IDS_TPFinal
 
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
-            cmbTipo.SelectedIndex = 0;
-            cmbModulo.SelectedIndex = 0;
+            CargarOpcionesModulo();
+
             dtpFechaDesde.Value = DateTime.Today.AddDays(-7);
             dtpFechaHasta.Value = DateTime.Today;
+
             CargarBitacora();
         }
 
@@ -63,23 +131,20 @@ namespace IDS_TPFinal
         private void CargarOpcionesModulo()
         {
             cmbModulo.Items.Clear();
-            cmbModulo.Items.Add("Todos");
-            cmbModulo.Items.Add("Seguridad");
-            cmbModulo.Items.Add("Usuarios");
+            cmbModulo.Items.Add(TraducirTexto("Bitacora.Opciones.Todos", "Todos"));
+            cmbModulo.Items.Add(TraducirTexto("Bitacora.Opciones.Seguridad", "Seguridad"));
+            cmbModulo.Items.Add(TraducirTexto("Bitacora.Opciones.Usuarios", "Usuarios"));
             cmbModulo.SelectedIndex = 0;
 
             cmbTipo.Items.Clear();
-            cmbTipo.Items.Add("Todos");
+            cmbTipo.Items.Add(TraducirTexto("Bitacora.Opciones.Todos", "Todos"));
             cmbTipo.Items.Add("INFO");
             cmbTipo.Items.Add("WARN");
             cmbTipo.Items.Add("ERROR");
             cmbTipo.SelectedIndex = 0;
-
-            dtpFechaDesde.Value = DateTime.Today.AddDays(-7);
-            dtpFechaHasta.Value = DateTime.Today;
         }
 
-        // Consulta a la bitácora segun los filtros seleccionados
+        // Consulta a la bitácora según los filtros seleccionados
         private void CargarBitacora()
         {
             if (_bitacoraService == null)
@@ -90,11 +155,11 @@ namespace IDS_TPFinal
             try
             {
                 string modulo = ObtenerModuloSeleccionado();
+                string tipo = ObtenerTipoSeleccionado();
+
                 DateTime fechaDesde = dtpFechaDesde.Value.Date;
                 DateTime fechaHasta = dtpFechaHasta.Value.Date.AddDays(1).AddTicks(-1);
 
-                string tipo = ObtenerTipoSeleccionado();
-                
                 var registros = _bitacoraService
                     .Listar(modulo, tipo, fechaDesde, fechaHasta, 500)
                     .Select(registro => new
@@ -110,7 +175,9 @@ namespace IDS_TPFinal
 
                 dgvBitacora.DataSource = registros;
                 ConfigurarColumnas();
-                lblCantidadRegistros.Text = $"Registros encontrados: {registros.Count}";
+
+                _cantidadRegistrosActual = registros.Count;
+                ActualizarCantidadRegistros();
             }
             catch (Exception)
             {
@@ -126,24 +193,40 @@ namespace IDS_TPFinal
                 );
             }
         }
-        private string ObtenerTipoSeleccionado()
-        {
-            string tipo = cmbTipo.SelectedItem?.ToString();
 
-            if (string.IsNullOrWhiteSpace(tipo) || tipo == "Todos")
-            {
-                return null;
-            }
-
-            return tipo;
-        }
         private string ObtenerModuloSeleccionado()
         {
-            string modulo = cmbModulo.SelectedItem?.ToString();
+            if (cmbModulo.SelectedIndex == 1)
+            {
+                return "Seguridad";
+            }
 
-            return modulo == "Todos"
-                ? null
-                : modulo;
+            if (cmbModulo.SelectedIndex == 2)
+            {
+                return "Usuarios";
+            }
+
+            return null;
+        }
+
+        private string ObtenerTipoSeleccionado()
+        {
+            if (cmbTipo.SelectedIndex == 1)
+            {
+                return "INFO";
+            }
+
+            if (cmbTipo.SelectedIndex == 2)
+            {
+                return "WARN";
+            }
+
+            if (cmbTipo.SelectedIndex == 3)
+            {
+                return "ERROR";
+            }
+
+            return null;
         }
 
         private void ConfigurarColumnas()
@@ -153,12 +236,66 @@ namespace IDS_TPFinal
                 return;
             }
 
-            dgvBitacora.Columns["Fecha"].FillWeight = 105;
-            dgvBitacora.Columns["Usuario"].FillWeight = 80;
-            dgvBitacora.Columns["Modulo"].FillWeight = 80;
-            dgvBitacora.Columns["Accion"].FillWeight = 120;
-            dgvBitacora.Columns["Descripcion"].FillWeight = 240;
-            dgvBitacora.Columns["Tipo"].FillWeight = 60;
+            ConfigurarColumna("Fecha", 105, "Bitacora.Grilla.Fecha", "Fecha");
+            ConfigurarColumna("Usuario", 80, "Bitacora.Grilla.Usuario", "Usuario");
+            ConfigurarColumna("Modulo", 80, "Bitacora.Grilla.Modulo", "Módulo");
+            ConfigurarColumna("Accion", 120, "Bitacora.Grilla.Accion", "Acción");
+            ConfigurarColumna("Descripcion", 240, "Bitacora.Grilla.Descripcion", "Descripción");
+            ConfigurarColumna("Tipo", 60, "Bitacora.Grilla.Tipo", "Tipo");
+        }
+
+        private void ConfigurarColumna(
+            string nombreColumna,
+            int fillWeight,
+            string claveTraduccion,
+            string textoPorDefecto)
+        {
+            if (!dgvBitacora.Columns.Contains(nombreColumna))
+            {
+                return;
+            }
+
+            dgvBitacora.Columns[nombreColumna].FillWeight = fillWeight;
+            dgvBitacora.Columns[nombreColumna].Tag = claveTraduccion;
+            dgvBitacora.Columns[nombreColumna].HeaderText = TraducirTexto(
+                claveTraduccion,
+                textoPorDefecto
+            );
+        }
+
+        private void ActualizarCantidadRegistros()
+        {
+            lblCantidadRegistros.Text = FormatearTexto(
+                "Bitacora.RegistrosEncontrados",
+                "Registros encontrados: {0}",
+                _cantidadRegistrosActual
+            );
+        }
+
+        private string TraducirTexto(string clave, string textoPorDefecto)
+        {
+            return MensajeTraducido.TraducirConFallback(
+                _idiomaAppService,
+                clave,
+                textoPorDefecto
+            );
+        }
+
+        private string FormatearTexto(
+            string clave,
+            string textoPorDefecto,
+            params object[] valores)
+        {
+            string plantilla = TraducirTexto(clave, textoPorDefecto);
+
+            try
+            {
+                return string.Format(plantilla, valores);
+            }
+            catch (FormatException)
+            {
+                return string.Format(textoPorDefecto, valores);
+            }
         }
 
         private void AplicarEstiloVisual()
