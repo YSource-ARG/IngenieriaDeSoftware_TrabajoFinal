@@ -6,6 +6,23 @@ namespace IDS_TPFinal
 {
     public partial class FrmGestionUsuarios
     {
+        private class EstadoUsuarioCombo
+        {
+            public EstadoUsuarioCombo(bool activo, string texto)
+            {
+                Activo = activo;
+                Texto = texto;
+            }
+
+            public bool Activo { get; private set; }
+            public string Texto { get; private set; }
+
+            public override string ToString()
+            {
+                return Texto;
+            }
+        }
+
         private void PrepararAltaUsuario()
         {
             _cargandoUsuarios = true;
@@ -39,9 +56,9 @@ namespace IDS_TPFinal
             btnInhabilitarReactivar.Enabled = false;
             btnRestablecerPassword.Enabled = false;
 
-            btnInhabilitarReactivar.Text = "⏻\nInhabilitar/Reactivar";
+            lblPassword.Text = TraducirMensaje("Usuarios.NuevaPassword", "Nueva contraseña");
 
-            lblPassword.Text = "Nueva contraseña";
+            ActualizarTextosDinamicos();
         }
 
         private void AplicarModoConsulta()
@@ -59,9 +76,9 @@ namespace IDS_TPFinal
             btnInhabilitarReactivar.Enabled = true;
             btnRestablecerPassword.Enabled = true;
 
-            ActualizarTextoBotonCambioEstado();
+            lblPassword.Text = TraducirMensaje("Usuarios.NuevaPassword", "Nueva contraseña");
 
-            lblPassword.Text = "Nueva contraseña";
+            ActualizarTextosDinamicos();
         }
 
         private void AplicarModoEdicion()
@@ -80,14 +97,36 @@ namespace IDS_TPFinal
             btnRestablecerPassword.Enabled = false;
 
             txtPassword.Clear();
-            lblPassword.Text = "Nueva contraseña";
+            lblPassword.Text = TraducirMensaje("Usuarios.NuevaPassword", "Nueva contraseña");
+
+            ActualizarTextosDinamicos();
+        }
+
+        private void ActualizarTextosDinamicos()
+        {
+            btnNuevo.Text = "+\n" + TraducirMensaje("Usuarios.Nuevo", "Nuevo");
+            btnEditar.Text = "✎\n" + TraducirMensaje("Usuarios.Editar", "Editar");
+            btnRestablecerPassword.Text = "🔑\n" + TraducirMensaje("Usuarios.RestablecerPassword", "Restablecer contraseña");
+            btnHistorialEmail.Text = "✉\n" + TraducirMensaje("Usuarios.HistorialEmail", "Historial email");
+
+            ActualizarTextoBotonCambioEstado();
         }
 
         private void ActualizarTextoBotonCambioEstado()
         {
+            if (!HayUsuarioSeleccionado())
+            {
+                btnInhabilitarReactivar.Text = "⏻\n" + TraducirMensaje(
+                    "Usuarios.InhabilitarReactivar",
+                    "Inhabilitar/Reactivar"
+                );
+
+                return;
+            }
+
             btnInhabilitarReactivar.Text = ObtenerEstadoSeleccionado()
-                ? "⏻\nInhabilitar"
-                : "⏻\nReactivar";
+                ? "⏻\n" + TraducirMensaje("Usuarios.Inhabilitar", "Inhabilitar")
+                : "⏻\n" + TraducirMensaje("Usuarios.Reactivar", "Reactivar");
         }
 
         private void LimpiarCampos()
@@ -100,10 +139,7 @@ namespace IDS_TPFinal
             txtFechaCreacion.Clear();
             txtFechaUltimoAcceso.Clear();
 
-            if (cmbEstado.Items.Count > 0)
-            {
-                cmbEstado.SelectedIndex = 0;
-            }
+            SeleccionarEstadoCombo(true);
         }
 
         private void LimpiarSeleccionGrilla()
@@ -123,7 +159,35 @@ namespace IDS_TPFinal
 
         private bool ObtenerEstadoSeleccionado()
         {
-            return cmbEstado.SelectedItem?.ToString() == "Activo";
+            EstadoUsuarioCombo estado = cmbEstado.SelectedItem as EstadoUsuarioCombo;
+
+            if (estado != null)
+            {
+                return estado.Activo;
+            }
+
+            string texto = cmbEstado.SelectedItem?.ToString();
+
+            return texto == "Activo" || texto == "Active";
+        }
+
+        private void SeleccionarEstadoCombo(bool activo)
+        {
+            foreach (object item in cmbEstado.Items)
+            {
+                EstadoUsuarioCombo estado = item as EstadoUsuarioCombo;
+
+                if (estado != null && estado.Activo == activo)
+                {
+                    cmbEstado.SelectedItem = estado;
+                    return;
+                }
+            }
+
+            if (cmbEstado.Items.Count > 0)
+            {
+                cmbEstado.SelectedIndex = activo ? 0 : Math.Min(1, cmbEstado.Items.Count - 1);
+            }
         }
 
         private Guid ObtenerIdUsuarioSeleccionado()
