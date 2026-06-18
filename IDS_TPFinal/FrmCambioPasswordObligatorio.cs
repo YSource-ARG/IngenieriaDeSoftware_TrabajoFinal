@@ -1,13 +1,16 @@
+using BLL.Idiomas;
 using BLL.Usuarios;
 using System;
 using System.Windows.Forms;
 using UI.Estilos;
+using UI.Idiomas;
 
 namespace UI
 {
     public partial class FrmCambioPasswordObligatorio : Form
     {
         private readonly GestionUsuariosAppService _gestionUsuariosAppService;
+        private readonly IIdiomaAppService _idiomaAppService;
         private readonly Guid _usuarioId;
         private readonly string _nombreUsuario;
 
@@ -19,7 +22,8 @@ namespace UI
         public FrmCambioPasswordObligatorio(
             GestionUsuariosAppService gestionUsuariosAppService,
             Guid usuarioId,
-            string nombreUsuario)
+            string nombreUsuario,
+            IIdiomaAppService idiomaAppService)
         {
             _gestionUsuariosAppService = gestionUsuariosAppService
                 ?? throw new ArgumentNullException(nameof(gestionUsuariosAppService));
@@ -31,6 +35,7 @@ namespace UI
 
             _usuarioId = usuarioId;
             _nombreUsuario = nombreUsuario;
+            _idiomaAppService = idiomaAppService;
 
             InitializeComponent();
             ConfigurarDescripcion();
@@ -62,35 +67,122 @@ namespace UI
         {
             try
             {
+                if (!ValidarDatosCambioPassword())
+                {
+                    return;
+                }
+
                 _gestionUsuariosAppService.ConfirmarCambioPasswordObligatorio(
                     _usuarioId,
                     txtNuevaPassword.Text,
                     txtConfirmarPassword.Text
                 );
 
-                MessageBox.Show(
+                MostrarInformacion(
+                    "Mensajes.CambioPassword.PasswordActualizada",
                     "Contraseña actualizada correctamente.",
-                    "Cambio de contraseña",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
+                    "Mensajes.Titulos.CambioPassword",
+                    "Cambio de contraseña"
                 );
 
                 DialogResult = DialogResult.OK;
                 Close();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show(
-                    ex.Message,
-                    "No se pudo cambiar la contraseña",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
+                MostrarAdvertencia(
+                    "Mensajes.CambioPassword.ErrorCambio",
+                    "No fue posible cambiar la contraseña. Verifique los datos e intente nuevamente.",
+                    "Mensajes.Titulos.NoPudoCambiarPassword",
+                    "No se pudo cambiar la contraseña"
                 );
 
                 txtNuevaPassword.Clear();
                 txtConfirmarPassword.Clear();
                 txtNuevaPassword.Focus();
             }
+        }
+
+        private bool ValidarDatosCambioPassword()
+        {
+            if (string.IsNullOrWhiteSpace(txtNuevaPassword.Text))
+            {
+                MostrarAdvertencia(
+                    "Mensajes.CambioPassword.NuevaPasswordRequerida",
+                    "La nueva contraseña no puede estar vacía.",
+                    "Mensajes.Titulos.Validacion",
+                    "Validación"
+                );
+
+                txtNuevaPassword.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtConfirmarPassword.Text))
+            {
+                MostrarAdvertencia(
+                    "Mensajes.CambioPassword.ConfirmarPasswordRequerida",
+                    "Debe confirmar la nueva contraseña.",
+                    "Mensajes.Titulos.Validacion",
+                    "Validación"
+                );
+
+                txtConfirmarPassword.Focus();
+                return false;
+            }
+
+            if (txtNuevaPassword.Text != txtConfirmarPassword.Text)
+            {
+                MostrarAdvertencia(
+                    "Mensajes.CambioPassword.PasswordsNoCoinciden",
+                    "La contraseña y su confirmación no coinciden.",
+                    "Mensajes.Titulos.Validacion",
+                    "Validación"
+                );
+
+                txtNuevaPassword.Clear();
+                txtConfirmarPassword.Clear();
+                txtNuevaPassword.Focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        private void MostrarInformacion(
+            string claveMensaje,
+            string mensajePorDefecto,
+            string claveTitulo,
+            string tituloPorDefecto)
+        {
+            MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                claveMensaje,
+                mensajePorDefecto,
+                claveTitulo,
+                tituloPorDefecto,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
+        private void MostrarAdvertencia(
+            string claveMensaje,
+            string mensajePorDefecto,
+            string claveTitulo,
+            string tituloPorDefecto)
+        {
+            MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                claveMensaje,
+                mensajePorDefecto,
+                claveTitulo,
+                tituloPorDefecto,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            );
         }
 
         private void btnCancelar_Click(object sender, EventArgs e)

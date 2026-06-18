@@ -334,7 +334,8 @@ namespace UI
             using (FrmCambioPasswordObligatorio frmCambioPassword = new FrmCambioPasswordObligatorio(
                 _gestionUsuariosAppService,
                 resultadoLogin.UsuarioId,
-                resultadoLogin.NombreUsuario))
+                resultadoLogin.NombreUsuario,
+                _idiomaAppService))
             {
                 DialogResult resultado = frmCambioPassword.ShowDialog(this);
 
