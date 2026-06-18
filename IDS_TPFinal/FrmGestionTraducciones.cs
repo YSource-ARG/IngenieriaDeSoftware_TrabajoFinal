@@ -43,7 +43,7 @@ namespace UI
             cboIdiomas.SelectedIndexChanged += cboIdiomas_SelectedIndexChanged;
             dgvTraducciones.SelectionChanged += dgvTraducciones_SelectionChanged;
             btnNuevo.Click += btnNuevo_Click;
-            btnGuardar.Click += btnGuardar_Click;            
+            btnGuardar.Click += btnGuardar_Click;
             btnCerrar.Click += btnCerrar_Click;
             this.FormClosed += FrmGestionTraducciones_FormClosed;
 
@@ -172,15 +172,13 @@ namespace UI
         {
             Idioma idiomaSeleccionado = ObtenerIdiomaSeleccionado();
 
-            if (idiomaSeleccionado == null)
+            if (!ValidarIdiomaSeleccionado(idiomaSeleccionado))
             {
-                MessageBox.Show(
-                    "Debe seleccionar un idioma.",
-                    "Traducciones",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
+                return;
+            }
 
+            if (!ValidarDatosTraduccion())
+            {
                 return;
             }
 
@@ -191,25 +189,28 @@ namespace UI
                     txtTexto.Text
                 );
 
-            MessageBox.Show(
-                resultado.Mensaje,
-                "Traducciones",
-                MessageBoxButtons.OK,
-                resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning
-            );
-
             if (!resultado.Exitoso)
             {
+                MostrarAdvertencia(
+                    "Mensajes.Traducciones.ErrorGuardar",
+                    "No fue posible guardar la traducción. Verifique los datos e intente nuevamente.",
+                    "Mensajes.Titulos.Traducciones",
+                    "Traducciones"
+                );
+
                 return;
             }
 
+            MostrarInformacion(
+                "Mensajes.Traducciones.TraduccionGuardada",
+                "Traducción guardada correctamente.",
+                "Mensajes.Titulos.Traducciones",
+                "Traducciones"
+            );
+
             CargarTraducciones();
 
-            if (_idiomaAppService.IdiomaActual != null &&
-                _idiomaAppService.IdiomaActual.Id == idiomaSeleccionado.Id)
-            {
-                _idiomaAppService.CambiarIdioma(idiomaSeleccionado.Codigo);
-            }
+            ActualizarIdiomaActualSiCorresponde(idiomaSeleccionado);
         }
 
         private void btnCerrar_Click(object sender, EventArgs e)
@@ -233,15 +234,18 @@ namespace UI
         {
             Idioma idiomaSeleccionado = ObtenerIdiomaSeleccionado();
 
-            if (idiomaSeleccionado == null)
+            if (!ValidarIdiomaSeleccionado(idiomaSeleccionado))
             {
-                MessageBox.Show(
-                    "Debe seleccionar un idioma.",
-                    "Traducciones",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
+                return;
+            }
 
+            if (!ValidarTraduccionSeleccionada())
+            {
+                return;
+            }
+
+            if (!ValidarDatosTraduccion())
+            {
                 return;
             }
 
@@ -252,60 +256,49 @@ namespace UI
                     txtTexto.Text
                 );
 
-            MessageBox.Show(
-                resultado.Mensaje,
-                "Traducciones",
-                MessageBoxButtons.OK,
-                resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning
-            );
-
             if (!resultado.Exitoso)
             {
+                MostrarAdvertencia(
+                    "Mensajes.Traducciones.ErrorModificar",
+                    "No fue posible modificar la traducción. Verifique los datos e intente nuevamente.",
+                    "Mensajes.Titulos.Traducciones",
+                    "Traducciones"
+                );
+
                 return;
             }
 
+            MostrarInformacion(
+                "Mensajes.Traducciones.TraduccionModificada",
+                "Traducción modificada correctamente.",
+                "Mensajes.Titulos.Traducciones",
+                "Traducciones"
+            );
+
             CargarTraducciones();
 
-            if (_idiomaAppService.IdiomaActual != null &&
-                _idiomaAppService.IdiomaActual.Id == idiomaSeleccionado.Id)
-            {
-                _idiomaAppService.CambiarIdioma(idiomaSeleccionado.Codigo);
-            }
+            ActualizarIdiomaActualSiCorresponde(idiomaSeleccionado);
         }
 
         private void btnEliminar_Click(object sender, EventArgs e)
         {
             Idioma idiomaSeleccionado = ObtenerIdiomaSeleccionado();
 
-            if (idiomaSeleccionado == null)
+            if (!ValidarIdiomaSeleccionado(idiomaSeleccionado))
             {
-                MessageBox.Show(
-                    "Debe seleccionar un idioma.",
-                    "Traducciones",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-
                 return;
             }
 
-            if (_traduccionSeleccionadaId == Guid.Empty)
+            if (!ValidarTraduccionSeleccionada())
             {
-                MessageBox.Show(
-                    "Debe seleccionar una traducción.",
-                    "Traducciones",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-
                 return;
             }
 
-            DialogResult confirmacion = MessageBox.Show(
+            DialogResult confirmacion = MostrarConfirmacion(
+                "Mensajes.Traducciones.ConfirmarEliminar",
                 "¿Está seguro que desea eliminar la traducción seleccionada?",
-                "Eliminar traducción",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
+                "Mensajes.Titulos.EliminarTraduccion",
+                "Eliminar traducción"
             );
 
             if (confirmacion != DialogResult.Yes)
@@ -316,25 +309,156 @@ namespace UI
             ResultadoGuardadoTraduccion resultado =
                 _gestionTraduccionesAppService.EliminarTraduccion(_traduccionSeleccionadaId);
 
-            MessageBox.Show(
-                resultado.Mensaje,
-                "Traducciones",
-                MessageBoxButtons.OK,
-                resultado.Exitoso ? MessageBoxIcon.Information : MessageBoxIcon.Warning
-            );
-
             if (!resultado.Exitoso)
             {
+                MostrarAdvertencia(
+                    "Mensajes.Traducciones.ErrorEliminar",
+                    "No fue posible eliminar la traducción. Verifique los datos e intente nuevamente.",
+                    "Mensajes.Titulos.Traducciones",
+                    "Traducciones"
+                );
+
                 return;
             }
 
+            MostrarInformacion(
+                "Mensajes.Traducciones.TraduccionEliminada",
+                "Traducción eliminada correctamente.",
+                "Mensajes.Titulos.Traducciones",
+                "Traducciones"
+            );
+
             CargarTraducciones();
 
+            ActualizarIdiomaActualSiCorresponde(idiomaSeleccionado);
+        }
+
+        private bool ValidarIdiomaSeleccionado(Idioma idiomaSeleccionado)
+        {
+            if (idiomaSeleccionado != null)
+            {
+                return true;
+            }
+
+            MostrarAdvertencia(
+                "Mensajes.Traducciones.DebeSeleccionarIdioma",
+                "Debe seleccionar un idioma.",
+                "Mensajes.Titulos.Traducciones",
+                "Traducciones"
+            );
+
+            return false;
+        }
+
+        private bool ValidarTraduccionSeleccionada()
+        {
+            if (_traduccionSeleccionadaId != Guid.Empty)
+            {
+                return true;
+            }
+
+            MostrarAdvertencia(
+                "Mensajes.Traducciones.DebeSeleccionarTraduccion",
+                "Debe seleccionar una traducción.",
+                "Mensajes.Titulos.Traducciones",
+                "Traducciones"
+            );
+
+            return false;
+        }
+
+        private bool ValidarDatosTraduccion()
+        {
+            if (string.IsNullOrWhiteSpace(txtClave.Text))
+            {
+                MostrarAdvertencia(
+                    "Mensajes.Traducciones.ClaveRequerida",
+                    "Debe ingresar la clave de traducción.",
+                    "Mensajes.Titulos.Validacion",
+                    "Validación"
+                );
+
+                txtClave.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtTexto.Text))
+            {
+                MostrarAdvertencia(
+                    "Mensajes.Traducciones.TextoRequerido",
+                    "Debe ingresar el texto de la traducción.",
+                    "Mensajes.Titulos.Validacion",
+                    "Validación"
+                );
+
+                txtTexto.Focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        private void ActualizarIdiomaActualSiCorresponde(Idioma idiomaSeleccionado)
+        {
             if (_idiomaAppService.IdiomaActual != null &&
                 _idiomaAppService.IdiomaActual.Id == idiomaSeleccionado.Id)
             {
                 _idiomaAppService.CambiarIdioma(idiomaSeleccionado.Codigo);
             }
+        }
+
+        private void MostrarInformacion(
+            string claveMensaje,
+            string mensajePorDefecto,
+            string claveTitulo,
+            string tituloPorDefecto)
+        {
+            MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                claveMensaje,
+                mensajePorDefecto,
+                claveTitulo,
+                tituloPorDefecto,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
+        private void MostrarAdvertencia(
+            string claveMensaje,
+            string mensajePorDefecto,
+            string claveTitulo,
+            string tituloPorDefecto)
+        {
+            MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                claveMensaje,
+                mensajePorDefecto,
+                claveTitulo,
+                tituloPorDefecto,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            );
+        }
+
+        private DialogResult MostrarConfirmacion(
+            string claveMensaje,
+            string mensajePorDefecto,
+            string claveTitulo,
+            string tituloPorDefecto)
+        {
+            return MensajeTraducido.Mostrar(
+                this,
+                _idiomaAppService,
+                claveMensaje,
+                mensajePorDefecto,
+                claveTitulo,
+                tituloPorDefecto,
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
         }
     }
 }
