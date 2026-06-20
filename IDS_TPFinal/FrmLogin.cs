@@ -377,6 +377,8 @@ namespace UI
             {
                 if (frmPrincipal.CerrandoSesion)
                 {
+                    CargarIdiomasLogin();
+
                     txtPassword.Clear();
                     this.Show();
                     txtPassword.Focus();
