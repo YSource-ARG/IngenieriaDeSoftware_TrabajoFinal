@@ -76,7 +76,14 @@ namespace DAL.Bitacora
             }
         }
 
-        public List<BE.Bitacora> Listar(string modulo, string tipo, DateTime? fechaDesde, DateTime? fechaHasta, int cantidadMaxima)
+        public List<BE.Bitacora> Listar(
+    string usuario,
+    string accion,
+    string modulo,
+    string tipo,
+    DateTime? fechaDesde,
+    DateTime? fechaHasta,
+    int cantidadMaxima)
         {
             const string sql = @"
         SELECT TOP (@CantidadMaxima)
@@ -89,7 +96,9 @@ namespace DAL.Bitacora
             Descripcion,
             Tipo
         FROM dbo.Bitacora
-        WHERE (@Modulo IS NULL OR Modulo = @Modulo)
+        WHERE (@Usuario IS NULL OR Usuario LIKE '%' + @Usuario + '%')
+          AND (@Accion IS NULL OR Accion LIKE '%' + @Accion + '%')
+          AND (@Modulo IS NULL OR Modulo = @Modulo)
           AND (@Tipo IS NULL OR Tipo = @Tipo)
           AND (@FechaDesde IS NULL OR Fecha >= @FechaDesde)
           AND (@FechaHasta IS NULL OR Fecha <= @FechaHasta)
@@ -102,17 +111,28 @@ namespace DAL.Bitacora
                 using (SqlConnection connection = _connectionFactory.CrearConexion())
                 using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    command.Parameters.Add("@CantidadMaxima", SqlDbType.Int).Value = cantidadMaxima;
+                    command.Parameters.Add("@CantidadMaxima", SqlDbType.Int).Value =
+                        cantidadMaxima;
 
-                    command.Parameters.Add("@Tipo", SqlDbType.NVarChar, 20).Value =
-                        string.IsNullOrWhiteSpace(tipo)
+                    command.Parameters.Add("@Usuario", SqlDbType.NVarChar, 100).Value =
+                        string.IsNullOrWhiteSpace(usuario)
                             ? (object)DBNull.Value
-                            : tipo.Trim();
+                            : usuario.Trim();
+
+                    command.Parameters.Add("@Accion", SqlDbType.NVarChar, 100).Value =
+                        string.IsNullOrWhiteSpace(accion)
+                            ? (object)DBNull.Value
+                            : accion.Trim();
 
                     command.Parameters.Add("@Modulo", SqlDbType.NVarChar, 100).Value =
                         string.IsNullOrWhiteSpace(modulo)
                             ? (object)DBNull.Value
                             : modulo.Trim();
+
+                    command.Parameters.Add("@Tipo", SqlDbType.NVarChar, 20).Value =
+                        string.IsNullOrWhiteSpace(tipo)
+                            ? (object)DBNull.Value
+                            : tipo.Trim();
 
                     command.Parameters.Add("@FechaDesde", SqlDbType.DateTime2).Value =
                         fechaDesde.HasValue
@@ -145,6 +165,65 @@ namespace DAL.Bitacora
             }
 
             return registros;
+        }
+
+        public List<string> ListarUsuarios()
+        {
+            const string sql = @"
+                SELECT NombreUsuario
+                FROM dbo.Usuario
+
+                UNION
+
+                SELECT 'Sistema' AS NombreUsuario
+
+                ORDER BY NombreUsuario";
+
+            return ListarValoresDistintos(sql, "NombreUsuario");
+        }
+
+        public List<string> ListarAcciones()
+        {
+            const string sql = @"
+                SELECT DISTINCT Accion
+                FROM dbo.Bitacora
+                WHERE Accion IS NOT NULL
+                  AND LTRIM(RTRIM(Accion)) <> ''
+                ORDER BY Accion";
+
+            return ListarValoresDistintos(sql, "Accion");
+        }
+
+        private List<string> ListarValoresDistintos(string sql, string nombreColumna)
+        {
+            List<string> valores = new List<string>();
+
+            try
+            {
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            valores.Add(reader[nombreColumna].ToString());
+                        }
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException("No se pudieron obtener las opciones de filtro de la bitácora.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
+            }
+
+            return valores;
         }
 
         private BE.Bitacora MapearBitacora(SqlDataReader reader)
