@@ -168,13 +168,12 @@ namespace UI
                 return;
             }
 
-            if (_idiomaAppService.IdiomaActual != null &&
-                _idiomaAppService.IdiomaActual.Id == idiomaSeleccionado.Id)
+            if (_idiomaAppService.IdiomaActual != null && _idiomaAppService.IdiomaActual.Id == idiomaSeleccionado.Id)
             {
                 return;
             }
 
-            var resultado = _idiomaAppService.CambiarIdioma(idiomaSeleccionado.Codigo);
+            ResultadoCambioIdioma resultado = _idiomaAppService.CambiarIdioma(idiomaSeleccionado.Codigo);
 
             if (!resultado.Exitoso)
             {
@@ -183,6 +182,26 @@ namespace UI
                     _idiomaAppService,
                     "Mensajes.Idioma.ErrorCambio",
                     resultado.Mensaje,
+                    "Mensajes.Titulos.Idioma",
+                    "Idioma",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            try
+            {
+                _gestionUsuariosAppService.GuardarIdiomaPreferidoUsuarioActual(idiomaSeleccionado.Id);
+            }
+            catch (Exception)
+            {
+                MensajeTraducido.Mostrar(
+                    this,
+                    _idiomaAppService,
+                    "Mensajes.Idioma.ErrorGuardarPreferencia",
+                    "El idioma fue cambiado, pero no se pudo guardar como preferencia del usuario.",
                     "Mensajes.Titulos.Idioma",
                     "Idioma",
                     MessageBoxButtons.OK,

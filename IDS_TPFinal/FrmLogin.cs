@@ -317,6 +317,20 @@ namespace UI
                 return;
             }
 
+            if (resultadoLogin.IdiomaPreferidoId.HasValue)
+            {
+                AplicarIdiomaPreferido(resultadoLogin.IdiomaPreferidoId);
+            }
+            else
+            {
+                Idioma idiomaSeleccionado = _idiomaAppService.IdiomaActual;
+
+                if (idiomaSeleccionado != null)
+                {
+                    _gestionUsuariosAppService.GuardarIdiomaPreferidoUsuarioActual(idiomaSeleccionado.Id);
+                }
+            }
+
             if (resultadoLogin.DebeCambiarPassword &&
                 !CambiarPasswordObligatorio(resultadoLogin))
             {
@@ -363,6 +377,8 @@ namespace UI
             {
                 if (frmPrincipal.CerrandoSesion)
                 {
+                    CargarIdiomasLogin();
+
                     txtPassword.Clear();
                     this.Show();
                     txtPassword.Focus();
@@ -384,7 +400,32 @@ namespace UI
         private void FrmLogin_FormClosed(object sender, FormClosedEventArgs e)
         {
             _idiomaAppService.Desuscribir(this);
-        }        
+        }
+
+        private void AplicarIdiomaPreferido(Guid? idiomaPreferidoId)
+        {
+            if (!idiomaPreferidoId.HasValue)
+            {
+                return;
+            }
+
+            List<Idioma> idiomas = _idiomaAppService.ListarIdiomasActivos();
+
+            Idioma idiomaPreferido = idiomas.Find(
+                idioma => idioma.Id == idiomaPreferidoId.Value
+            );
+
+            if (idiomaPreferido == null)
+            {
+                return;
+            }
+
+            _cargandoIdiomasLogin = true;
+            cboIdiomaLogin.SelectedValue = idiomaPreferido.Codigo;
+            _cargandoIdiomasLogin = false;
+
+            _idiomaAppService.CambiarIdioma(idiomaPreferido.Codigo);
+        }
 
         private void CargarIdiomasLogin()
         {

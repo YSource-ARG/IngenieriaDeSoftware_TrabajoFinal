@@ -25,21 +25,23 @@ namespace DAL.Integridad
         public List<Usuario> ListarUsuariosParaIntegridad()
         {
             const string sql = @"
-SELECT
-    Id,
-    NombreUsuario,
-    NombreCompleto,
-    PasswordHash,
-    Activo,
-    DebeCambiarPassword,
-    IntentosFallidosLogin,
-    BloqueadoHasta,
-    BloqueadoPorIntegridad,
-    DigitoVerificadorHorizontal,
-    FechaCreacion,
-    FechaUltimoAcceso
-FROM dbo.Usuario
-ORDER BY Id";
+            SELECT
+                Id,
+                NombreUsuario,
+                NombreCompleto,
+                Email,
+                IdiomaPreferidoId,
+                PasswordHash,
+                Activo,
+                DebeCambiarPassword,
+                IntentosFallidosLogin,
+                BloqueadoHasta,
+                BloqueadoPorIntegridad,
+                DigitoVerificadorHorizontal,
+                FechaCreacion,
+                FechaUltimoAcceso
+            FROM dbo.Usuario
+            ORDER BY Id";
 
             List<Usuario> usuarios = new List<Usuario>();
 
@@ -79,9 +81,9 @@ ORDER BY Id";
             }
 
             const string sql = @"
-SELECT Valor
-FROM dbo.DigitoVerificadorVertical
-WHERE Entidad = @Entidad";
+                SELECT Valor
+                FROM dbo.DigitoVerificadorVertical
+                WHERE Entidad = @Entidad";
 
             try
             {
@@ -122,9 +124,9 @@ WHERE Entidad = @Entidad";
             }
 
             const string sql = @"
-UPDATE dbo.Usuario
-SET DigitoVerificadorHorizontal = @DigitoVerificadorHorizontal
-WHERE Id = @Id";
+                UPDATE dbo.Usuario
+                SET DigitoVerificadorHorizontal = @DigitoVerificadorHorizontal
+                WHERE Id = @Id";
 
             try
             {
@@ -161,33 +163,33 @@ WHERE Id = @Id";
             }
 
             const string sql = @"
-IF EXISTS
-(
-    SELECT 1
-    FROM dbo.DigitoVerificadorVertical
-    WHERE Entidad = @Entidad
-)
-BEGIN
-    UPDATE dbo.DigitoVerificadorVertical
-    SET Valor = @Valor,
-        FechaCalculo = SYSDATETIME()
-    WHERE Entidad = @Entidad
-END
-ELSE
-BEGIN
-    INSERT INTO dbo.DigitoVerificadorVertical
-    (
-        Entidad,
-        Valor,
-        FechaCalculo
-    )
-    VALUES
-    (
-        @Entidad,
-        @Valor,
-        SYSDATETIME()
-    )
-END";
+                IF EXISTS
+                (
+                    SELECT 1
+                    FROM dbo.DigitoVerificadorVertical
+                    WHERE Entidad = @Entidad
+                )
+                BEGIN
+                    UPDATE dbo.DigitoVerificadorVertical
+                    SET Valor = @Valor,
+                        FechaCalculo = SYSDATETIME()
+                    WHERE Entidad = @Entidad
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO dbo.DigitoVerificadorVertical
+                    (
+                        Entidad,
+                        Valor,
+                        FechaCalculo
+                    )
+                    VALUES
+                    (
+                        @Entidad,
+                        @Valor,
+                        SYSDATETIME()
+                    )
+                END";
 
             try
             {
@@ -214,13 +216,13 @@ END";
         public void BloquearUsuariosPorIntegridadExceptoAdmin()
         {
             const string sql = @"
-UPDATE dbo.Usuario
-SET BloqueadoPorIntegridad = 1
-WHERE NombreUsuario <> 'admin';
+                UPDATE dbo.Usuario
+                SET BloqueadoPorIntegridad = 1
+                WHERE NombreUsuario <> 'admin';
 
-UPDATE dbo.Usuario
-SET BloqueadoPorIntegridad = 0
-WHERE NombreUsuario = 'admin';";
+                UPDATE dbo.Usuario
+                SET BloqueadoPorIntegridad = 0
+                WHERE NombreUsuario = 'admin';";
 
             try
             {
@@ -244,8 +246,8 @@ WHERE NombreUsuario = 'admin';";
         public void DesbloquearUsuariosPorIntegridad()
         {
             const string sql = @"
-UPDATE dbo.Usuario
-SET BloqueadoPorIntegridad = 0";
+                UPDATE dbo.Usuario
+                SET BloqueadoPorIntegridad = 0";
 
             try
             {
@@ -272,26 +274,36 @@ SET BloqueadoPorIntegridad = 0";
             {
                 Id = Guid.Parse(reader["Id"].ToString()),
                 NombreUsuario = reader["NombreUsuario"].ToString(),
+
                 NombreCompleto = reader["NombreCompleto"] == DBNull.Value
                     ? null
                     : reader["NombreCompleto"].ToString(),
+
+                Email = reader["Email"] == DBNull.Value
+                    ? null
+                    : reader["Email"].ToString(),
+
+                IdiomaPreferidoId = reader["IdiomaPreferidoId"] == DBNull.Value
+                    ? (Guid?)null
+                    : Guid.Parse(reader["IdiomaPreferidoId"].ToString()),
+
                 PasswordHash = reader["PasswordHash"].ToString(),
                 Activo = Convert.ToBoolean(reader["Activo"]),
                 DebeCambiarPassword = Convert.ToBoolean(reader["DebeCambiarPassword"]),
                 IntentosFallidosLogin = Convert.ToInt32(reader["IntentosFallidosLogin"]),
+
                 BloqueadoHasta = reader["BloqueadoHasta"] == DBNull.Value
                     ? (DateTime?)null
                     : Convert.ToDateTime(reader["BloqueadoHasta"]),
 
-                // Bloqueo preventivo por falla de integridad.
-                // No reemplaza al campo Activo porque cumple otra finalidad.
-                BloqueadoPorIntegridad = Convert.ToBoolean(reader["BloqueadoPorIntegridad"]),
+                BloqueadoPorIntegridad =
+                    Convert.ToBoolean(reader["BloqueadoPorIntegridad"]),
 
-                // DVH persistido en la entidad protegida.
-                // Se compara contra el DVH recalculado para detectar cambios externos.
-                DigitoVerificadorHorizontal = reader["DigitoVerificadorHorizontal"].ToString(),
+                DigitoVerificadorHorizontal =
+                    reader["DigitoVerificadorHorizontal"].ToString(),
 
                 FechaCreacion = Convert.ToDateTime(reader["FechaCreacion"]),
+
                 FechaUltimoAcceso = reader["FechaUltimoAcceso"] == DBNull.Value
                     ? (DateTime?)null
                     : Convert.ToDateTime(reader["FechaUltimoAcceso"])

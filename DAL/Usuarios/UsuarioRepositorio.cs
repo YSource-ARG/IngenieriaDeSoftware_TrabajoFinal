@@ -35,6 +35,7 @@ namespace DAL.Usuarios
             NombreUsuario,
             NombreCompleto,
             Email,
+            IdiomaPreferidoId,
             PasswordHash, 
             Activo, 
             DebeCambiarPassword,
@@ -86,22 +87,23 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-        SELECT 
-            Id, 
-            NombreUsuario,
-            NombreCompleto,
-            Email,
-            PasswordHash, 
-            Activo, 
-            DebeCambiarPassword,
-            IntentosFallidosLogin,
-            BloqueadoHasta,
-            BloqueadoPorIntegridad,
-            DigitoVerificadorHorizontal,
-            FechaCreacion,
-            FechaUltimoAcceso
-        FROM dbo.Usuario 
-        WHERE Id = @Id";
+            SELECT 
+                Id, 
+                NombreUsuario,
+                NombreCompleto,
+                Email,
+                IdiomaPreferidoId,
+                PasswordHash, 
+                Activo, 
+                DebeCambiarPassword,
+                IntentosFallidosLogin,
+                BloqueadoHasta,
+                BloqueadoPorIntegridad,
+                DigitoVerificadorHorizontal,
+                FechaCreacion,
+                FechaUltimoAcceso
+            FROM dbo.Usuario 
+            WHERE Id = @Id";
 
             try
             {
@@ -136,26 +138,27 @@ namespace DAL.Usuarios
         public List<Usuario> Listar(string textoBusqueda, bool? activo)
         {
             const string sql = @"
-                SELECT 
-                    Id, 
-                    NombreUsuario,
-                    NombreCompleto,
-                    Email,
-                    PasswordHash, 
-                    Activo, 
-                    DebeCambiarPassword,
-                    IntentosFallidosLogin,
-                    BloqueadoHasta,
-                    BloqueadoPorIntegridad,
-                    DigitoVerificadorHorizontal,
-                    FechaCreacion,
-                    FechaUltimoAcceso 
-                FROM dbo.Usuario
-                WHERE (@TextoBusqueda IS NULL 
-                       OR NombreUsuario LIKE '%' + @TextoBusqueda + '%'
-                       OR NombreCompleto LIKE '%' + @TextoBusqueda + '%')
-                  AND (@Activo IS NULL OR Activo = @Activo)
-                ORDER BY NombreUsuario";
+            SELECT 
+                Id, 
+                NombreUsuario,
+                NombreCompleto,
+                Email,
+                IdiomaPreferidoId,
+                PasswordHash, 
+                Activo, 
+                DebeCambiarPassword,
+                IntentosFallidosLogin,
+                BloqueadoHasta,
+                BloqueadoPorIntegridad,
+                DigitoVerificadorHorizontal,
+                FechaCreacion,
+                FechaUltimoAcceso 
+            FROM dbo.Usuario
+            WHERE (@TextoBusqueda IS NULL 
+                    OR NombreUsuario LIKE '%' + @TextoBusqueda + '%'
+                    OR NombreCompleto LIKE '%' + @TextoBusqueda + '%')
+                AND (@Activo IS NULL OR Activo = @Activo)
+            ORDER BY NombreUsuario";
 
             List<Usuario> usuarios = new List<Usuario>();
 
@@ -205,10 +208,10 @@ namespace DAL.Usuarios
             }
 
             const string sql = @"
-        SELECT COUNT(1)
-        FROM dbo.Usuario
-        WHERE NombreUsuario = @NombreUsuario
-          AND (@IdUsuarioExcluido IS NULL OR Id <> @IdUsuarioExcluido)";
+            SELECT COUNT(1)
+            FROM dbo.Usuario
+            WHERE NombreUsuario = @NombreUsuario
+                AND (@IdUsuarioExcluido IS NULL OR Id <> @IdUsuarioExcluido)";
 
             try
             {
@@ -253,6 +256,7 @@ namespace DAL.Usuarios
             NombreUsuario,
             NombreCompleto,
             Email,
+            IdiomaPreferidoId,
             PasswordHash,
             Activo,
             DebeCambiarPassword,
@@ -265,6 +269,7 @@ namespace DAL.Usuarios
             @NombreUsuario,
             @NombreCompleto,
             @Email,
+            @IdiomaPreferidoId,
             @PasswordHash,
             @Activo,
             @DebeCambiarPassword,
@@ -423,6 +428,64 @@ namespace DAL.Usuarios
             }
         }
 
+        public void ActualizarIdiomaPreferido(Guid idUsuario, Guid idiomaPreferidoId)
+        {
+            if (idUsuario == Guid.Empty)
+            {
+                throw new ArgumentException(
+                    "El identificador del usuario no puede estar vacío.",
+                    nameof(idUsuario)
+                );
+            }
+
+            if (idiomaPreferidoId == Guid.Empty)
+            {
+                throw new ArgumentException(
+                    "El identificador del idioma no puede estar vacío.",
+                    nameof(idiomaPreferidoId)
+                );
+            }
+
+            const string sql = @"
+            UPDATE dbo.Usuario
+            SET IdiomaPreferidoId = @IdiomaPreferidoId
+            WHERE Id = @Id";
+
+            try
+            {
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add(
+                        "@Id",
+                        SqlDbType.UniqueIdentifier
+                    ).Value = idUsuario;
+
+                    command.Parameters.Add(
+                        "@IdiomaPreferidoId",
+                        SqlDbType.UniqueIdentifier
+                    ).Value = idiomaPreferidoId;
+
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException(
+                    "No se pudo actualizar el idioma preferido del usuario.",
+                    ex
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException(
+                    "No se pudo abrir o utilizar la conexión con la base de datos.",
+                    ex
+                );
+            }
+        }
+
         public void ActualizarFechaUltimoAcceso(Guid idUsuario)
         {
             if (idUsuario == Guid.Empty)
@@ -456,10 +519,8 @@ namespace DAL.Usuarios
                 throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
         }
-        public void ActualizarIntentosFallidosLogin(
-    Guid idUsuario,
-    int intentosFallidos,
-    DateTime? bloqueadoHasta)
+
+        public void ActualizarIntentosFallidosLogin(Guid idUsuario, int intentosFallidos, DateTime? bloqueadoHasta)
         {
             if (idUsuario == Guid.Empty)
             {
@@ -550,6 +611,7 @@ WHERE Id = @Id";
                 throw new AccesoDatosException("No se pudo abrir o utilizar la conexión con la base de datos.", ex);
             }
         }
+
         private Usuario MapearUsuario(SqlDataReader reader)
         {
             return new Usuario
@@ -565,6 +627,10 @@ WHERE Id = @Id";
                 Email = reader["Email"] == DBNull.Value
                     ? null
                     : reader["Email"].ToString(),
+
+                IdiomaPreferidoId = reader["IdiomaPreferidoId"] == DBNull.Value
+                    ? (Guid?)null
+                    : Guid.Parse(reader["IdiomaPreferidoId"].ToString()),
 
                 PasswordHash = reader["PasswordHash"].ToString(),
                 Activo = Convert.ToBoolean(reader["Activo"]),
@@ -594,14 +660,15 @@ WHERE Id = @Id";
         {
             command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = usuario.Id;
             command.Parameters.Add("@NombreUsuario", SqlDbType.NVarChar, 100).Value = usuario.NombreUsuario;
-            command.Parameters.Add("@NombreCompleto", SqlDbType.NVarChar, 150).Value =
-                string.IsNullOrWhiteSpace(usuario.NombreCompleto)
+            command.Parameters.Add("@NombreCompleto", SqlDbType.NVarChar, 150).Value = string.IsNullOrWhiteSpace(usuario.NombreCompleto)
                     ? (object)DBNull.Value
                     : usuario.NombreCompleto.Trim();
-            command.Parameters.Add("@Email", SqlDbType.NVarChar, 255).Value =
-                string.IsNullOrWhiteSpace(usuario.Email)
+            command.Parameters.Add("@Email", SqlDbType.NVarChar, 255).Value = string.IsNullOrWhiteSpace(usuario.Email)
                     ? (object)DBNull.Value
                     : usuario.Email.Trim();
+            command.Parameters.Add("@IdiomaPreferidoId", SqlDbType.UniqueIdentifier).Value = usuario.IdiomaPreferidoId.HasValue
+                    ? (object)usuario.IdiomaPreferidoId.Value
+                    : DBNull.Value;
             command.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = usuario.PasswordHash;
             command.Parameters.Add("@Activo", SqlDbType.Bit).Value = usuario.Activo;
             command.Parameters.Add("@DebeCambiarPassword", SqlDbType.Bit).Value = usuario.DebeCambiarPassword;

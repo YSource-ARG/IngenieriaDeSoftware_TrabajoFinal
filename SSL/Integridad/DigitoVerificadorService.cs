@@ -25,17 +25,19 @@ namespace SSL.Integridad
             // el DVH no puede calcularse usando su propio valor.
             //
             // No se incluye BloqueadoPorIntegridad porque ese campo lo modifica
-            // el sistema como reacción ante una falla de integridad. Si se incluyera,
-            // bloquear usuarios cambiaría nuevamente el DVH y generaría un ciclo.
+            // el sistema como reacción ante una falla de integridad.
             //
-            // No se incluyen IntentosFallidosLogin, BloqueadoHasta ni FechaUltimoAcceso
-            // porque son datos operativos del proceso de login y pueden cambiar
-            // normalmente sin representar una vulneración externa de la base.
+            // No se incluyen IntentosFallidosLogin, BloqueadoHasta,
+            // FechaUltimoAcceso porque son datos operativos que pueden cambiar
+            // normalmente desde la aplicación.
+
             List<string> valores = new List<string>
-{
+            {
                 usuario.Id.ToString("D"),
                 NormalizarTexto(usuario.NombreUsuario),
                 NormalizarTexto(usuario.NombreCompleto),
+                NormalizarTexto(usuario.Email),
+                NormalizarGuidNullable(usuario.IdiomaPreferidoId),
                 NormalizarTexto(usuario.PasswordHash),
                 NormalizarBool(usuario.Activo),
                 NormalizarBool(usuario.DebeCambiarPassword),
@@ -52,10 +54,6 @@ namespace SSL.Integridad
                 throw new ArgumentNullException(nameof(usuarios));
             }
 
-            // El DVV representa la integridad del conjunto completo.
-            // Para que el cálculo sea estable, se ordena siempre por Id.
-            // Además, se agrega la posición de fila para detectar agregados,
-            // eliminaciones o cambios de orden en el conjunto controlado.
             List<string> valoresVerticales = usuarios
                 .OrderBy(x => x.Id)
                 .Select((usuario, indice) =>
@@ -71,10 +69,11 @@ namespace SSL.Integridad
         {
             StringBuilder cadena = new StringBuilder();
 
-            for (int indiceAtributo = 0; indiceAtributo < valores.Count; indiceAtributo++)
+            for (int indiceAtributo = 0;
+                 indiceAtributo < valores.Count;
+                 indiceAtributo++)
             {
                 string valor = valores[indiceAtributo] ?? string.Empty;
-
                 int posicionAtributo = indiceAtributo + 1;
 
                 if (valor.Length == 0)
@@ -86,17 +85,13 @@ namespace SSL.Integridad
                     continue;
                 }
 
-                for (int indiceCaracter = 0; indiceCaracter < valor.Length; indiceCaracter++)
+                for (int indiceCaracter = 0;
+                     indiceCaracter < valor.Length;
+                     indiceCaracter++)
                 {
                     int posicionCaracter = indiceCaracter + 1;
                     int codigoCaracter = valor[indiceCaracter];
 
-                    // La cadena incorpora:
-                    // A = posición del atributo dentro de la entidad.
-                    // C = posición del carácter dentro del atributo.
-                    // Valor numérico del carácter = contenido.
-                    //
-                    // Con esto se cumple la regla de contenido + posición.
                     cadena.Append("A")
                         .Append(posicionAtributo)
                         .Append(":C")
@@ -119,13 +114,20 @@ namespace SSL.Integridad
 
                 StringBuilder resultado = new StringBuilder();
 
-                foreach (byte b in bytesHash)
+                foreach (byte byteHash in bytesHash)
                 {
-                    resultado.Append(b.ToString("x2"));
+                    resultado.Append(byteHash.ToString("x2"));
                 }
 
                 return resultado.ToString();
             }
+        }
+
+        private string NormalizarGuidNullable(Guid? valor)
+        {
+            return valor.HasValue
+                ? valor.Value.ToString("D")
+                : string.Empty;
         }
 
         private string NormalizarTexto(string texto)
@@ -143,13 +145,6 @@ namespace SSL.Integridad
         private string NormalizarFecha(DateTime fecha)
         {
             return fecha.ToString("O", CultureInfo.InvariantCulture);
-        }
-
-        private string NormalizarFechaNullable(DateTime? fecha)
-        {
-            return fecha.HasValue
-                ? fecha.Value.ToString("O", CultureInfo.InvariantCulture)
-                : string.Empty;
         }
     }
 }
