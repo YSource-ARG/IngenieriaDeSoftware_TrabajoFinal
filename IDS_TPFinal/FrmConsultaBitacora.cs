@@ -110,12 +110,10 @@ namespace IDS_TPFinal
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
             CargarOpcionesModulo();
+            CargarOpcionesUsuarioYAccion();
 
             dtpFechaDesde.Value = DateTime.Today.AddDays(-7);
             dtpFechaHasta.Value = DateTime.Today;
-
-            cmbUsuario.SelectedIndex = 0;
-            cmbAccion.SelectedIndex = 0;
 
             CargarBitacora();
         }
@@ -148,10 +146,7 @@ namespace IDS_TPFinal
                 return;
             }
 
-            string opcionTodos = TraducirTexto(
-                "Bitacora.Opciones.Todos",
-                "Todos"
-            );
+            string opcionTodos = TraducirTexto("Bitacora.Opciones.Todos", "Todos");
 
             cmbUsuario.Items.Clear();
             cmbUsuario.Items.Add(opcionTodos);
@@ -206,13 +201,8 @@ namespace IDS_TPFinal
             {
                 string modulo = ObtenerModuloSeleccionado();
                 string tipo = ObtenerTipoSeleccionado();
-                string usuario = cmbUsuario.SelectedIndex <= 0
-                    ? null
-                    : cmbUsuario.SelectedItem.ToString();
-
-                string accion = cmbAccion.SelectedIndex <= 0
-                    ? null
-                    : cmbAccion.SelectedItem.ToString();
+                string usuario = ObtenerUsuarioSeleccionado();
+                string accion = ObtenerAccionSeleccionada();
 
                 DateTime fechaDesde = dtpFechaDesde.Value.Date;
                 DateTime fechaHasta = dtpFechaHasta.Value.Date.AddDays(1).AddTicks(-1);

@@ -84,11 +84,6 @@ namespace IDS_TPFinal
             // 
             this.cmbAccion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbAccion.FormattingEnabled = true;
-            this.cmbAccion.Items.AddRange(new object[] {
-            "Todos",
-            "INFO",
-            "WARN",
-            "ERROR"});
             this.cmbAccion.Location = new System.Drawing.Point(291, 94);
             this.cmbAccion.Name = "cmbAccion";
             this.cmbAccion.Size = new System.Drawing.Size(264, 21);
@@ -137,11 +132,6 @@ namespace IDS_TPFinal
             // 
             this.cmbTipo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbTipo.FormattingEnabled = true;
-            this.cmbTipo.Items.AddRange(new object[] {
-            "Todos",
-            "INFO",
-            "WARN",
-            "ERROR"});
             this.cmbTipo.Location = new System.Drawing.Point(157, 40);
             this.cmbTipo.Name = "cmbTipo";
             this.cmbTipo.Size = new System.Drawing.Size(91, 21);

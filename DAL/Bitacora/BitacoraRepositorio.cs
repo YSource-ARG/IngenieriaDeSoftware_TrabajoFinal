@@ -96,8 +96,8 @@ namespace DAL.Bitacora
             Descripcion,
             Tipo
         FROM dbo.Bitacora
-        WHERE (@Usuario IS NULL OR Usuario LIKE '%' + @Usuario + '%')
-          AND (@Accion IS NULL OR Accion LIKE '%' + @Accion + '%')
+        WHERE (@Usuario IS NULL OR Usuario = @Usuario)
+          AND (@Accion IS NULL OR Accion = @Accion)
           AND (@Modulo IS NULL OR Modulo = @Modulo)
           AND (@Tipo IS NULL OR Tipo = @Tipo)
           AND (@FechaDesde IS NULL OR Fecha >= @FechaDesde)
