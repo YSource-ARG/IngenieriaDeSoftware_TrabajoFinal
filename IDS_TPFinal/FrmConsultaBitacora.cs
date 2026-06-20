@@ -24,17 +24,14 @@ namespace IDS_TPFinal
         {
         }
 
-        public FrmConsultaBitacora(
-            IBitacoraService bitacoraService,
-            IIdiomaAppService idiomaAppService)
+        public FrmConsultaBitacora(IBitacoraService bitacoraService, IIdiomaAppService idiomaAppService)
         {
             _bitacoraService = bitacoraService
                 ?? throw new ArgumentNullException(nameof(bitacoraService));
 
             _idiomaAppService = idiomaAppService;
 
-            InitializeComponent();
-            ConfigurarTagsTraduccion();
+            InitializeComponent();            
             AplicarEstiloVisual();
 
             if (_idiomaAppService != null)
@@ -42,23 +39,7 @@ namespace IDS_TPFinal
                 _idiomaAppService.Suscribir(this);
                 ActualizarIdioma();
             }
-        }
-
-        private void ConfigurarTagsTraduccion()
-        {
-            this.Tag = "Bitacora.TituloVentana";
-
-            lblTitulo.Tag = "Bitacora.Titulo";
-            lblModulo.Tag = "Bitacora.Modulo";
-            lblTipo.Tag = "Bitacora.Tipo";
-            lblFechaDesde.Tag = "Bitacora.FechaDesde";
-            lblFechaHasta.Tag = "Bitacora.FechaHasta";
-            lblCantidadRegistros.Tag = "Bitacora.RegistrosEncontrados";
-
-            btnBuscar.Tag = "Bitacora.Buscar";
-            btnLimpiar.Tag = "Bitacora.Limpiar";
-            btnCerrar.Tag = "Bitacora.Cerrar";
-        }
+        }        
 
         public void ActualizarIdioma()
         {
@@ -69,10 +50,13 @@ namespace IDS_TPFinal
 
             int indiceModulo = cmbModulo.SelectedIndex;
             int indiceTipo = cmbTipo.SelectedIndex;
+            int indiceUsuario = cmbUsuario.SelectedIndex;
+            int indiceAccion = cmbAccion.SelectedIndex;
 
             TraductorControles.TraducirFormulario(this, _idiomaAppService);
 
             CargarOpcionesModulo();
+            CargarOpcionesUsuarioYAccion();
 
             if (indiceModulo >= 0 && indiceModulo < cmbModulo.Items.Count)
             {
@@ -84,6 +68,15 @@ namespace IDS_TPFinal
                 cmbTipo.SelectedIndex = indiceTipo;
             }
 
+            if (indiceUsuario >= 0 && indiceUsuario < cmbUsuario.Items.Count)
+            {
+                cmbUsuario.SelectedIndex = indiceUsuario;
+            }
+
+            if (indiceAccion >= 0 && indiceAccion < cmbAccion.Items.Count)
+            {
+                cmbAccion.SelectedIndex = indiceAccion;
+            }
             ConfigurarColumnas();
             ActualizarCantidadRegistros();
         }
@@ -101,6 +94,7 @@ namespace IDS_TPFinal
         private void FrmConsultaBitacora_Load(object sender, EventArgs e)
         {
             CargarOpcionesModulo();
+            CargarOpcionesUsuarioYAccion();
 
             dtpFechaDesde.Value = DateTime.Today.AddDays(-7);
             dtpFechaHasta.Value = DateTime.Today;
@@ -116,6 +110,7 @@ namespace IDS_TPFinal
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
             CargarOpcionesModulo();
+            CargarOpcionesUsuarioYAccion();
 
             dtpFechaDesde.Value = DateTime.Today.AddDays(-7);
             dtpFechaHasta.Value = DateTime.Today;
@@ -144,6 +139,56 @@ namespace IDS_TPFinal
             cmbTipo.SelectedIndex = 0;
         }
 
+        private void CargarOpcionesUsuarioYAccion()
+        {
+            if (_bitacoraService == null)
+            {
+                return;
+            }
+
+            string opcionTodos = TraducirTexto("Bitacora.Opciones.Todos", "Todos");
+
+            cmbUsuario.Items.Clear();
+            cmbUsuario.Items.Add(opcionTodos);
+
+            foreach (string usuario in _bitacoraService.ListarUsuarios())
+            {
+                cmbUsuario.Items.Add(usuario);
+            }
+
+            cmbUsuario.SelectedIndex = 0;
+
+            cmbAccion.Items.Clear();
+            cmbAccion.Items.Add(opcionTodos);
+
+            foreach (string accion in _bitacoraService.ListarAcciones())
+            {
+                cmbAccion.Items.Add(accion);
+            }
+
+            cmbAccion.SelectedIndex = 0;
+        }
+
+        private string ObtenerUsuarioSeleccionado()
+        {
+            if (cmbUsuario.SelectedIndex <= 0)
+            {
+                return null;
+            }
+
+            return cmbUsuario.SelectedItem.ToString();
+        }
+
+        private string ObtenerAccionSeleccionada()
+        {
+            if (cmbAccion.SelectedIndex <= 0)
+            {
+                return null;
+            }
+
+            return cmbAccion.SelectedItem.ToString();
+        }
+
         // Consulta a la bitácora según los filtros seleccionados
         private void CargarBitacora()
         {
@@ -156,12 +201,22 @@ namespace IDS_TPFinal
             {
                 string modulo = ObtenerModuloSeleccionado();
                 string tipo = ObtenerTipoSeleccionado();
+                string usuario = ObtenerUsuarioSeleccionado();
+                string accion = ObtenerAccionSeleccionada();
 
                 DateTime fechaDesde = dtpFechaDesde.Value.Date;
                 DateTime fechaHasta = dtpFechaHasta.Value.Date.AddDays(1).AddTicks(-1);
 
                 var registros = _bitacoraService
-                    .Listar(modulo, tipo, fechaDesde, fechaHasta, 500)
+                    .Listar(
+                        usuario,
+                        accion,
+                        modulo,
+                        tipo,
+                        fechaDesde,
+                        fechaHasta,
+                        500
+                    )
                     .Select(registro => new
                     {
                         Fecha = registro.Fecha.ToString("dd/MM/yyyy HH:mm:ss"),
@@ -313,9 +368,8 @@ namespace IDS_TPFinal
             TemaVisual.AplicarTextoSecundario(lblFechaHasta);
             TemaVisual.AplicarTextoSecundario(lblTipo);
             TemaVisual.AplicarTextoSecundario(lblCantidadRegistros);
-
-            cmbModulo.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbTipo.DropDownStyle = ComboBoxStyle.DropDownList;
+            TemaVisual.AplicarTextoSecundario(lblUsuario);
+            TemaVisual.AplicarTextoSecundario(lblAccion);            
         }
     }
 }

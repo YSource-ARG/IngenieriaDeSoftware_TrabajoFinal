@@ -62,22 +62,44 @@ namespace BLL.Bitacora
         }
 
         // Consulta los registros de la bitácora aplicando filtros de fechas y cantidades máx
-        public List<BE.Bitacora> Listar(string modulo, string tipo, DateTime? fechaDesde, DateTime? fechaHasta, int cantidadMaxima)
+        public List<BE.Bitacora> Listar(
+            string usuario,
+            string accion,
+            string modulo,
+            string tipo,
+            DateTime? fechaDesde,
+            DateTime? fechaHasta,
+            int cantidadMaxima)
         {
             int cantidadNormalizada = NormalizarCantidadMaxima(cantidadMaxima);
 
-            if (fechaDesde.HasValue && fechaHasta.HasValue && fechaDesde.Value > fechaHasta.Value)
+            if (fechaDesde.HasValue &&
+                fechaHasta.HasValue &&
+                fechaDesde.Value > fechaHasta.Value)
             {
-                throw new ArgumentException("La fecha desde no puede ser mayor que la fecha hasta.");
+                throw new ArgumentException(
+                    "La fecha desde no puede ser mayor que la fecha hasta."
+                );
             }
 
             return _bitacoraRepositorio.Listar(
+                usuario,
+                accion,
                 modulo,
                 tipo,
                 fechaDesde,
                 fechaHasta,
                 cantidadNormalizada
             );
+        }
+        public List<string> ListarUsuarios()
+        {
+            return _bitacoraRepositorio.ListarUsuarios();
+        }
+
+        public List<string> ListarAcciones()
+        {
+            return _bitacoraRepositorio.ListarAcciones();
         }
 
         private void IntentarSincronizarPendientes()
