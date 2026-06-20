@@ -366,3 +366,20 @@ BEGIN
     )
 END
 GO
+
+-- Preferencia de idioma del usuario.
+IF COL_LENGTH('dbo.Usuario', 'IdiomaPreferidoId') IS NULL
+BEGIN
+    ALTER TABLE dbo.Usuario
+    ADD IdiomaPreferidoId uniqueidentifier NULL
+END
+GO
+
+IF OBJECT_ID('dbo.FK_Usuario_IdiomaPreferido', 'F') IS NULL
+BEGIN
+    ALTER TABLE dbo.Usuario
+    ADD CONSTRAINT FK_Usuario_IdiomaPreferido
+        FOREIGN KEY (IdiomaPreferidoId)
+        REFERENCES dbo.Idioma(Id)
+END
+GO

@@ -11,6 +11,7 @@ namespace BLL.Autenticacion
             Guid usuarioId,
             string nombreUsuario,
             bool debeCambiarPassword,
+            Guid? idiomaPreferidoId,
             bool errorAccesoDatos,
             bool bloqueadoPorIntegridad)
         {
@@ -20,6 +21,7 @@ namespace BLL.Autenticacion
             UsuarioId = usuarioId;
             NombreUsuario = nombreUsuario;
             DebeCambiarPassword = debeCambiarPassword;
+            IdiomaPreferidoId = idiomaPreferidoId;
             ErrorAccesoDatos = errorAccesoDatos;
             BloqueadoPorIntegridad = bloqueadoPorIntegridad;
         }
@@ -36,6 +38,8 @@ namespace BLL.Autenticacion
 
         public bool DebeCambiarPassword { get; private set; }
 
+        public Guid? IdiomaPreferidoId { get; private set; }
+
         public bool ErrorAccesoDatos { get; private set; }
 
         public bool BloqueadoPorIntegridad { get; private set; }
@@ -49,10 +53,12 @@ namespace BLL.Autenticacion
                 Guid.Empty,
                 null,
                 false,
+                null,
                 false,
                 false
             );
         }
+
         public static ResultadoLogin ErrorBaseDatos()
         {
             return new ResultadoLogin(
@@ -62,10 +68,12 @@ namespace BLL.Autenticacion
                 Guid.Empty,
                 null,
                 false,
-                false,
-                true
+                null,
+                true,
+                false
             );
         }
+
         public static ResultadoLogin BloqueadoPorFallaIntegridad()
         {
             return new ResultadoLogin(
@@ -75,10 +83,12 @@ namespace BLL.Autenticacion
                 Guid.Empty,
                 null,
                 false,
+                null,
                 false,
                 true
             );
         }
+
         public static ResultadoLogin Bloqueado(DateTime bloqueadoHasta)
         {
             return new ResultadoLogin(
@@ -88,6 +98,7 @@ namespace BLL.Autenticacion
                 Guid.Empty,
                 null,
                 false,
+                null,
                 false,
                 false
             );
@@ -96,7 +107,8 @@ namespace BLL.Autenticacion
         public static ResultadoLogin Exitoso(
             Guid usuarioId,
             string nombreUsuario,
-            bool debeCambiarPassword)
+            bool debeCambiarPassword,
+            Guid? idiomaPreferidoId)
         {
             return new ResultadoLogin(
                 true,
@@ -105,6 +117,7 @@ namespace BLL.Autenticacion
                 usuarioId,
                 nombreUsuario,
                 debeCambiarPassword,
+                idiomaPreferidoId,
                 false,
                 false
             );

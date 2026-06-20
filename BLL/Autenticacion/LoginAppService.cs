@@ -204,7 +204,8 @@ namespace BLL.Autenticacion
                 return ResultadoLogin.Exitoso(
                     usuario.Id,
                     usuario.NombreUsuario,
-                    usuario.DebeCambiarPassword
+                    usuario.DebeCambiarPassword,
+                    usuario.IdiomaPreferidoId
                 );
             }
             catch (AccesoDatosException ex)

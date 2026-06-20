@@ -30,6 +30,7 @@ namespace DAL.Integridad
                 NombreUsuario,
                 NombreCompleto,
                 Email,
+                IdiomaPreferidoId,
                 PasswordHash,
                 Activo,
                 DebeCambiarPassword,
@@ -281,6 +282,10 @@ namespace DAL.Integridad
                 Email = reader["Email"] == DBNull.Value
                     ? null
                     : reader["Email"].ToString(),
+
+                IdiomaPreferidoId = reader["IdiomaPreferidoId"] == DBNull.Value
+                    ? (Guid?)null
+                    : Guid.Parse(reader["IdiomaPreferidoId"].ToString()),
 
                 PasswordHash = reader["PasswordHash"].ToString(),
                 Activo = Convert.ToBoolean(reader["Activo"]),

@@ -28,8 +28,8 @@ namespace SSL.Integridad
             // el sistema como reacción ante una falla de integridad.
             //
             // No se incluyen IntentosFallidosLogin, BloqueadoHasta,
-            // FechaUltimoAcceso ni IdiomaPreferidoId porque son datos
-            // operativos que pueden cambiar normalmente desde la aplicación.
+            // FechaUltimoAcceso porque son datos operativos que pueden cambiar
+            // normalmente desde la aplicación.
 
             List<string> valores = new List<string>
             {
@@ -37,6 +37,7 @@ namespace SSL.Integridad
                 NormalizarTexto(usuario.NombreUsuario),
                 NormalizarTexto(usuario.NombreCompleto),
                 NormalizarTexto(usuario.Email),
+                NormalizarGuidNullable(usuario.IdiomaPreferidoId),
                 NormalizarTexto(usuario.PasswordHash),
                 NormalizarBool(usuario.Activo),
                 NormalizarBool(usuario.DebeCambiarPassword),
@@ -120,6 +121,13 @@ namespace SSL.Integridad
 
                 return resultado.ToString();
             }
+        }
+
+        private string NormalizarGuidNullable(Guid? valor)
+        {
+            return valor.HasValue
+                ? valor.Value.ToString("D")
+                : string.Empty;
         }
 
         private string NormalizarTexto(string texto)

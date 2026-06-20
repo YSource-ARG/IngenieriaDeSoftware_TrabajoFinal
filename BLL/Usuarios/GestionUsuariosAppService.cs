@@ -48,6 +48,36 @@ namespace BLL.Usuarios
             return _usuarioRepositorio.ObtenerPorId(idUsuario);
         }
 
+        public void GuardarIdiomaPreferidoUsuarioActual(Guid idiomaPreferidoId)
+        {
+            if (idiomaPreferidoId == Guid.Empty)
+            {
+                throw new ArgumentException(
+                    "El identificador del idioma no puede estar vacío.",
+                    nameof(idiomaPreferidoId)
+                );
+            }
+
+            if (!_sessionService.HaySesionActiva)
+            {
+                throw new InvalidOperationException(
+                    "No hay una sesión activa para guardar la preferencia de idioma."
+                );
+            }
+
+            _usuarioRepositorio.ActualizarIdiomaPreferido(
+                _sessionService.UsuarioIdActual,
+                idiomaPreferidoId
+            );
+
+            RecalcularIntegridadUsuarios();
+
+            RegistrarBitacora(
+                "IDIOMA_PREFERIDO_MODIFICADO",
+                $"El usuario '{_sessionService.NombreUsuarioActual}' modificó su idioma preferido."
+            );
+        }
+
         // Se validan y persisten los datos, se hashea la contraseña y se registra en la bitácora.
         public void CrearUsuario(string nombreUsuario, string nombreCompleto, string email, string passwordInicial, bool activo)
         {
