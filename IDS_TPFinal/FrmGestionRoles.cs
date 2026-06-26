@@ -39,25 +39,9 @@ namespace IDS_TPFinal
             CargarRoles();
         }
 
-        private void AplicarEstilosYTextos()
+        private void AplicarEstiloVisual()
         {
             TemaVisual.AplicarFormularioOscuro(this);
-
-            Text = Traducir("Roles.Gestion.Titulo", "Gestión de roles");
-            _lblTitulo.Text = Traducir("Roles.Gestion.Titulo", "Gestión de roles");
-            _lblAyuda.Text = Traducir(
-                "Roles.Gestion.Ayuda",
-                "Seleccione un rol existente para administrar su composición o cree uno nuevo cargando sus atributos y marcando permisos o subroles en el árbol."
-            );
-            _lblRolExistente.Text = Traducir("Roles.Gestion.RolExistente", "Rol existente");
-            _lblNombre.Text = Traducir("Roles.Gestion.Nombre", "Nombre");
-            _lblCodigo.Text = Traducir("Roles.Gestion.Codigo", "Código");
-            _lblDescripcion.Text = Traducir("Roles.Gestion.Descripcion", "Descripción");
-            _chkActivo.Text = Traducir("Roles.Gestion.Activo", "Activo");
-            _btnNuevoRol.Text = Traducir("Roles.Gestion.NuevoRol", "Nuevo rol");
-            _btnCancelarNuevo.Text = Traducir("Roles.Gestion.Cancelar", "Cancelar");
-            _btnCerrar.Text = Traducir("Roles.Gestion.Cerrar", "Cerrar");
-
             TemaVisual.AplicarTitulo(_lblTitulo);
             TemaVisual.AplicarTextoSecundario(_lblAyuda);
 
@@ -96,8 +80,6 @@ namespace IDS_TPFinal
             TemaVisual.AplicarBotonSecundario(_btnNuevoRol);
             TemaVisual.AplicarBotonSecundario(_btnCancelarNuevo);
             TemaVisual.AplicarBotonSecundario(_btnCerrar);
-
-            AplicarModoVisual();
         }
 
         private void CargarRoles(Guid? idRolSeleccionado = null)
