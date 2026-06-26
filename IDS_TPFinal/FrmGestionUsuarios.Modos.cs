@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Windows.Forms;
 using UI.Idiomas;
+using UI;
 
 namespace IDS_TPFinal
 {
@@ -55,6 +56,7 @@ namespace IDS_TPFinal
             btnEditar.Enabled = false;
             btnInhabilitarReactivar.Enabled = false;
             btnRestablecerPassword.Enabled = false;
+            _btnPermisos.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.UsuariosAsignarPermisos);
 
             lblPassword.Text = TraducirMensaje("Usuarios.NuevaPassword", "Nueva contraseña");
 
@@ -75,6 +77,7 @@ namespace IDS_TPFinal
             btnEditar.Enabled = true;
             btnInhabilitarReactivar.Enabled = true;
             btnRestablecerPassword.Enabled = true;
+            _btnPermisos.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.UsuariosAsignarPermisos);
 
             lblPassword.Text = TraducirMensaje("Usuarios.NuevaPassword", "Nueva contraseña");
 
@@ -95,6 +98,7 @@ namespace IDS_TPFinal
             btnEditar.Enabled = false;
             btnInhabilitarReactivar.Enabled = false;
             btnRestablecerPassword.Enabled = false;
+            _btnPermisos.Enabled = false;
 
             txtPassword.Clear();
             lblPassword.Text = TraducirMensaje("Usuarios.NuevaPassword", "Nueva contraseña");
@@ -108,6 +112,7 @@ namespace IDS_TPFinal
             btnEditar.Text = "✎\n" + TraducirMensaje("Usuarios.Editar", "Editar");
             btnRestablecerPassword.Text = "🔑\n" + TraducirMensaje("Usuarios.RestablecerPassword", "Restablecer contraseña");
             btnHistorialEmail.Text = "✉\n" + TraducirMensaje("Usuarios.HistorialEmail", "Historial email");
+            _btnPermisos.Text = "🛡\n" + TraducirMensaje("Usuarios.Permisos", "Permisos");
 
             ActualizarTextoBotonCambioEstado();
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using UI;
 using UI.Estilos;
 
 namespace IDS_TPFinal
@@ -79,6 +80,9 @@ namespace IDS_TPFinal
             AplicarBotonAccion(btnInhabilitarReactivar, "⏻\n" + TraducirMensaje("Usuarios.InhabilitarReactivar", "Inhabilitar/Reactivar"));
             AplicarBotonAccion(btnRestablecerPassword, "🔑\n" + TraducirMensaje("Usuarios.RestablecerPassword", "Restablecer contraseña"));
             AplicarBotonAccion(btnHistorialEmail, "✉\n" + TraducirMensaje("Usuarios.HistorialEmail", "Historial email"));
+            AplicarBotonAccion(_btnPermisos, "🛡\n" + TraducirMensaje("Usuarios.Permisos", "Permisos"));
+
+            ConfigurarAccesosPorPermiso();
         }
 
         private void ConfigurarEstadoInicial()
@@ -156,6 +160,16 @@ namespace IDS_TPFinal
             {
                 boton.BackColor = TemaVisual.FondoPanel;
             };
+        }
+
+        private void ConfigurarAccesosPorPermiso()
+        {
+            btnNuevo.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.UsuariosCrear);
+            btnEditar.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.UsuariosEditar);
+            btnInhabilitarReactivar.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.UsuariosCambiarEstado);
+            btnRestablecerPassword.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.UsuariosBlanquearPassword);
+            btnHistorialEmail.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.UsuariosVerHistorialEmail);
+            _btnPermisos.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.UsuariosAsignarPermisos);
         }
     }
 }

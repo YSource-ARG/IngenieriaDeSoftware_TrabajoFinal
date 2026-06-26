@@ -41,6 +41,7 @@ namespace UI
             this.btnDesbloquearIntegridad = new System.Windows.Forms.Button();
             this.btnRecalcularDigitos = new System.Windows.Forms.Button();
             this.btnConsultaBitacora = new System.Windows.Forms.Button();
+            this.btnGestionRoles = new System.Windows.Forms.Button();
             this.btnGestionUsuarios = new System.Windows.Forms.Button();
             this.btnSalir = new System.Windows.Forms.Button();
             this.btnCerrarSesion = new System.Windows.Forms.Button();
@@ -130,6 +131,7 @@ namespace UI
             this.panelLateral.Controls.Add(this.btnDesbloquearIntegridad);
             this.panelLateral.Controls.Add(this.btnRecalcularDigitos);
             this.panelLateral.Controls.Add(this.btnConsultaBitacora);
+            this.panelLateral.Controls.Add(this.btnGestionRoles);
             this.panelLateral.Controls.Add(this.btnGestionUsuarios);
             this.panelLateral.Controls.Add(this.btnSalir);
             this.panelLateral.Controls.Add(this.btnCerrarSesion);
@@ -143,7 +145,7 @@ namespace UI
             // 
             // btnGestionIdiomas
             // 
-            this.btnGestionIdiomas.Location = new System.Drawing.Point(11, 328);
+            this.btnGestionIdiomas.Location = new System.Drawing.Point(11, 377);
             this.btnGestionIdiomas.Margin = new System.Windows.Forms.Padding(2);
             this.btnGestionIdiomas.Name = "btnGestionIdiomas";
             this.btnGestionIdiomas.Size = new System.Drawing.Size(135, 34);
@@ -155,7 +157,7 @@ namespace UI
             // 
             // btnGestionTraducciones
             // 
-            this.btnGestionTraducciones.Location = new System.Drawing.Point(11, 274);
+            this.btnGestionTraducciones.Location = new System.Drawing.Point(11, 328);
             this.btnGestionTraducciones.Margin = new System.Windows.Forms.Padding(2);
             this.btnGestionTraducciones.Name = "btnGestionTraducciones";
             this.btnGestionTraducciones.Size = new System.Drawing.Size(135, 34);
@@ -167,7 +169,7 @@ namespace UI
             // 
             // btnDesbloquearIntegridad
             // 
-            this.btnDesbloquearIntegridad.Location = new System.Drawing.Point(11, 223);
+            this.btnDesbloquearIntegridad.Location = new System.Drawing.Point(11, 277);
             this.btnDesbloquearIntegridad.Margin = new System.Windows.Forms.Padding(2);
             this.btnDesbloquearIntegridad.Name = "btnDesbloquearIntegridad";
             this.btnDesbloquearIntegridad.Size = new System.Drawing.Size(135, 34);
@@ -179,7 +181,7 @@ namespace UI
             // 
             // btnRecalcularDigitos
             // 
-            this.btnRecalcularDigitos.Location = new System.Drawing.Point(11, 174);
+            this.btnRecalcularDigitos.Location = new System.Drawing.Point(11, 228);
             this.btnRecalcularDigitos.Margin = new System.Windows.Forms.Padding(2);
             this.btnRecalcularDigitos.Name = "btnRecalcularDigitos";
             this.btnRecalcularDigitos.Size = new System.Drawing.Size(135, 34);
@@ -191,7 +193,7 @@ namespace UI
             // 
             // btnConsultaBitacora
             // 
-            this.btnConsultaBitacora.Location = new System.Drawing.Point(11, 118);
+            this.btnConsultaBitacora.Location = new System.Drawing.Point(11, 169);
             this.btnConsultaBitacora.Margin = new System.Windows.Forms.Padding(2);
             this.btnConsultaBitacora.Name = "btnConsultaBitacora";
             this.btnConsultaBitacora.Size = new System.Drawing.Size(135, 34);
@@ -200,6 +202,18 @@ namespace UI
             this.btnConsultaBitacora.Text = "Bitácora";
             this.btnConsultaBitacora.UseVisualStyleBackColor = true;
             this.btnConsultaBitacora.Click += new System.EventHandler(this.btnConsultaBitacora_Click);
+            // 
+            // btnGestionRoles
+            // 
+            this.btnGestionRoles.Location = new System.Drawing.Point(11, 118);
+            this.btnGestionRoles.Margin = new System.Windows.Forms.Padding(2);
+            this.btnGestionRoles.Name = "btnGestionRoles";
+            this.btnGestionRoles.Size = new System.Drawing.Size(135, 34);
+            this.btnGestionRoles.TabIndex = 3;
+            this.btnGestionRoles.Tag = "Principal.GestionRoles";
+            this.btnGestionRoles.Text = "Roles";
+            this.btnGestionRoles.UseVisualStyleBackColor = true;
+            this.btnGestionRoles.Click += new System.EventHandler(this.btnGestionRoles_Click);
             // 
             // btnGestionUsuarios
             // 
@@ -215,7 +229,7 @@ namespace UI
             // 
             // btnSalir
             // 
-            this.btnSalir.Location = new System.Drawing.Point(11, 422);
+            this.btnSalir.Location = new System.Drawing.Point(11, 476);
             this.btnSalir.Margin = new System.Windows.Forms.Padding(2);
             this.btnSalir.Name = "btnSalir";
             this.btnSalir.Size = new System.Drawing.Size(135, 34);
@@ -227,7 +241,7 @@ namespace UI
             // 
             // btnCerrarSesion
             // 
-            this.btnCerrarSesion.Location = new System.Drawing.Point(11, 375);
+            this.btnCerrarSesion.Location = new System.Drawing.Point(11, 426);
             this.btnCerrarSesion.Margin = new System.Windows.Forms.Padding(2);
             this.btnCerrarSesion.Name = "btnCerrarSesion";
             this.btnCerrarSesion.Size = new System.Drawing.Size(135, 34);
@@ -359,6 +373,7 @@ namespace UI
         private System.Windows.Forms.Label lblResumenTitulo;
         private System.Windows.Forms.Label lblResumenTexto;
         private System.Windows.Forms.Button btnGestionUsuarios;
+        private System.Windows.Forms.Button btnGestionRoles;
         private System.Windows.Forms.Button btnConsultaBitacora;
         private System.Windows.Forms.Button btnRecalcularDigitos;
         private System.Windows.Forms.Button btnDesbloquearIntegridad;

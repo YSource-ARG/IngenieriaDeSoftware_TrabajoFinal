@@ -52,6 +52,12 @@
     <Compile Include="Idiomas\TraduccionRepositorio.cs" />
     <Compile Include="Integridad\DigitoVerificadorRepositorio.cs" />
     <Compile Include="Integridad\IDigitoVerificadorRepositorio.cs" />
+    <Compile Include="Permisos\IPermisoComponenteRepositorio.cs" />
+    <Compile Include="Permisos\IRolComponenteRepositorio.cs" />
+    <Compile Include="Permisos\IUsuarioPermisoComponenteRepositorio.cs" />
+    <Compile Include="Permisos\PermisoComponenteRepositorio.cs" />
+    <Compile Include="Permisos\RolComponenteRepositorio.cs" />
+    <Compile Include="Permisos\UsuarioPermisoComponenteRepositorio.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Usuarios\IUsuarioEmailHistorialRepositorio.cs" />
     <Compile Include="Usuarios\IUsuarioRepositorio.cs" />

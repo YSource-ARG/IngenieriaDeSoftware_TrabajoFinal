@@ -58,6 +58,8 @@
     <Compile Include="Integridad\IIntegridadService.cs" />
     <Compile Include="Integridad\IntegridadService.cs" />
     <Compile Include="Integridad\ResultadoVerificacionIntegridad.cs" />
+    <Compile Include="Permisos\AutorizacionService.cs" />
+    <Compile Include="Permisos\GestionPermisosAppService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Usuarios\GestionUsuariosAppService.cs" />
   </ItemGroup>

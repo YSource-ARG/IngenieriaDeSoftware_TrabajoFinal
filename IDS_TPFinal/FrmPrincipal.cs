@@ -1,4 +1,4 @@
-using BE;
+Ôªøusing BE;
 using BLL.Autenticacion;
 using BLL.Bitacora;
 using IDS_TPFinal;
@@ -10,6 +10,7 @@ using BLL.Usuarios;
 using BLL.Integridad;
 using BLL.Idiomas;
 using UI.Idiomas;
+using BLL.Permisos;
 
 namespace UI
 {
@@ -22,6 +23,8 @@ namespace UI
         private readonly IIdiomaAppService _idiomaAppService;
         private readonly GestionTraduccionesAppService _gestionTraduccionesAppService;
         private readonly GestionIdiomasAppService _gestionIdiomasAppService;
+        private readonly GestionPermisosAppService _gestionPermisosAppService;
+        private readonly AutorizacionService _autorizacionService;
 
         private bool _cerrandoSesion;
         private bool _cargandoIdiomasPrincipal;
@@ -35,7 +38,9 @@ namespace UI
             IBitacoraService bitacoraService,
             IIdiomaAppService idiomaAppService,
             GestionTraduccionesAppService gestionTraduccionesAppService,
-            GestionIdiomasAppService gestionIdiomasAppService)
+            GestionIdiomasAppService gestionIdiomasAppService,
+            GestionPermisosAppService gestionPermisosAppService,
+            AutorizacionService autorizacionService)
         {
             if (cerrarSesionAppService == null)
             {
@@ -72,6 +77,16 @@ namespace UI
                 throw new ArgumentNullException(nameof(gestionIdiomasAppService));
             }
 
+            if (gestionPermisosAppService == null)
+            {
+                throw new ArgumentNullException(nameof(gestionPermisosAppService));
+            }
+
+            if (autorizacionService == null)
+            {
+                throw new ArgumentNullException(nameof(autorizacionService));
+            }
+
             _cerrarSesionAppService = cerrarSesionAppService;
             _gestionUsuariosAppService = gestionUsuariosAppService;
             _integridadService = integridadService;
@@ -79,6 +94,8 @@ namespace UI
             _idiomaAppService = idiomaAppService;
             _gestionTraduccionesAppService = gestionTraduccionesAppService;
             _gestionIdiomasAppService = gestionIdiomasAppService;
+            _gestionPermisosAppService = gestionPermisosAppService;
+            _autorizacionService = autorizacionService;
 
             InitializeComponent();
             AplicarEstiloVisual();
@@ -88,6 +105,7 @@ namespace UI
 
             _idiomaAppService.Suscribir(this);
             ActualizarIdioma();
+            ConfigurarAccesosPorPermiso();
 
             this.FormClosed += FrmPrincipal_FormClosed;
         }
@@ -269,6 +287,7 @@ namespace UI
             ConfigurarBotonPrincipal(btnCerrarSesion);
             ConfigurarBotonSecundario(btnSalir);
             ConfigurarBotonSecundario(btnGestionUsuarios);
+            ConfigurarBotonSecundario(btnGestionRoles);
             ConfigurarBotonSecundario(btnConsultaBitacora);
             ConfigurarBotonSecundario(btnGestionTraducciones);
             ConfigurarBotonSecundario(btnRecalcularDigitos);
@@ -322,16 +341,43 @@ namespace UI
 
         private void btnGestionUsuarios_Click(object sender, EventArgs e)
         {
+            if (!ValidarPermiso(PermisosSistema.UsuariosGestionar, "No ten√©s permisos para gestionar usuarios."))
+            {
+                return;
+            }
+
             FrmGestionUsuarios frmGestionUsuarios = new FrmGestionUsuarios(
                 _gestionUsuariosAppService,
+                _gestionPermisosAppService,
+                _autorizacionService,
                 _idiomaAppService
             );
 
             MostrarFormularioDialogoCentrado(frmGestionUsuarios);
         }
 
+        private void btnGestionRoles_Click(object sender, EventArgs e)
+        {
+            if (!ValidarPermiso(PermisosSistema.UsuariosAsignarPermisos, "No ten√©s permisos para gestionar roles."))
+            {
+                return;
+            }
+
+            FrmGestionRoles frmGestionRoles = new FrmGestionRoles(
+                _gestionPermisosAppService,
+                _idiomaAppService
+            );
+
+            MostrarFormularioDialogoCentrado(frmGestionRoles);
+        }
+
         private void btnConsultaBitacora_Click(object sender, EventArgs e)
         {
+            if (!ValidarPermiso(PermisosSistema.BitacoraConsultar, "No ten√©s permisos para consultar la bit√°cora."))
+            {
+                return;
+            }
+
             FrmConsultaBitacora frmConsultaBitacora = new FrmConsultaBitacora(
                 _bitacoraService,
                 _idiomaAppService
@@ -360,13 +406,18 @@ namespace UI
 
         private void btnRecalcularDigitos_Click(object sender, EventArgs e)
         {
+            if (!ValidarPermiso(PermisosSistema.IntegridadGestionar, "No ten√©s permisos para gestionar integridad."))
+            {
+                return;
+            }
+
             DialogResult confirmacion = MensajeTraducido.Mostrar(
                 this,
                 _idiomaAppService,
                 "Mensajes.Principal.ConfirmarRecalcularDigitos",
-                "Esta acciÛn recalcular· los dÌgitos verificadores de usuarios.\n\nImportante: el rec·lculo no restaura datos modificados por fuera del sistema, sino que toma el estado actual de la base como nuevo estado v·lido.\n\nøDesea continuar?",
+                "Esta acci√≥n recalcular√° los d√≠gitos verificadores de usuarios.\n\nImportante: el rec√°lculo no restaura datos modificados por fuera del sistema, sino que toma el estado actual de la base como nuevo estado v√°lido.\n\n¬øDesea continuar?",
                 "Mensajes.Titulos.RecalcularDigitos",
-                "Recalcular dÌgitos verificadores",
+                "Recalcular d√≠gitos verificadores",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning
             );
@@ -387,7 +438,7 @@ namespace UI
                     this,
                     _idiomaAppService,
                     "Mensajes.Principal.RecalculoDigitosCorrecto",
-                    "Los dÌgitos verificadores fueron recalculados correctamente.",
+                    "Los d√≠gitos verificadores fueron recalculados correctamente.",
                     "Mensajes.Titulos.Integridad",
                     "Integridad",
                     MessageBoxButtons.OK,
@@ -400,7 +451,7 @@ namespace UI
                     this,
                     _idiomaAppService,
                     "Mensajes.Principal.ErrorRecalcularDigitos",
-                    "No fue posible recalcular los dÌgitos verificadores. Verifique el estado de la base e intente nuevamente.",
+                    "No fue posible recalcular los d√≠gitos verificadores. Verifique el estado de la base e intente nuevamente.",
                     "Mensajes.Titulos.ErrorIntegridad",
                     "Error de integridad",
                     MessageBoxButtons.OK,
@@ -411,11 +462,16 @@ namespace UI
 
         private void btnDesbloquearIntegridad_Click(object sender, EventArgs e)
         {
+            if (!ValidarPermiso(PermisosSistema.IntegridadGestionar, "No ten√©s permisos para gestionar integridad."))
+            {
+                return;
+            }
+
             DialogResult confirmacion = MensajeTraducido.Mostrar(
                 this,
                 _idiomaAppService,
                 "Mensajes.Principal.ConfirmarDesbloquearIntegridad",
-                "Esta acciÛn desbloquear· a los usuarios que fueron bloqueados por falla de integridad.\n\nSe recomienda hacerlo despuÈs de recalcular los dÌgitos verificadores.\n\nøDesea continuar?",
+                "Esta acci√≥n desbloquear√° a los usuarios que fueron bloqueados por falla de integridad.\n\nSe recomienda hacerlo despu√©s de recalcular los d√≠gitos verificadores.\n\n¬øDesea continuar?",
                 "Mensajes.Titulos.DesbloquearIntegridad",
                 "Desbloquear usuarios por integridad",
                 MessageBoxButtons.YesNo,
@@ -462,6 +518,11 @@ namespace UI
 
         private void btnGestionTraducciones_Click(object sender, EventArgs e)
         {
+            if (!ValidarPermiso(PermisosSistema.TraduccionesGestionar, "No ten√©s permisos para gestionar traducciones."))
+            {
+                return;
+            }
+
             FrmGestionTraducciones frmGestionTraducciones = new FrmGestionTraducciones(
                 _gestionTraduccionesAppService,
                 _idiomaAppService
@@ -472,12 +533,46 @@ namespace UI
 
         private void btnGestionIdiomas_Click(object sender, EventArgs e)
         {
+            if (!ValidarPermiso(PermisosSistema.IdiomasGestionar, "No ten√©s permisos para gestionar idiomas."))
+            {
+                return;
+            }
+
             FrmGestionIdiomas frmGestionIdiomas = new FrmGestionIdiomas(
                 _gestionIdiomasAppService,
                 _idiomaAppService
             );
 
             MostrarFormularioDialogoCentrado(frmGestionIdiomas);
+        }
+
+        private void ConfigurarAccesosPorPermiso()
+        {
+            btnGestionUsuarios.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.UsuariosGestionar);
+            btnGestionRoles.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.UsuariosAsignarPermisos);
+            btnConsultaBitacora.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.BitacoraConsultar);
+            btnRecalcularDigitos.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.IntegridadGestionar);
+            btnDesbloquearIntegridad.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.IntegridadGestionar);
+            btnGestionTraducciones.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.TraduccionesGestionar);
+            btnGestionIdiomas.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.IdiomasGestionar);
+        }
+
+        private bool ValidarPermiso(string codigoPermiso, string mensaje)
+        {
+            if (_autorizacionService.UsuarioActualTienePermiso(codigoPermiso))
+            {
+                return true;
+            }
+
+            MessageBox.Show(
+                this,
+                mensaje,
+                "Permisos",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            );
+
+            return false;
         }
     }
 }

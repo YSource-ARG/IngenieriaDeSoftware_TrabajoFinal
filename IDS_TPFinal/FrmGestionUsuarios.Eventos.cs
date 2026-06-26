@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Windows.Forms;
+using UI;
 
 namespace IDS_TPFinal
 {
@@ -14,9 +15,9 @@ namespace IDS_TPFinal
             btnRestablecerPassword.Click += btnRestablecerPassword_Click;
             btnCancelar.Click += btnCancelar_Click;
             btnCerrar.Click += btnCerrar_Click;
+            _btnPermisos.Click += btnPermisos_Click;
         }
 
-        // Realiza una operación de persistencia en base al modo en que se encuentra el formulario.
         private void btnGuardar_Click(object sender, EventArgs e)
         {
             try
@@ -35,12 +36,22 @@ namespace IDS_TPFinal
 
                 if (_modoActual == ModoFormularioUsuario.Alta)
                 {
+                    if (!ValidarPermiso(PermisosSistema.UsuariosCrear, "No tenés permisos para crear usuarios."))
+                    {
+                        return;
+                    }
+
                     CrearUsuario();
                     return;
                 }
 
                 if (_modoActual == ModoFormularioUsuario.Edicion)
                 {
+                    if (!ValidarPermiso(PermisosSistema.UsuariosEditar, "No tenés permisos para editar usuarios."))
+                    {
+                        return;
+                    }
+
                     ModificarUsuario();
                     return;
                 }
@@ -65,11 +76,21 @@ namespace IDS_TPFinal
 
         private void btnNuevo_Click(object sender, EventArgs e)
         {
+            if (!ValidarPermiso(PermisosSistema.UsuariosCrear, "No tenés permisos para crear usuarios."))
+            {
+                return;
+            }
+
             PrepararAltaUsuario();
         }
 
         private void btnEditar_Click(object sender, EventArgs e)
         {
+            if (!ValidarPermiso(PermisosSistema.UsuariosEditar, "No tenés permisos para editar usuarios."))
+            {
+                return;
+            }
+
             if (!HayUsuarioSeleccionado())
             {
                 MostrarAdvertencia(
@@ -90,6 +111,11 @@ namespace IDS_TPFinal
         {
             try
             {
+                if (!ValidarPermiso(PermisosSistema.UsuariosCambiarEstado, "No tenés permisos para cambiar el estado de usuarios."))
+                {
+                    return;
+                }
+
                 if (_modoActual == ModoFormularioUsuario.Edicion)
                 {
                     MostrarAdvertencia(
@@ -131,6 +157,11 @@ namespace IDS_TPFinal
         {
             try
             {
+                if (!ValidarPermiso(PermisosSistema.UsuariosBlanquearPassword, "No tenés permisos para restablecer contraseñas."))
+                {
+                    return;
+                }
+
                 if (!HayUsuarioSeleccionado())
                 {
                     MostrarAdvertencia(
