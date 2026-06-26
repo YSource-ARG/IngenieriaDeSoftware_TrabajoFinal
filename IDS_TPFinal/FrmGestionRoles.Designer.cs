@@ -59,6 +59,7 @@
             this._lblTitulo.Name = "_lblTitulo";
             this._lblTitulo.Size = new System.Drawing.Size(191, 32);
             this._lblTitulo.TabIndex = 0;
+            this._lblTitulo.Tag = "Roles.Gestion.Titulo";
             this._lblTitulo.Text = "Gestión de roles";
             // 
             // _lblAyuda
@@ -70,6 +71,7 @@
             this._lblAyuda.Name = "_lblAyuda";
             this._lblAyuda.Size = new System.Drawing.Size(782, 30);
             this._lblAyuda.TabIndex = 1;
+            this._lblAyuda.Tag = "Roles.Gestion.Ayuda";
             this._lblAyuda.Text = "Seleccione un rol existente para administrar su composición o cree uno nuevo car" +
     "gando sus atributos y marcando permisos o subroles en el árbol.";
             // 
@@ -81,6 +83,7 @@
             this._lblRolExistente.Name = "_lblRolExistente";
             this._lblRolExistente.Size = new System.Drawing.Size(89, 19);
             this._lblRolExistente.TabIndex = 2;
+            this._lblRolExistente.Tag = "Roles.Gestion.RolExistente";
             this._lblRolExistente.Text = "Rol existente";
             // 
             // _cboRoles
@@ -100,6 +103,7 @@
             this._btnNuevoRol.Name = "_btnNuevoRol";
             this._btnNuevoRol.Size = new System.Drawing.Size(140, 36);
             this._btnNuevoRol.TabIndex = 4;
+            this._btnNuevoRol.Tag = "Roles.Gestion.NuevoRol";
             this._btnNuevoRol.Text = "Nuevo rol";
             this._btnNuevoRol.UseVisualStyleBackColor = true;
             this._btnNuevoRol.Click += new System.EventHandler(this.btnNuevoRol_Click);
@@ -112,6 +116,7 @@
             this._lblNombre.Name = "_lblNombre";
             this._lblNombre.Size = new System.Drawing.Size(63, 19);
             this._lblNombre.TabIndex = 5;
+            this._lblNombre.Tag = "Roles.Gestion.Nombre";
             this._lblNombre.Text = "Nombre";
             // 
             // _txtNombre
@@ -130,6 +135,7 @@
             this._lblCodigo.Name = "_lblCodigo";
             this._lblCodigo.Size = new System.Drawing.Size(56, 19);
             this._lblCodigo.TabIndex = 7;
+            this._lblCodigo.Tag = "Roles.Gestion.Codigo";
             this._lblCodigo.Text = "Código";
             // 
             // _txtCodigo
@@ -148,6 +154,7 @@
             this._chkActivo.Name = "_chkActivo";
             this._chkActivo.Size = new System.Drawing.Size(65, 23);
             this._chkActivo.TabIndex = 9;
+            this._chkActivo.Tag = "Roles.Gestion.Activo";
             this._chkActivo.Text = "Activo";
             this._chkActivo.UseVisualStyleBackColor = true;
             // 
@@ -159,6 +166,7 @@
             this._lblDescripcion.Name = "_lblDescripcion";
             this._lblDescripcion.Size = new System.Drawing.Size(88, 19);
             this._lblDescripcion.TabIndex = 10;
+            this._lblDescripcion.Tag = "Roles.Gestion.Descripcion";
             this._lblDescripcion.Text = "Descripción";
             // 
             // _txtDescripcion
@@ -199,6 +207,7 @@
             this._btnCancelarNuevo.Name = "_btnCancelarNuevo";
             this._btnCancelarNuevo.Size = new System.Drawing.Size(150, 40);
             this._btnCancelarNuevo.TabIndex = 14;
+            this._btnCancelarNuevo.Tag = "Roles.Gestion.Cancelar";
             this._btnCancelarNuevo.Text = "Cancelar";
             this._btnCancelarNuevo.UseVisualStyleBackColor = true;
             this._btnCancelarNuevo.Visible = false;
@@ -210,6 +219,7 @@
             this._btnCerrar.Name = "_btnCerrar";
             this._btnCerrar.Size = new System.Drawing.Size(150, 40);
             this._btnCerrar.TabIndex = 15;
+            this._btnCerrar.Tag = "Roles.Gestion.Cerrar";
             this._btnCerrar.Text = "Cerrar";
             this._btnCerrar.UseVisualStyleBackColor = true;
             this._btnCerrar.Click += new System.EventHandler(this.btnCerrar_Click);
@@ -240,6 +250,7 @@
             this.MinimizeBox = false;
             this.Name = "FrmGestionRoles";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Tag = "Roles.Gestion.TituloVentana";
             this.Text = "Gestión de roles";
             this.ResumeLayout(false);
             this.PerformLayout();
