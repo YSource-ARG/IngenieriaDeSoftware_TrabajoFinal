@@ -3,7 +3,6 @@ using BLL.Idiomas;
 using BLL.Permisos;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using UI.Estilos;
@@ -11,117 +10,90 @@ using UI.Idiomas;
 
 namespace IDS_TPFinal
 {
-    public class FrmAsignacionPermisosUsuario : Form
+    public partial class FrmAsignacionPermisosUsuario : Form, IObservadorIdioma
     {
         private readonly GestionPermisosAppService _gestionPermisosAppService;
         private readonly Guid _idUsuario;
         private readonly string _nombreUsuario;
         private readonly IIdiomaAppService _idiomaAppService;
-
-        private Label _lblTitulo;
-        private Label _lblUsuario;
-        private Label _lblAyuda;
-        private TreeView _treeComponentes;
-        private Button _btnGuardar;
-        private Button _btnCerrar;
         private bool _actualizandoChecks;
+
+        public FrmAsignacionPermisosUsuario()
+        {
+            InitializeComponent();
+        }
 
         public FrmAsignacionPermisosUsuario(
             GestionPermisosAppService gestionPermisosAppService,
             Guid idUsuario,
             string nombreUsuario,
             IIdiomaAppService idiomaAppService)
+            : this()
         {
-            _gestionPermisosAppService = gestionPermisosAppService ?? throw new ArgumentNullException(nameof(gestionPermisosAppService));
+            _gestionPermisosAppService = gestionPermisosAppService
+                ?? throw new ArgumentNullException(nameof(gestionPermisosAppService));
+
             _idUsuario = idUsuario;
             _nombreUsuario = nombreUsuario ?? string.Empty;
             _idiomaAppService = idiomaAppService;
 
-            InicializarComponentes();
+            AplicarEstiloVisual();
+
+            if (_idiomaAppService != null)
+            {
+                _idiomaAppService.Suscribir(this);
+                ActualizarIdioma();
+            }
+            else
+            {
+                ActualizarTextoUsuario();
+                CargarArbolComponentes();
+            }
+        }
+
+        private void AplicarEstiloVisual()
+        {
+            TemaVisual.AplicarFormularioOscuro(this);
+            TemaVisual.AplicarTitulo(_lblTitulo);
+            TemaVisual.AplicarTextoSecundario(_lblUsuario);
+            TemaVisual.AplicarTextoSecundario(_lblAyuda);
+
+            _treeComponentes.BackColor = TemaVisual.FondoInput;
+            _treeComponentes.ForeColor = TemaVisual.TextoPrincipal;
+            _treeComponentes.LineColor = TemaVisual.BordeSuave;
+
+            TemaVisual.AplicarBotonPrincipal(_btnGuardar);
+            TemaVisual.AplicarBotonSecundario(_btnCerrar);
+        }
+
+        public void ActualizarIdioma()
+        {
+            if (_idiomaAppService == null)
+            {
+                return;
+            }
+
+            TraductorControles.TraducirFormulario(this, _idiomaAppService);
+            ActualizarTextoUsuario();
             CargarArbolComponentes();
         }
 
-        private void InicializarComponentes()
+        private void ActualizarTextoUsuario()
         {
-            Text = "Asignación de permisos";
-            StartPosition = FormStartPosition.CenterParent;
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
-            ClientSize = new Size(760, 560);
+            _lblUsuario.Text = string.Format(
+                Traducir("Permisos.Asignacion.Usuario", "Usuario: {0}"),
+                _nombreUsuario
+            );
+        }
 
-            TemaVisual.AplicarFormularioOscuro(this);
-
-            _lblTitulo = new Label
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (_idiomaAppService != null)
             {
-                AutoSize = true,
-                Location = new Point(25, 20),
-                Font = new Font("Segoe UI", 18F, FontStyle.Bold),
-                ForeColor = TemaVisual.TextoPrincipal,
-                Text = Traducir("Permisos.Asignacion.Titulo", "Asignación de permisos")
-            };
+                _idiomaAppService.Desuscribir(this);
+            }
 
-            _lblUsuario = new Label
-            {
-                AutoSize = true,
-                Location = new Point(28, 62),
-                Font = new Font("Segoe UI", 10F, FontStyle.Regular),
-                ForeColor = TemaVisual.TextoSecundario,
-                Text = string.Format(
-                    Traducir("Permisos.Asignacion.Usuario", "Usuario: {0}"),
-                    _nombreUsuario
-                )
-            };
-
-            _lblAyuda = new Label
-            {
-                AutoSize = true,
-                Location = new Point(28, 86),
-                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
-                ForeColor = TemaVisual.TextoSecundario,
-                Text = Traducir(
-                    "Permisos.Asignacion.Ayuda",
-                    "Al marcar un rol, sus hijos se marcan visualmente en forma recursiva dentro del árbol Composite."
-                )
-            };
-
-            _treeComponentes = new TreeView
-            {
-                Location = new Point(30, 120),
-                Size = new Size(690, 360),
-                CheckBoxes = true,
-                BorderStyle = BorderStyle.FixedSingle,
-                BackColor = TemaVisual.FondoInput,
-                ForeColor = TemaVisual.TextoPrincipal,
-                Font = new Font("Segoe UI", 10F, FontStyle.Regular),
-                HideSelection = false
-            };
-            _treeComponentes.AfterCheck += treeComponentes_AfterCheck;
-
-            _btnGuardar = new Button
-            {
-                Location = new Point(420, 500),
-                Size = new Size(140, 40),
-                Text = Traducir("General.Guardar", "Guardar")
-            };
-            TemaVisual.AplicarBotonPrincipal(_btnGuardar);
-            _btnGuardar.Click += btnGuardar_Click;
-
-            _btnCerrar = new Button
-            {
-                Location = new Point(580, 500),
-                Size = new Size(140, 40),
-                Text = Traducir("General.Cerrar", "Cerrar")
-            };
-            TemaVisual.AplicarBotonSecundario(_btnCerrar);
-            _btnCerrar.Click += (s, e) => Close();
-
-            Controls.Add(_lblTitulo);
-            Controls.Add(_lblUsuario);
-            Controls.Add(_lblAyuda);
-            Controls.Add(_treeComponentes);
-            Controls.Add(_btnGuardar);
-            Controls.Add(_btnCerrar);
+            base.OnFormClosed(e);
         }
 
         private void CargarArbolComponentes()
@@ -346,6 +318,11 @@ namespace IDS_TPFinal
                     componentesSeleccionados
                 );
             }
+        }
+
+        private void btnCerrar_Click(object sender, EventArgs e)
+        {
+            Close();
         }
 
         private string Traducir(string clave, string fallback)
