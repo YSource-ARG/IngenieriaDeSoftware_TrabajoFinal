@@ -1,4 +1,4 @@
-using BLL.Configuracion;
+ï»¿using BLL.Configuracion;
 using System;
 using System.Configuration;
 using System.Windows.Forms;
@@ -10,12 +10,8 @@ namespace UI
         [STAThread]
         static void Main()
         {
-            
             string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
 
-
-            // Se crea la factory de servicios, responsable de construir e inyectar las dependencias
-            // crea repositorios, servicios de negocio, seguridad y bitácora para el caso de uso.
             AplicacionServiceFactory serviceFactory = new AplicacionServiceFactory(connectionString);
 
             Application.EnableVisualStyles();
@@ -29,7 +25,9 @@ namespace UI
                 serviceFactory.BitacoraService,
                 serviceFactory.IdiomaAppService,
                 serviceFactory.GestionTraduccionesAppService,
-                serviceFactory.GestionIdiomasAppService
+                serviceFactory.GestionIdiomasAppService,
+                serviceFactory.GestionPermisosAppService,
+                serviceFactory.AutorizacionService
             ));
         }
     }

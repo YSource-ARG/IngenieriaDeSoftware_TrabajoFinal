@@ -1,4 +1,4 @@
-using BLL.Autenticacion;
+﻿using BLL.Autenticacion;
 using BLL.Bitacora;
 using BLL.Usuarios;
 using System;
@@ -10,7 +10,7 @@ using BE;
 using BLL.Idiomas;
 using System.Collections.Generic;
 using UI.Idiomas;
-
+using BLL.Permisos;
 
 namespace UI
 {
@@ -24,6 +24,8 @@ namespace UI
         private readonly IIdiomaAppService _idiomaAppService;
         private readonly GestionTraduccionesAppService _gestionTraduccionesAppService;
         private readonly GestionIdiomasAppService _gestionIdiomasAppService;
+        private readonly GestionPermisosAppService _gestionPermisosAppService;
+        private readonly AutorizacionService _autorizacionService;
         private bool _cargandoIdiomasLogin;
 
         public FrmLogin(
@@ -34,7 +36,9 @@ namespace UI
             IBitacoraService bitacoraService,
             IIdiomaAppService idiomaAppService,
             GestionTraduccionesAppService gestionTraduccionesAppService,
-            GestionIdiomasAppService gestionIdiomasAppService)
+            GestionIdiomasAppService gestionIdiomasAppService,
+            GestionPermisosAppService gestionPermisosAppService,
+            AutorizacionService autorizacionService)
         {
             if (loginAppService == null)
             {
@@ -76,6 +80,16 @@ namespace UI
                 throw new ArgumentNullException(nameof(gestionIdiomasAppService));
             }
 
+            if (gestionPermisosAppService == null)
+            {
+                throw new ArgumentNullException(nameof(gestionPermisosAppService));
+            }
+
+            if (autorizacionService == null)
+            {
+                throw new ArgumentNullException(nameof(autorizacionService));
+            }
+
             _loginAppService = loginAppService;
             _cerrarSesionAppService = cerrarSesionAppService;
             _gestionUsuariosAppService = gestionUsuariosAppService;
@@ -84,6 +98,8 @@ namespace UI
             _idiomaAppService = idiomaAppService;
             _gestionTraduccionesAppService = gestionTraduccionesAppService;
             _gestionIdiomasAppService = gestionIdiomasAppService;
+            _gestionPermisosAppService = gestionPermisosAppService;
+            _autorizacionService = autorizacionService;
 
             InitializeComponent();
 
@@ -172,10 +188,6 @@ namespace UI
 
             try
             {
-                // La integridad se verifica antes del login porque el usuario todavía
-                // no debe acceder al sistema si la base fue modificada por fuera.
-                // Si se detecta una falla, el servicio bloquea a los usuarios comunes
-                // y deja habilitado al administrador para recalcular los DV.
                 resultadoIntegridad = _integridadService.VerificarIntegridadUsuarios();
             }
             catch (Exception)
@@ -266,8 +278,7 @@ namespace UI
 
                 if (resultadoLogin.BloqueadoHasta.HasValue)
                 {
-                    TimeSpan tiempoRestante =
-                        resultadoLogin.BloqueadoHasta.Value - DateTime.Now;
+                    TimeSpan tiempoRestante = resultadoLogin.BloqueadoHasta.Value - DateTime.Now;
 
                     int minutosRestantes = Math.Max(
                         1,
@@ -331,8 +342,7 @@ namespace UI
                 }
             }
 
-            if (resultadoLogin.DebeCambiarPassword &&
-                !CambiarPasswordObligatorio(resultadoLogin))
+            if (resultadoLogin.DebeCambiarPassword && !CambiarPasswordObligatorio(resultadoLogin))
             {
                 _cerrarSesionAppService.CerrarSesion();
                 txtPassword.Clear();
@@ -366,13 +376,13 @@ namespace UI
                 _bitacoraService,
                 _idiomaAppService,
                 _gestionTraduccionesAppService,
-                _gestionIdiomasAppService
+                _gestionIdiomasAppService,
+                _gestionPermisosAppService,
+                _autorizacionService
             );
 
             this.Hide();
 
-            // Acá el evento de cerrar con la X el formulario invoca el cierre de sesión
-            // del usuario logueado o cierra toda la aplicación según corresponda.
             frmPrincipal.FormClosed += (s, args) =>
             {
                 if (frmPrincipal.CerrandoSesion)

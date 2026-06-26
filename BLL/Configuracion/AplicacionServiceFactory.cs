@@ -14,6 +14,8 @@ using DAL.Integridad;
 using SSL.Integridad;
 using BLL.Idiomas;
 using DAL.Idiomas;
+using BLL.Permisos;
+using DAL.Permisos;
 
 namespace BLL.Configuracion
 {
@@ -35,6 +37,10 @@ namespace BLL.Configuracion
 
         public GestionIdiomasAppService GestionIdiomasAppService { get; }
 
+        public GestionPermisosAppService GestionPermisosAppService { get; }
+
+        public AutorizacionService AutorizacionService { get; }
+
         public AplicacionServiceFactory(string connectionString)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
@@ -48,6 +54,9 @@ namespace BLL.Configuracion
             IUsuarioEmailHistorialRepositorio usuarioEmailHistorialRepositorio = new UsuarioEmailHistorialRepositorio(connectionFactory);
             IBitacoraRepositorio bitacoraRepositorio = new BitacoraRepositorio(connectionFactory);
             IDigitoVerificadorRepositorio digitoVerificadorRepositorio = new DigitoVerificadorRepositorio(connectionFactory);
+            IPermisoComponenteRepositorio permisoComponenteRepositorio = new PermisoComponenteRepositorio(connectionFactory);
+            IRolComponenteRepositorio rolComponenteRepositorio = new RolComponenteRepositorio(connectionFactory);
+            IUsuarioPermisoComponenteRepositorio usuarioPermisoComponenteRepositorio = new UsuarioPermisoComponenteRepositorio(connectionFactory);
             
             IIdiomaRepositorio idiomaRepositorio = new IdiomaRepositorio(connectionFactory);
             ITraduccionRepositorio traduccionRepositorio = new TraduccionRepositorio(connectionFactory);
@@ -89,6 +98,23 @@ namespace BLL.Configuracion
                 sessionService,
                 BitacoraService,
                 IntegridadService
+            );
+
+            GestionPermisosAppService = new GestionPermisosAppService(
+                permisoComponenteRepositorio,
+                rolComponenteRepositorio,
+                usuarioPermisoComponenteRepositorio,
+                usuarioRepositorio,
+                sessionService,
+                BitacoraService
+            );
+
+            AutorizacionService = new AutorizacionService(
+                permisoComponenteRepositorio,
+                rolComponenteRepositorio,
+                usuarioPermisoComponenteRepositorio,
+                usuarioRepositorio,
+                sessionService
             );
         }
     }

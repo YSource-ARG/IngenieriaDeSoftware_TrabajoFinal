@@ -383,3 +383,282 @@ BEGIN
         REFERENCES dbo.Idioma(Id)
 END
 GO
+
+-- Permisos - Componentes de autorizacion.
+-- Unifica roles y permisos en una sola entidad para soportar el patron Composite.
+IF OBJECT_ID('dbo.PermisoComponente', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.PermisoComponente
+    (
+        Id uniqueidentifier NOT NULL,
+        Nombre nvarchar(150) NOT NULL,
+        Codigo nvarchar(100) NOT NULL,
+        Descripcion nvarchar(300) NULL,
+        Activo bit NOT NULL
+            CONSTRAINT DF_PermisoComponente_Activo DEFAULT (1),
+        Tipo int NOT NULL,
+        FechaCreacion datetime2(7) NOT NULL
+            CONSTRAINT DF_PermisoComponente_FechaCreacion DEFAULT (SYSDATETIME()),
+        FechaModificacion datetime2(7) NULL,
+        CONSTRAINT PK_PermisoComponente PRIMARY KEY (Id),
+        CONSTRAINT UQ_PermisoComponente_Codigo UNIQUE (Codigo),
+        CONSTRAINT CK_PermisoComponente_Tipo CHECK (Tipo IN (1, 2))
+    )
+END
+GO
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_PermisoComponente_Tipo'
+      AND object_id = OBJECT_ID('dbo.PermisoComponente')
+)
+BEGIN
+    CREATE INDEX IX_PermisoComponente_Tipo
+        ON dbo.PermisoComponente(Tipo)
+END
+GO
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_PermisoComponente_Activo'
+      AND object_id = OBJECT_ID('dbo.PermisoComponente')
+)
+BEGIN
+    CREATE INDEX IX_PermisoComponente_Activo
+        ON dbo.PermisoComponente(Activo)
+END
+GO
+
+-- Permisos - Relacion jerarquica del Composite.
+-- Un rol puede contener permisos y otros roles.
+IF OBJECT_ID('dbo.RolComponente', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.RolComponente
+    (
+        RolId uniqueidentifier NOT NULL,
+        ComponenteHijoId uniqueidentifier NOT NULL,
+        CONSTRAINT PK_RolComponente PRIMARY KEY (RolId, ComponenteHijoId),
+        CONSTRAINT FK_RolComponente_Rol
+            FOREIGN KEY (RolId)
+            REFERENCES dbo.PermisoComponente(Id),
+        CONSTRAINT FK_RolComponente_ComponenteHijo
+            FOREIGN KEY (ComponenteHijoId)
+            REFERENCES dbo.PermisoComponente(Id)
+    )
+END
+GO
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_RolComponente_ComponenteHijoId'
+      AND object_id = OBJECT_ID('dbo.RolComponente')
+)
+BEGIN
+    CREATE INDEX IX_RolComponente_ComponenteHijoId
+        ON dbo.RolComponente(ComponenteHijoId)
+END
+GO
+
+-- Permisos - Asignacion directa de roles/permisos a usuarios.
+IF OBJECT_ID('dbo.UsuarioPermisoComponente', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.UsuarioPermisoComponente
+    (
+        UsuarioId uniqueidentifier NOT NULL,
+        ComponenteId uniqueidentifier NOT NULL,
+        FechaAsignacion datetime2(7) NOT NULL
+            CONSTRAINT DF_UsuarioPermisoComponente_FechaAsignacion DEFAULT (SYSDATETIME()),
+        AsignadoPorUsuarioId uniqueidentifier NULL,
+        CONSTRAINT PK_UsuarioPermisoComponente PRIMARY KEY (UsuarioId, ComponenteId),
+        CONSTRAINT FK_UsuarioPermisoComponente_Usuario
+            FOREIGN KEY (UsuarioId)
+            REFERENCES dbo.Usuario(Id),
+        CONSTRAINT FK_UsuarioPermisoComponente_Componente
+            FOREIGN KEY (ComponenteId)
+            REFERENCES dbo.PermisoComponente(Id),
+        CONSTRAINT FK_UsuarioPermisoComponente_AsignadoPorUsuario
+            FOREIGN KEY (AsignadoPorUsuarioId)
+            REFERENCES dbo.Usuario(Id)
+    )
+END
+GO
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'IX_UsuarioPermisoComponente_ComponenteId'
+      AND object_id = OBJECT_ID('dbo.UsuarioPermisoComponente')
+)
+BEGIN
+    CREATE INDEX IX_UsuarioPermisoComponente_ComponenteId
+        ON dbo.UsuarioPermisoComponente(ComponenteId)
+END
+GO
+
+-- Permisos base utilizados por la UI actual.
+DECLARE @PermisosBase TABLE
+(
+    Codigo nvarchar(100) NOT NULL,
+    Nombre nvarchar(150) NOT NULL,
+    Descripcion nvarchar(300) NULL
+);
+
+INSERT INTO @PermisosBase (Codigo, Nombre, Descripcion)
+VALUES
+    ('USUARIOS_GESTIONAR', 'Gestionar usuarios', 'Permite abrir la gestión de usuarios.'),
+    ('USUARIOS_CREAR', 'Crear usuarios', 'Permite crear nuevos usuarios.'),
+    ('USUARIOS_EDITAR', 'Editar usuarios', 'Permite modificar datos de usuarios existentes.'),
+    ('USUARIOS_CAMBIAR_ESTADO', 'Cambiar estado de usuarios', 'Permite inhabilitar y reactivar usuarios.'),
+    ('USUARIOS_BLANQUEAR_PASSWORD', 'Blanquear contraseña de usuarios', 'Permite restablecer contraseñas de usuarios.'),
+    ('USUARIOS_VER_HISTORIAL_EMAIL', 'Ver historial de email', 'Permite consultar el historial de cambios de email.'),
+    ('USUARIOS_ASIGNAR_PERMISOS', 'Asignar permisos a usuarios', 'Permite asignar roles y permisos a usuarios.'),
+    ('BITACORA_CONSULTAR', 'Consultar bitácora', 'Permite acceder a la consulta de bitácora.'),
+    ('INTEGRIDAD_GESTIONAR', 'Gestionar integridad', 'Permite recalcular DV y desbloquear usuarios por integridad.'),
+    ('TRADUCCIONES_GESTIONAR', 'Gestionar traducciones', 'Permite administrar traducciones del sistema.'),
+    ('IDIOMAS_GESTIONAR', 'Gestionar idiomas', 'Permite administrar idiomas del sistema.');
+
+INSERT INTO dbo.PermisoComponente
+(
+    Id,
+    Nombre,
+    Codigo,
+    Descripcion,
+    Activo,
+    Tipo,
+    FechaCreacion,
+    FechaModificacion
+)
+SELECT
+    NEWID(),
+    pb.Nombre,
+    pb.Codigo,
+    pb.Descripcion,
+    1,
+    1,
+    SYSDATETIME(),
+    SYSDATETIME()
+FROM @PermisosBase pb
+WHERE NOT EXISTS
+(
+    SELECT 1
+    FROM dbo.PermisoComponente pc
+    WHERE pc.Codigo = pb.Codigo
+);
+GO
+
+-- Rol inicial administrador para agrupar todos los permisos base.
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM dbo.PermisoComponente
+    WHERE Codigo = 'ROL_ADMINISTRADOR'
+)
+BEGIN
+    INSERT INTO dbo.PermisoComponente
+    (
+        Id,
+        Nombre,
+        Codigo,
+        Descripcion,
+        Activo,
+        Tipo,
+        FechaCreacion,
+        FechaModificacion
+    )
+    VALUES
+    (
+        NEWID(),
+        'Administrador',
+        'ROL_ADMINISTRADOR',
+        'Rol inicial con acceso completo a la administración base del sistema.',
+        1,
+        2,
+        SYSDATETIME(),
+        SYSDATETIME()
+    )
+END
+GO
+
+DECLARE @IdRolAdministrador uniqueidentifier;
+SELECT @IdRolAdministrador = Id
+FROM dbo.PermisoComponente
+WHERE Codigo = 'ROL_ADMINISTRADOR';
+
+INSERT INTO dbo.RolComponente
+(
+    RolId,
+    ComponenteHijoId
+)
+SELECT
+    @IdRolAdministrador,
+    pc.Id
+FROM dbo.PermisoComponente pc
+WHERE pc.Tipo = 1
+  AND pc.Codigo IN
+  (
+      'USUARIOS_GESTIONAR',
+      'USUARIOS_CREAR',
+      'USUARIOS_EDITAR',
+      'USUARIOS_CAMBIAR_ESTADO',
+      'USUARIOS_BLANQUEAR_PASSWORD',
+      'USUARIOS_VER_HISTORIAL_EMAIL',
+      'USUARIOS_ASIGNAR_PERMISOS',
+      'BITACORA_CONSULTAR',
+      'INTEGRIDAD_GESTIONAR',
+      'TRADUCCIONES_GESTIONAR',
+      'IDIOMAS_GESTIONAR'
+  )
+  AND NOT EXISTS
+  (
+      SELECT 1
+      FROM dbo.RolComponente rc
+      WHERE rc.RolId = @IdRolAdministrador
+        AND rc.ComponenteHijoId = pc.Id
+  );
+GO
+
+-- Se asigna el rol administrador al usuario admin para asegurar acceso inicial.
+DECLARE @IdUsuarioAdmin uniqueidentifier;
+DECLARE @IdRolAdmin uniqueidentifier;
+
+SELECT @IdUsuarioAdmin = Id
+FROM dbo.Usuario
+WHERE NombreUsuario = 'admin';
+
+SELECT @IdRolAdmin = Id
+FROM dbo.PermisoComponente
+WHERE Codigo = 'ROL_ADMINISTRADOR';
+
+IF @IdUsuarioAdmin IS NOT NULL
+   AND @IdRolAdmin IS NOT NULL
+   AND NOT EXISTS
+   (
+       SELECT 1
+       FROM dbo.UsuarioPermisoComponente
+       WHERE UsuarioId = @IdUsuarioAdmin
+         AND ComponenteId = @IdRolAdmin
+   )
+BEGIN
+    INSERT INTO dbo.UsuarioPermisoComponente
+    (
+        UsuarioId,
+        ComponenteId,
+        FechaAsignacion,
+        AsignadoPorUsuarioId
+    )
+    VALUES
+    (
+        @IdUsuarioAdmin,
+        @IdRolAdmin,
+        SYSDATETIME(),
+        @IdUsuarioAdmin
+    )
+END
+GO
