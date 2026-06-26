@@ -75,6 +75,9 @@
     <Compile Include="FrmGestionIdiomas.Designer.cs">
       <DependentUpon>FrmGestionIdiomas.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmGestionRoles.Designer.cs">
+      <DependentUpon>FrmGestionRoles.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmGestionTraducciones.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -137,6 +140,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FrmGestionIdiomas.resx">
       <DependentUpon>FrmGestionIdiomas.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmGestionRoles.resx">
+      <DependentUpon>FrmGestionRoles.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrmGestionTraducciones.resx">
       <DependentUpon>FrmGestionTraducciones.cs</DependentUpon>
