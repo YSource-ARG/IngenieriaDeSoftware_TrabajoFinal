@@ -58,6 +58,7 @@
     <Compile Include="Permisos\IUsuarioPermisoComponenteRepositorio.cs" />
     <Compile Include="Permisos\PermisoComponenteRepositorio.cs" />
     <Compile Include="Permisos\RolComponenteRepositorio.cs" />
+    <Compile Include="Permisos\UnidadDeTrabajoPermisos.cs" />
     <Compile Include="Permisos\UsuarioPermisoComponenteRepositorio.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Usuarios\IUsuarioEmailHistorialRepositorio.cs" />
