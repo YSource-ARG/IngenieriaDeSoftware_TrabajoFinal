@@ -528,6 +528,11 @@ namespace IDS_TPFinal
             _chkActivo.Checked = false;
         }
 
+        private void btnCerrar_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
         private string Traducir(string clave, string fallback)
         {
             return MensajeTraducido.TraducirConFallback(_idiomaAppService, clave, fallback);
