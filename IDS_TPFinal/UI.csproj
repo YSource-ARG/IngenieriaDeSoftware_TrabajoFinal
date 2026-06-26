@@ -69,6 +69,9 @@
     <Compile Include="FrmGestionIdiomas.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="FrmGestionRoles.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FrmGestionIdiomas.Designer.cs">
       <DependentUpon>FrmGestionIdiomas.cs</DependentUpon>
     </Compile>

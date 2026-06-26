@@ -24,6 +24,7 @@ namespace IDS_TPFinal
         private TreeView _treeComponentes;
         private Button _btnGuardar;
         private Button _btnCerrar;
+        private bool _actualizandoChecks;
 
         public FrmAsignacionPermisosUsuario(
             GestionPermisosAppService gestionPermisosAppService,
@@ -80,7 +81,7 @@ namespace IDS_TPFinal
                 ForeColor = TemaVisual.TextoSecundario,
                 Text = Traducir(
                     "Permisos.Asignacion.Ayuda",
-                    "Marque roles o permisos directos. El árbol refleja la jerarquía Composite en forma recursiva."
+                    "Al marcar un rol, sus hijos se marcan visualmente en forma recursiva dentro del árbol Composite."
                 )
             };
 
@@ -95,6 +96,7 @@ namespace IDS_TPFinal
                 Font = new Font("Segoe UI", 10F, FontStyle.Regular),
                 HideSelection = false
             };
+            _treeComponentes.AfterCheck += treeComponentes_AfterCheck;
 
             _btnGuardar = new Button
             {
@@ -158,6 +160,7 @@ namespace IDS_TPFinal
                 _treeComponentes.Nodes.Add(nodoPermisos);
             }
 
+            AplicarChecksVisualesDesdeRoles();
             _treeComponentes.ExpandAll();
         }
 
@@ -217,6 +220,72 @@ namespace IDS_TPFinal
             return $"{prefijo} {componente.Nombre} ({componente.Codigo})";
         }
 
+        private void treeComponentes_AfterCheck(object sender, TreeViewEventArgs e)
+        {
+            if (_actualizandoChecks)
+            {
+                return;
+            }
+
+            ComponentePermisos componente = e.Node.Tag as ComponentePermisos;
+
+            if (componente == null || componente.Tipo != TipoComponentePermisos.Rol)
+            {
+                return;
+            }
+
+            try
+            {
+                _actualizandoChecks = true;
+                PropagarCheckAHijos(e.Node, e.Node.Checked);
+            }
+            finally
+            {
+                _actualizandoChecks = false;
+            }
+        }
+
+        private void PropagarCheckAHijos(TreeNode nodoPadre, bool checkeado)
+        {
+            foreach (TreeNode nodoHijo in nodoPadre.Nodes)
+            {
+                nodoHijo.Checked = checkeado;
+                PropagarCheckAHijos(nodoHijo, checkeado);
+            }
+        }
+
+        private void AplicarChecksVisualesDesdeRoles()
+        {
+            try
+            {
+                _actualizandoChecks = true;
+
+                foreach (TreeNode nodoRaiz in _treeComponentes.Nodes)
+                {
+                    AplicarChecksVisualesDesdeRolesRecursivo(nodoRaiz);
+                }
+            }
+            finally
+            {
+                _actualizandoChecks = false;
+            }
+        }
+
+        private void AplicarChecksVisualesDesdeRolesRecursivo(TreeNode nodo)
+        {
+            ComponentePermisos componente = nodo.Tag as ComponentePermisos;
+
+            if (componente != null && componente.Tipo == TipoComponentePermisos.Rol && nodo.Checked)
+            {
+                PropagarCheckAHijos(nodo, true);
+            }
+
+            foreach (TreeNode hijo in nodo.Nodes)
+            {
+                AplicarChecksVisualesDesdeRolesRecursivo(hijo);
+            }
+        }
+
         private void btnGuardar_Click(object sender, EventArgs e)
         {
             try
@@ -225,7 +294,7 @@ namespace IDS_TPFinal
 
                 foreach (TreeNode nodoRaiz in _treeComponentes.Nodes)
                 {
-                    ObtenerComponentesSeleccionadosRecursivo(nodoRaiz, componentesSeleccionados);
+                    ObtenerComponentesDirectosSeleccionadosRecursivo(nodoRaiz, false, componentesSeleccionados);
                 }
 
                 _gestionPermisosAppService.ReemplazarAsignacionesUsuario(
@@ -256,18 +325,26 @@ namespace IDS_TPFinal
             }
         }
 
-        private void ObtenerComponentesSeleccionadosRecursivo(TreeNode nodo, List<Guid> componentesSeleccionados)
+        private void ObtenerComponentesDirectosSeleccionadosRecursivo(
+            TreeNode nodo,
+            bool ancestroSeleccionado,
+            List<Guid> componentesSeleccionados)
         {
             ComponentePermisos componente = nodo.Tag as ComponentePermisos;
+            bool componenteSeleccionado = componente != null && nodo.Checked;
 
-            if (componente != null && nodo.Checked)
+            if (componenteSeleccionado && !ancestroSeleccionado)
             {
                 componentesSeleccionados.Add(componente.Id);
             }
 
             foreach (TreeNode hijo in nodo.Nodes)
             {
-                ObtenerComponentesSeleccionadosRecursivo(hijo, componentesSeleccionados);
+                ObtenerComponentesDirectosSeleccionadosRecursivo(
+                    hijo,
+                    ancestroSeleccionado || componenteSeleccionado,
+                    componentesSeleccionados
+                );
             }
         }
 
@@ -277,4 +354,3 @@ namespace IDS_TPFinal
         }
     }
 }
-

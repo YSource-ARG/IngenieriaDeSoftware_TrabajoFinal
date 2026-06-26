@@ -9,6 +9,14 @@ using System.Linq;
 
 namespace BLL.Permisos
 {
+    public class PermisoEfectivoDuplicadoException : InvalidOperationException
+    {
+        public PermisoEfectivoDuplicadoException(string message)
+            : base(message)
+        {
+        }
+    }
+
     public class GestionPermisosAppService
     {
         private readonly IPermisoComponenteRepositorio _permisoComponenteRepositorio;
@@ -79,6 +87,48 @@ namespace BLL.Permisos
         #endregion
 
         #region Alta, Modificación y Baja
+        public Guid CrearRolConComponentes(
+            string pNombre,
+            string pCodigo,
+            string pDescripcion,
+            bool pEstado,
+            List<Guid> pHijosId)
+        {
+            Guid idRol = Guid.NewGuid();
+
+            ValidarDatosComponente(idRol, pNombre, pCodigo, pDescripcion, pEstado);
+            ValidarCodigoUnico(pCodigo, null);
+
+            List<Guid> hijosNormalizados = NormalizarListaIds(pHijosId);
+            ValidarConjuntoDeComponentesDeRol(idRol, hijosNormalizados);
+
+            Rol rol = new Rol
+            {
+                Id = idRol,
+                Nombre = pNombre.Trim(),
+                Codigo = pCodigo.Trim(),
+                Descripcion = NormalizarDescripcion(pDescripcion),
+                Activo = pEstado,
+                Tipo = TipoComponentePermisos.Rol
+            };
+
+            _permisoComponenteRepositorio.Crear(rol);
+
+            foreach (Guid idHijo in hijosNormalizados)
+            {
+                _rolComponenteRepositorio.Agregar(idRol, idHijo);
+            }
+
+            RegistrarBitacora(
+                "ROL_CREADO",
+                hijosNormalizados.Count == 0
+                    ? $"Se creÃ³ el rol '{rol.Nombre}' con cÃ³digo '{rol.Codigo}'."
+                    : $"Se creÃ³ el rol '{rol.Nombre}' con cÃ³digo '{rol.Codigo}' y {hijosNormalizados.Count} componente(s) asociado(s)."
+            );
+
+            return idRol;
+        }
+
         public void CrearRol(string pNombre, string pCodigo, string pDescripcion, bool pEstado)
         {
             ValidarDatosComponente(Guid.Empty, pNombre, pCodigo, pDescripcion, pEstado);
@@ -308,8 +358,8 @@ namespace BLL.Permisos
         public void AsignarComponenteAUsuario(Guid pIdUsuario, Guid pIdComponente)
         {
             ValidarUsuarioExiste(pIdUsuario);
-            ObtenerComponenteRequerido(pIdComponente);
-            ValidarNoDuplicadoAsignacionUsuario(pIdUsuario, pIdComponente);
+            ComponentePermisos componente = ObtenerComponenteRequerido(pIdComponente);
+            ValidarNoDuplicadoAsignacionUsuario(pIdUsuario, componente);
 
             _usuarioPermisoComponenteRepositorio.Asignar(
                 pIdUsuario,
@@ -351,6 +401,8 @@ namespace BLL.Permisos
             {
                 ObtenerComponenteRequerido(idComponente);
             }
+
+            ValidarConjuntoAsignacionesUsuario(componentesNormalizados);
 
             _usuarioPermisoComponenteRepositorio.DesasignarTodos(pIdUsuario);
 
@@ -485,6 +537,20 @@ namespace BLL.Permisos
             }
         }
 
+        private void ValidarNoDuplicadoAsignacionUsuario(Guid idUsuario, ComponentePermisos componente)
+        {
+            ValidarNoDuplicadoAsignacionUsuario(idUsuario, componente.Id);
+
+            HashSet<string> permisosActuales = ObtenerCodigosPermisosEfectivosUsuario(idUsuario);
+            HashSet<string> permisosNuevoComponente = ObtenerCodigosPermisosDeComponente(componente.Id, new HashSet<Guid>());
+            List<string> permisosDuplicados = ObtenerPermisosDuplicados(permisosActuales, permisosNuevoComponente);
+
+            if (permisosDuplicados.Count > 0)
+            {
+                throw CrearExcepcionPermisoDuplicadoUsuario(componente.Nombre, permisosDuplicados);
+            }
+        }
+
         private void RegistrarBitacora(string accion, string descripcion)
         {
             _bitacoraService.Registrar(
@@ -582,6 +648,25 @@ namespace BLL.Permisos
             }
         }
 
+        private void ValidarConjuntoAsignacionesUsuario(List<Guid> idsComponentes)
+        {
+            HashSet<string> permisosAcumulados = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (Guid idComponente in idsComponentes)
+            {
+                ComponentePermisos componente = ObtenerComponenteRequerido(idComponente);
+                HashSet<string> permisosDelComponente = ObtenerCodigosPermisosDeComponente(idComponente, new HashSet<Guid>());
+                List<string> permisosDuplicados = ObtenerPermisosDuplicados(permisosAcumulados, permisosDelComponente);
+
+                if (permisosDuplicados.Count > 0)
+                {
+                    throw CrearExcepcionPermisoDuplicadoUsuario(componente.Nombre, permisosDuplicados);
+                }
+
+                permisosAcumulados.UnionWith(permisosDelComponente);
+            }
+        }
+
         private bool ExisteCaminoEntreRoles(Guid idRolOrigen, Guid idRolBuscado, HashSet<Guid> rolesVisitados)
         {
             if (!rolesVisitados.Add(idRolOrigen))
@@ -617,6 +702,35 @@ namespace BLL.Permisos
             }
 
             return permisos;
+        }
+
+        private HashSet<string> ObtenerCodigosPermisosEfectivosUsuario(Guid idUsuario)
+        {
+            HashSet<string> permisos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (ComponentePermisos componente in _usuarioPermisoComponenteRepositorio.ListarPorUsuario(idUsuario))
+            {
+                permisos.UnionWith(ObtenerCodigosPermisosDeComponente(componente.Id, new HashSet<Guid>()));
+            }
+
+            return permisos;
+        }
+
+        private List<string> ObtenerPermisosDuplicados(HashSet<string> permisosExistentes, HashSet<string> permisosNuevos)
+        {
+            return permisosNuevos
+                .Where(permisosExistentes.Contains)
+                .OrderBy(codigo => codigo)
+                .ToList();
+        }
+
+        private PermisoEfectivoDuplicadoException CrearExcepcionPermisoDuplicadoUsuario(
+            string nombreComponente,
+            List<string> permisosDuplicados)
+        {
+            return new PermisoEfectivoDuplicadoException(
+                $"No se puede asignar el componente '{nombreComponente}' porque aporta permisos que el usuario ya posee por otras asignaciones: {string.Join(", ", permisosDuplicados)}."
+            );
         }
 
         private HashSet<string> ObtenerCodigosPermisosDeComponente(Guid idComponente, HashSet<Guid> rolesVisitados)

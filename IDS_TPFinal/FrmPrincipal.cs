@@ -287,6 +287,7 @@ namespace UI
             ConfigurarBotonPrincipal(btnCerrarSesion);
             ConfigurarBotonSecundario(btnSalir);
             ConfigurarBotonSecundario(btnGestionUsuarios);
+            ConfigurarBotonSecundario(btnGestionRoles);
             ConfigurarBotonSecundario(btnConsultaBitacora);
             ConfigurarBotonSecundario(btnGestionTraducciones);
             ConfigurarBotonSecundario(btnRecalcularDigitos);
@@ -353,6 +354,21 @@ namespace UI
             );
 
             MostrarFormularioDialogoCentrado(frmGestionUsuarios);
+        }
+
+        private void btnGestionRoles_Click(object sender, EventArgs e)
+        {
+            if (!ValidarPermiso(PermisosSistema.UsuariosAsignarPermisos, "No tenés permisos para gestionar roles."))
+            {
+                return;
+            }
+
+            FrmGestionRoles frmGestionRoles = new FrmGestionRoles(
+                _gestionPermisosAppService,
+                _idiomaAppService
+            );
+
+            MostrarFormularioDialogoCentrado(frmGestionRoles);
         }
 
         private void btnConsultaBitacora_Click(object sender, EventArgs e)
@@ -533,6 +549,7 @@ namespace UI
         private void ConfigurarAccesosPorPermiso()
         {
             btnGestionUsuarios.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.UsuariosGestionar);
+            btnGestionRoles.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.UsuariosAsignarPermisos);
             btnConsultaBitacora.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.BitacoraConsultar);
             btnRecalcularDigitos.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.IntegridadGestionar);
             btnDesbloquearIntegridad.Enabled = _autorizacionService.UsuarioActualTienePermiso(PermisosSistema.IntegridadGestionar);
