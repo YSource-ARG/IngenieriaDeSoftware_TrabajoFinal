@@ -23,6 +23,7 @@ namespace BLL.Permisos
         private readonly IRolComponenteRepositorio _rolComponenteRepositorio;
         private readonly IUsuarioPermisoComponenteRepositorio _usuarioPermisoComponenteRepositorio;
         private readonly IUsuarioRepositorio _usuarioRepositorio;
+        private readonly IUnidadDeTrabajoPermisos _unidadDeTrabajoPermisos;
         private readonly ISessionService _sessionService;
         private readonly IBitacoraService _bitacoraService;
 
@@ -31,6 +32,7 @@ namespace BLL.Permisos
             IRolComponenteRepositorio rolComponenteRepositorio,
             IUsuarioPermisoComponenteRepositorio usuarioPermisoComponenteRepositorio,
             IUsuarioRepositorio usuarioRepositorio,
+            IUnidadDeTrabajoPermisos unidadDeTrabajoPermisos,
             ISessionService sessionService,
             IBitacoraService bitacoraService)
         {
@@ -38,6 +40,7 @@ namespace BLL.Permisos
             _rolComponenteRepositorio = rolComponenteRepositorio ?? throw new ArgumentNullException(nameof(rolComponenteRepositorio));
             _usuarioPermisoComponenteRepositorio = usuarioPermisoComponenteRepositorio ?? throw new ArgumentNullException(nameof(usuarioPermisoComponenteRepositorio));
             _usuarioRepositorio = usuarioRepositorio ?? throw new ArgumentNullException(nameof(usuarioRepositorio));
+            _unidadDeTrabajoPermisos = unidadDeTrabajoPermisos ?? throw new ArgumentNullException(nameof(unidadDeTrabajoPermisos));
             _sessionService = sessionService ?? throw new ArgumentNullException(nameof(sessionService));
             _bitacoraService = bitacoraService ?? throw new ArgumentNullException(nameof(bitacoraService));
         }
@@ -112,18 +115,15 @@ namespace BLL.Permisos
                 Tipo = TipoComponentePermisos.Rol
             };
 
-            _permisoComponenteRepositorio.Crear(rol);
-
-            foreach (Guid idHijo in hijosNormalizados)
-            {
-                _rolComponenteRepositorio.Agregar(idRol, idHijo);
-            }
+            // El rol y sus componentes se guardan en una única transacción.
+            // Si falla alguna inserción, DAL revierte toda la operación.
+            _unidadDeTrabajoPermisos.CrearRolConComponentes(rol, hijosNormalizados);
 
             RegistrarBitacora(
                 "ROL_CREADO",
                 hijosNormalizados.Count == 0
-                    ? $"Se creÃ³ el rol '{rol.Nombre}' con cÃ³digo '{rol.Codigo}'."
-                    : $"Se creÃ³ el rol '{rol.Nombre}' con cÃ³digo '{rol.Codigo}' y {hijosNormalizados.Count} componente(s) asociado(s)."
+                    ? $"Se creó el rol '{rol.Nombre}' con código '{rol.Codigo}'."
+                    : $"Se creó el rol '{rol.Nombre}' con código '{rol.Codigo}' y {hijosNormalizados.Count} componente(s) asociado(s)."
             );
 
             return idRol;
@@ -253,9 +253,7 @@ namespace BLL.Permisos
 
             Rol rol = (Rol)_permisoComponenteRepositorio.ObtenerPorId(pId);
 
-            _rolComponenteRepositorio.EliminarRelacionesPorComponente(pId);
-            _usuarioPermisoComponenteRepositorio.EliminarAsignacionesPorComponente(pId);
-            _permisoComponenteRepositorio.Eliminar(pId);
+            _unidadDeTrabajoPermisos.EliminarComponente(pId);
 
             RegistrarBitacora(
                 "ROL_ELIMINADO",
@@ -269,9 +267,7 @@ namespace BLL.Permisos
 
             Permiso permiso = (Permiso)_permisoComponenteRepositorio.ObtenerPorId(pId);
 
-            _rolComponenteRepositorio.EliminarRelacionesPorComponente(pId);
-            _usuarioPermisoComponenteRepositorio.EliminarAsignacionesPorComponente(pId);
-            _permisoComponenteRepositorio.Eliminar(pId);
+            _unidadDeTrabajoPermisos.EliminarComponente(pId);
 
             RegistrarBitacora(
                 "PERMISO_ELIMINADO",
@@ -332,12 +328,7 @@ namespace BLL.Permisos
             List<Guid> hijosNormalizados = NormalizarListaIds(pHijosId);
             ValidarConjuntoDeComponentesDeRol(pIdRol, hijosNormalizados);
 
-            _rolComponenteRepositorio.QuitarTodosDeRol(pIdRol);
-
-            foreach (Guid idHijo in hijosNormalizados)
-            {
-                _rolComponenteRepositorio.Agregar(pIdRol, idHijo);
-            }
+            _unidadDeTrabajoPermisos.ReemplazarComponentesDeRol(pIdRol, hijosNormalizados);
 
             RegistrarBitacora(
                 "ROL_COMPONENTES_REEMPLAZADOS",
@@ -404,16 +395,15 @@ namespace BLL.Permisos
 
             ValidarConjuntoAsignacionesUsuario(componentesNormalizados);
 
-            _usuarioPermisoComponenteRepositorio.DesasignarTodos(pIdUsuario);
+            Guid? asignadoPorUsuarioId = _sessionService.HaySesionActiva
+                ? (Guid?)_sessionService.UsuarioIdActual
+                : null;
 
-            foreach (Guid idComponente in componentesNormalizados)
-            {
-                _usuarioPermisoComponenteRepositorio.Asignar(
-                    pIdUsuario,
-                    idComponente,
-                    _sessionService.HaySesionActiva ? (Guid?)_sessionService.UsuarioIdActual : null
-                );
-            }
+            _unidadDeTrabajoPermisos.ReemplazarAsignacionesDeUsuario(
+                pIdUsuario,
+                componentesNormalizados,
+                asignadoPorUsuarioId
+            );
 
             RegistrarBitacora(
                 "USUARIO_COMPONENTES_REEMPLAZADOS",
