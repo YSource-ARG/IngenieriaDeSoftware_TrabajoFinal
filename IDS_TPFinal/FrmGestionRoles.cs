@@ -39,19 +39,6 @@ namespace IDS_TPFinal
             CargarRoles();
         }
 
-        private TextBox CrearTextBox(Point location, int width)
-        {
-            return new TextBox
-            {
-                Location = location,
-                Size = new Size(width, 25),
-                BackColor = TemaVisual.FondoInput,
-                ForeColor = TemaVisual.TextoPrincipal,
-                BorderStyle = BorderStyle.FixedSingle,
-                Font = new Font("Segoe UI", 10F, FontStyle.Regular)
-            };
-        }
-
         private void CargarRoles(Guid? idRolSeleccionado = null)
         {
             _cargandoRoles = true;
