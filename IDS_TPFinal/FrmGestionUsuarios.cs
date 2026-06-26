@@ -89,7 +89,6 @@ namespace IDS_TPFinal
             btnInhabilitarReactivar.Tag = "Usuarios.InhabilitarReactivar";
             btnRestablecerPassword.Tag = "Usuarios.RestablecerPassword";
             btnHistorialEmail.Tag = "Usuarios.HistorialEmail";
-            _btnPermisos.Tag = "Usuarios.Permisos";
         }
 
         public void ActualizarIdioma()
