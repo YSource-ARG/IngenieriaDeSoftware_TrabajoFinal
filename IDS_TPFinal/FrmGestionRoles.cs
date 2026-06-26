@@ -39,6 +39,67 @@ namespace IDS_TPFinal
             CargarRoles();
         }
 
+        private void AplicarEstilosYTextos()
+        {
+            TemaVisual.AplicarFormularioOscuro(this);
+
+            Text = Traducir("Roles.Gestion.Titulo", "Gestión de roles");
+            _lblTitulo.Text = Traducir("Roles.Gestion.Titulo", "Gestión de roles");
+            _lblAyuda.Text = Traducir(
+                "Roles.Gestion.Ayuda",
+                "Seleccione un rol existente para administrar su composición o cree uno nuevo cargando sus atributos y marcando permisos o subroles en el árbol."
+            );
+            _lblRolExistente.Text = Traducir("Roles.Gestion.RolExistente", "Rol existente");
+            _lblNombre.Text = Traducir("Roles.Gestion.Nombre", "Nombre");
+            _lblCodigo.Text = Traducir("Roles.Gestion.Codigo", "Código");
+            _lblDescripcion.Text = Traducir("Roles.Gestion.Descripcion", "Descripción");
+            _chkActivo.Text = Traducir("Roles.Gestion.Activo", "Activo");
+            _btnNuevoRol.Text = Traducir("Roles.Gestion.NuevoRol", "Nuevo rol");
+            _btnCancelarNuevo.Text = Traducir("Roles.Gestion.Cancelar", "Cancelar");
+            _btnCerrar.Text = Traducir("Roles.Gestion.Cerrar", "Cerrar");
+
+            TemaVisual.AplicarTitulo(_lblTitulo);
+            TemaVisual.AplicarTextoSecundario(_lblAyuda);
+
+            Label[] etiquetas =
+            {
+                _lblRolExistente,
+                _lblNombre,
+                _lblCodigo,
+                _lblDescripcion
+            };
+
+            foreach (Label etiqueta in etiquetas)
+            {
+                etiqueta.ForeColor = TemaVisual.TextoPrincipal;
+                etiqueta.BackColor = Color.Transparent;
+                etiqueta.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            }
+
+            _cboRoles.BackColor = TemaVisual.FondoInput;
+            _cboRoles.ForeColor = TemaVisual.TextoPrincipal;
+            _cboRoles.FlatStyle = FlatStyle.Flat;
+            _cboRoles.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
+
+            TemaVisual.AplicarTextBox(_txtNombre);
+            TemaVisual.AplicarTextBox(_txtCodigo);
+            TemaVisual.AplicarTextBox(_txtDescripcion);
+
+            _chkActivo.ForeColor = TemaVisual.TextoPrincipal;
+            _chkActivo.BackColor = Color.Transparent;
+
+            _treeComponentes.BackColor = TemaVisual.FondoInput;
+            _treeComponentes.ForeColor = TemaVisual.TextoPrincipal;
+            _treeComponentes.LineColor = TemaVisual.BordeSuave;
+
+            TemaVisual.AplicarBotonPrincipal(_btnGuardar);
+            TemaVisual.AplicarBotonSecundario(_btnNuevoRol);
+            TemaVisual.AplicarBotonSecundario(_btnCancelarNuevo);
+            TemaVisual.AplicarBotonSecundario(_btnCerrar);
+
+            AplicarModoVisual();
+        }
+
         private void CargarRoles(Guid? idRolSeleccionado = null)
         {
             _cargandoRoles = true;
