@@ -23,6 +23,10 @@ VALUES
     (N'es-AR', N'Usuarios.Permisos', N'Permisos'),
     (N'en-US', N'Usuarios.Permisos', N'Permissions'),
 
+    -- Botón Roles del formulario principal.
+    (N'es-AR', N'Principal.GestionRoles', N'Roles'),
+    (N'en-US', N'Principal.GestionRoles', N'Role management'),
+
     -- Formulario Gestión de roles: textos estáticos del diseñador.
     (N'es-AR', N'Roles.Gestion.TituloVentana', N'Gestión de roles'),
     (N'en-US', N'Roles.Gestion.TituloVentana', N'Role management'),
