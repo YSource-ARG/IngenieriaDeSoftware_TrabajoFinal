@@ -28,7 +28,6 @@ namespace IDS_TPFinal
         public FrmGestionUsuarios()
         {
             InitializeComponent();
-            InicializarBotonPermisos();
         }
 
         public FrmGestionUsuarios(GestionUsuariosAppService gestionUsuariosAppService)
@@ -54,7 +53,6 @@ namespace IDS_TPFinal
             _idiomaAppService = idiomaAppService;
 
             InitializeComponent();
-            InicializarBotonPermisos();
             ConfigurarTagsTraduccion();
             RegistrarEventos();
 
@@ -110,26 +108,6 @@ namespace IDS_TPFinal
             }
 
             ActualizarTextosDinamicos();
-        }
-
-        private void InicializarBotonPermisos()
-        {
-            if (_btnPermisos != null)
-            {
-                return;
-            }
-
-            _btnPermisos = new Button
-            {
-                Name = "btnPermisos",
-                Size = new System.Drawing.Size(145, 84),
-                Location = new System.Drawing.Point(1179, 367),
-                Text = "Permisos",
-                UseVisualStyleBackColor = true
-            };
-
-            panelContenido.Controls.Add(_btnPermisos);
-            _btnPermisos.BringToFront();
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
