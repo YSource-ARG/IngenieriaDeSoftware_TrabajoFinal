@@ -36,6 +36,7 @@ namespace IDS_TPFinal
 
             _idiomaAppService = idiomaAppService;
 
+            AplicarEstiloVisual();
             CargarRoles();
         }
 
