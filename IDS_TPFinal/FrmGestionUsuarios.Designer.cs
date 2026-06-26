@@ -35,6 +35,7 @@
             this.lblTitulo = new System.Windows.Forms.Label();
             this.lblIcono = new System.Windows.Forms.Label();
             this.panelContenido = new System.Windows.Forms.Panel();
+            this._btnPermisos = new System.Windows.Forms.Button();
             this.btnHistorialEmail = new System.Windows.Forms.Button();
             this.dgvUsuarios = new System.Windows.Forms.DataGridView();
             this.panelLineaDerecha = new System.Windows.Forms.Panel();
@@ -119,6 +120,7 @@
             // 
             // panelContenido
             // 
+            this.panelContenido.Controls.Add(this._btnPermisos);
             this.panelContenido.Controls.Add(this.btnHistorialEmail);
             this.panelContenido.Controls.Add(this.dgvUsuarios);
             this.panelContenido.Controls.Add(this.panelLineaDerecha);
@@ -134,11 +136,20 @@
             this.panelContenido.Size = new System.Drawing.Size(1363, 486);
             this.panelContenido.TabIndex = 1;
             // 
+            // _btnPermisos
+            // 
+            this._btnPermisos.Location = new System.Drawing.Point(1180, 367);
+            this._btnPermisos.Name = "btnPermisos";
+            this._btnPermisos.Size = new System.Drawing.Size(145, 84);
+            this._btnPermisos.TabIndex = 10;
+            this._btnPermisos.Text = "Permisos";
+            this._btnPermisos.UseVisualStyleBackColor = true;
+            // 
             // btnHistorialEmail
             // 
-            this.btnHistorialEmail.Location = new System.Drawing.Point(1021, 367);
+            this.btnHistorialEmail.Location = new System.Drawing.Point(1000, 367);
             this.btnHistorialEmail.Name = "btnHistorialEmail";
-            this.btnHistorialEmail.Size = new System.Drawing.Size(180, 84);
+            this.btnHistorialEmail.Size = new System.Drawing.Size(160, 84);
             this.btnHistorialEmail.TabIndex = 9;
             this.btnHistorialEmail.Text = "Historial email";
             this.btnHistorialEmail.UseVisualStyleBackColor = true;
