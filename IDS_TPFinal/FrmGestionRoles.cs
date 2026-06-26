@@ -11,7 +11,7 @@ using UI.Idiomas;
 
 namespace IDS_TPFinal
 {
-    public partial class FrmGestionRoles : Form
+    public partial class FrmGestionRoles : Form, IObservadorIdioma
     {
         private readonly GestionPermisosAppService _gestionPermisosAppService;
         private readonly IIdiomaAppService _idiomaAppService;
@@ -37,6 +37,13 @@ namespace IDS_TPFinal
             _idiomaAppService = idiomaAppService;
 
             AplicarEstiloVisual();
+
+            if (_idiomaAppService != null)
+            {
+                _idiomaAppService.Suscribir(this);
+                ActualizarIdioma();
+            }
+
             CargarRoles();
         }
 
@@ -81,6 +88,43 @@ namespace IDS_TPFinal
             TemaVisual.AplicarBotonSecundario(_btnNuevoRol);
             TemaVisual.AplicarBotonSecundario(_btnCancelarNuevo);
             TemaVisual.AplicarBotonSecundario(_btnCerrar);
+        }
+
+        public void ActualizarIdioma()
+        {
+            if (_idiomaAppService == null)
+            {
+                return;
+            }
+
+            TraductorControles.TraducirFormulario(this, _idiomaAppService);
+            AplicarModoVisual();
+
+            if (_gestionPermisosAppService == null)
+            {
+                return;
+            }
+
+            if (_modoCreacion)
+            {
+                CargarArbolModoCreacion();
+                return;
+            }
+
+            if (_cboRoles.DataSource != null)
+            {
+                CargarRolSeleccionado();
+            }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (_idiomaAppService != null)
+            {
+                _idiomaAppService.Desuscribir(this);
+            }
+
+            base.OnFormClosed(e);
         }
 
         private void CargarRoles(Guid? idRolSeleccionado = null)
