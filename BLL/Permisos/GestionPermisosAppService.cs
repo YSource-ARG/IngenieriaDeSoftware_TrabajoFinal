@@ -195,14 +195,49 @@ namespace BLL.Permisos
         }
 
         public void ModificarRol(
-            Guid pId,
-            string pNombre,
-            string pCodigo,
-            string pDescripcion,
-            bool pEstado)
+    Guid pId,
+    string pNombre,
+    string pCodigo,
+    string pDescripcion,
+    bool pEstado)
         {
             ValidarRolExiste(pId);
-            ValidarDatosComponente(pId, pNombre, pCodigo, pDescripcion, pEstado);
+
+            Rol rolExistente =
+                (Rol)_permisoComponenteRepositorio.ObtenerPorId(pId);
+
+            bool esAdministrador = string.Equals(
+                rolExistente.Codigo,
+                "ROL_ADMINISTRADOR",
+                StringComparison.OrdinalIgnoreCase
+            );
+
+            if (esAdministrador &&
+                !string.Equals(
+                    pCodigo,
+                    "ROL_ADMINISTRADOR",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    "El código del rol Administrador no se puede modificar."
+                );
+            }
+
+            if (esAdministrador && !pEstado)
+            {
+                throw new InvalidOperationException(
+                    "El rol Administrador no se puede desactivar."
+                );
+            }
+
+            ValidarDatosComponente(
+                pId,
+                pNombre,
+                pCodigo,
+                pDescripcion,
+                pEstado
+            );
+
             ValidarCodigoUnico(pCodigo, pId);
 
             Rol rol = new Rol
