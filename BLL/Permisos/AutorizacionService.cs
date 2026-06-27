@@ -200,6 +200,11 @@ namespace BLL.Permisos
 
             ComponentePermisos componenteActual = _permisoComponenteRepositorio.ObtenerPorId(componente.Id) ?? componente;
 
+            if (!componenteActual.Activo)
+            {
+                return;
+            }
+
             if (componentesVisitados.Add(componenteActual.Id))
             {
                 acumulador.Add(componenteActual);
