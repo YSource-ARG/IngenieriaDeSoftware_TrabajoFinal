@@ -15,5 +15,11 @@ namespace BE.Permisos
         public bool Activo { get; set; }
 
         public TipoComponentePermisos Tipo { get; set; }
+
+        public DateTime FechaCreacion { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+
+        public string DigitoVerificadorHorizontal { get; set; }
     }
 }
