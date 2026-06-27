@@ -1,4 +1,5 @@
 ﻿using BE;
+using BE.Permisos;
 using SSL.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -18,19 +19,9 @@ namespace SSL.Integridad
                 throw new ArgumentNullException(nameof(usuario));
             }
 
-            // Se incluyen los datos propios del usuario que forman parte
-            // del estado protegido por integridad.
-            //
-            // No se incluye DigitoVerificadorHorizontal porque sería circular:
-            // el DVH no puede calcularse usando su propio valor.
-            //
-            // No se incluye BloqueadoPorIntegridad porque ese campo lo modifica
-            // el sistema como reacción ante una falla de integridad.
-            //
-            // No se incluyen IntentosFallidosLogin, BloqueadoHasta,
-            // FechaUltimoAcceso porque son datos operativos que pueden cambiar
-            // normalmente desde la aplicación.
-
+            // No se incluye el propio DVH para evitar una dependencia circular.
+            // Tampoco se incluyen campos operativos que cambian normalmente
+            // durante el uso de la aplicación.
             List<string> valores = new List<string>
             {
                 usuario.Id.ToString("D"),
@@ -54,12 +45,127 @@ namespace SSL.Integridad
                 throw new ArgumentNullException(nameof(usuarios));
             }
 
-            List<string> valoresVerticales = usuarios
-                .OrderBy(x => x.Id)
-                .Select((usuario, indice) =>
-                    "F" + (indice + 1).ToString(CultureInfo.InvariantCulture)
+            return CalcularDigitoVertical(
+                usuarios
+                    .OrderBy(x => x.Id)
+                    .Select(x => x.DigitoVerificadorHorizontal)
+            );
+        }
+
+        public string CalcularDigitoHorizontalComponentePermisos(
+            ComponentePermisos componente)
+        {
+            if (componente == null)
+            {
+                throw new ArgumentNullException(nameof(componente));
+            }
+
+            List<string> valores = new List<string>
+            {
+                componente.Id.ToString("D"),
+                NormalizarTexto(componente.Nombre),
+                NormalizarTexto(componente.Codigo),
+                NormalizarTexto(componente.Descripcion),
+                NormalizarBool(componente.Activo),
+                ((int)componente.Tipo).ToString(CultureInfo.InvariantCulture),
+                NormalizarFecha(componente.FechaCreacion),
+                NormalizarFechaNullable(componente.FechaModificacion)
+            };
+
+            return CalcularHashConPosiciones(valores);
+        }
+
+        public string CalcularDigitoVerticalComponentesPermisos(
+            List<ComponentePermisos> componentes)
+        {
+            if (componentes == null)
+            {
+                throw new ArgumentNullException(nameof(componentes));
+            }
+
+            return CalcularDigitoVertical(
+                componentes
+                    .OrderBy(x => x.Id)
+                    .Select(x => x.DigitoVerificadorHorizontal)
+            );
+        }
+
+        public string CalcularDigitoHorizontalRolComponente(
+            RolComponente relacion)
+        {
+            if (relacion == null)
+            {
+                throw new ArgumentNullException(nameof(relacion));
+            }
+
+            List<string> valores = new List<string>
+            {
+                relacion.RolId.ToString("D"),
+                relacion.ComponenteHijoId.ToString("D")
+            };
+
+            return CalcularHashConPosiciones(valores);
+        }
+
+        public string CalcularDigitoVerticalRolComponentes(
+            List<RolComponente> relaciones)
+        {
+            if (relaciones == null)
+            {
+                throw new ArgumentNullException(nameof(relaciones));
+            }
+
+            return CalcularDigitoVertical(
+                relaciones
+                    .OrderBy(x => x.RolId)
+                    .ThenBy(x => x.ComponenteHijoId)
+                    .Select(x => x.DigitoVerificadorHorizontal)
+            );
+        }
+
+        public string CalcularDigitoHorizontalUsuarioPermisoComponente(
+            UsuarioPermisoComponente asignacion)
+        {
+            if (asignacion == null)
+            {
+                throw new ArgumentNullException(nameof(asignacion));
+            }
+
+            List<string> valores = new List<string>
+            {
+                asignacion.UsuarioId.ToString("D"),
+                asignacion.ComponenteId.ToString("D"),
+                NormalizarFecha(asignacion.FechaAsignacion),
+                NormalizarGuidNullable(asignacion.AsignadoPorUsuarioId)
+            };
+
+            return CalcularHashConPosiciones(valores);
+        }
+
+        public string CalcularDigitoVerticalUsuarioPermisoComponentes(
+            List<UsuarioPermisoComponente> asignaciones)
+        {
+            if (asignaciones == null)
+            {
+                throw new ArgumentNullException(nameof(asignaciones));
+            }
+
+            return CalcularDigitoVertical(
+                asignaciones
+                    .OrderBy(x => x.UsuarioId)
+                    .ThenBy(x => x.ComponenteId)
+                    .Select(x => x.DigitoVerificadorHorizontal)
+            );
+        }
+
+        private string CalcularDigitoVertical(IEnumerable<string> digitosHorizontales)
+        {
+            List<string> valoresVerticales = digitosHorizontales
+                .Select((digitoHorizontal, indice) =>
+                    "F"
+                    + (indice + 1).ToString(CultureInfo.InvariantCulture)
                     + "="
-                    + NormalizarTexto(usuario.DigitoVerificadorHorizontal))
+                    + NormalizarTexto(digitoHorizontal))
                 .ToList();
 
             return CalcularHashConPosiciones(valoresVerticales);
@@ -145,6 +251,13 @@ namespace SSL.Integridad
         private string NormalizarFecha(DateTime fecha)
         {
             return fecha.ToString("O", CultureInfo.InvariantCulture);
+        }
+
+        private string NormalizarFechaNullable(DateTime? fecha)
+        {
+            return fecha.HasValue
+                ? NormalizarFecha(fecha.Value)
+                : string.Empty;
         }
     }
 }
