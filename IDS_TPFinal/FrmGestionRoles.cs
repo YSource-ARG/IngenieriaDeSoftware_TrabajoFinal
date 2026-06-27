@@ -45,6 +45,7 @@ namespace IDS_TPFinal
             }
 
             CargarRoles();
+            AplicarModoVisual();
         }
 
         private void AplicarEstiloVisual()
