@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace BLL.Integridad
 {
@@ -7,6 +7,8 @@ namespace BLL.Integridad
         ResultadoVerificacionIntegridad VerificarIntegridadUsuarios();
 
         void RecalcularDigitosUsuarios(Guid? usuarioId, string usuario);
+
+        void RecalcularDigitosPermisos();
 
         void DesbloquearUsuariosPorIntegridad(Guid? usuarioId, string usuario);
     }

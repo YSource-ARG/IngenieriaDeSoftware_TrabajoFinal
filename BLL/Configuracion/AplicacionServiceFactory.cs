@@ -75,9 +75,9 @@ namespace BLL.Configuracion
             BitacoraService = new BitacoraService(bitacoraRepositorio, bitacoraContingenciaService);
 
             IntegridadService = new IntegridadService(
-            digitoVerificadorRepositorio,
-            digitoVerificadorService,
-            BitacoraService
+                digitoVerificadorRepositorio,
+                digitoVerificadorService,
+                BitacoraService
             );
 
             LoginAppService = new LoginAppService(
@@ -107,6 +107,7 @@ namespace BLL.Configuracion
                 usuarioPermisoComponenteRepositorio,
                 usuarioRepositorio,
                 unidadDeTrabajoPermisos,
+                IntegridadService,
                 sessionService,
                 BitacoraService
             );
