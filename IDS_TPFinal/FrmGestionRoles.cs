@@ -19,6 +19,7 @@ namespace IDS_TPFinal
         private bool _actualizandoChecks;
         private bool _cargandoRoles;
         private bool _modoCreacion;
+        private bool _modoEdicion;
         private Guid _idRolActual;
 
         public FrmGestionRoles()
@@ -87,6 +88,7 @@ namespace IDS_TPFinal
 
             TemaVisual.AplicarBotonPrincipal(_btnGuardar);
             TemaVisual.AplicarBotonSecundario(_btnNuevoRol);
+            TemaVisual.AplicarBotonSecundario(_btnEditarRol);
             TemaVisual.AplicarBotonSecundario(_btnEliminarRol);
             TemaVisual.AplicarBotonSecundario(_btnCancelarNuevo);
             TemaVisual.AplicarBotonSecundario(_btnCerrar);
@@ -423,8 +425,10 @@ namespace IDS_TPFinal
         private void btnCancelarNuevo_Click(object sender, EventArgs e)
         {
             _modoCreacion = false;
+            _modoEdicion = false;
+
             AplicarModoVisual();
-            CargarRoles();
+            CargarRoles(_idRolActual);
         }
 
         private void btnGuardar_Click(object sender, EventArgs e)
@@ -434,6 +438,12 @@ namespace IDS_TPFinal
                 if (_modoCreacion)
                 {
                     CrearNuevoRol();
+                    return;
+                }
+
+                if (_modoEdicion)
+                {
+                    GuardarCambiosRol();
                     return;
                 }
 
@@ -474,6 +484,38 @@ namespace IDS_TPFinal
             _modoCreacion = false;
             AplicarModoVisual();
             CargarRoles(idNuevoRol);
+        }
+
+        private void GuardarCambiosRol()
+        {
+            if (_idRolActual == Guid.Empty)
+            {
+                return;
+            }
+
+            _gestionPermisosAppService.ModificarRol(
+                _idRolActual,
+                _txtNombre.Text,
+                _txtCodigo.Text,
+                _txtDescripcion.Text,
+                _chkActivo.Checked
+            );
+
+            MessageBox.Show(
+                this,
+                Traducir(
+                    "Roles.Gestion.ModificadoOk",
+                    "Los datos del rol se modificaron correctamente."
+                ),
+                Traducir("Roles.Gestion.Titulo", "Gestión de roles"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+
+            _modoEdicion = false;
+
+            AplicarModoVisual();
+            CargarRoles(_idRolActual);
         }
 
         private void GuardarComposicionRol()
@@ -539,24 +581,29 @@ namespace IDS_TPFinal
 
         private void AplicarModoVisual()
         {
-            bool camposEditables = _modoCreacion;
+            bool camposEditables = _modoCreacion || _modoEdicion;
 
             _cboRoles.Enabled = !camposEditables;
             _btnNuevoRol.Enabled = !camposEditables;
             _btnCancelarNuevo.Visible = camposEditables;
+            _btnEditarRol.Visible = !camposEditables;
+            _btnEditarRol.Enabled = !camposEditables && _cboRoles.Items.Count > 0;
 
             _txtNombre.ReadOnly = !camposEditables;
-            _txtCodigo.ReadOnly = !camposEditables;
             _txtDescripcion.ReadOnly = !camposEditables;
-            _chkActivo.Enabled = camposEditables;
 
             _txtNombre.BackColor = TemaVisual.FondoInput;
             _txtCodigo.BackColor = TemaVisual.FondoInput;
             _txtDescripcion.BackColor = TemaVisual.FondoInput;
 
-            _btnGuardar.Text = camposEditables
-                ? Traducir("Roles.Gestion.CrearRol", "Crear rol")
-                : Traducir("Roles.Gestion.GuardarComposicion", "Guardar composicion");
+            _btnGuardar.Text = _modoCreacion
+            ? Traducir("Roles.Gestion.CrearRol", "Crear rol")
+            : _modoEdicion
+                ? Traducir("Roles.Gestion.GuardarCambios", "Guardar cambios")
+                : Traducir(
+                    "Roles.Gestion.GuardarComposicion",
+                    "Guardar composición"
+                );
             _btnGuardar.Enabled = camposEditables || _cboRoles.Items.Count > 0;
 
             Rol rolSeleccionado = _cboRoles.SelectedItem as Rol;
@@ -569,12 +616,15 @@ namespace IDS_TPFinal
                     StringComparison.OrdinalIgnoreCase
                 );
 
+            bool protegerAdministrador = _modoEdicion && esRolAdministrador;
+
+            _txtCodigo.ReadOnly = !camposEditables || protegerAdministrador;
+
+            _chkActivo.Enabled = camposEditables && !protegerAdministrador;
+
             _btnEliminarRol.Visible = !camposEditables;
 
-            _btnEliminarRol.Enabled =
-                !camposEditables &&
-                rolSeleccionado != null &&
-                !esRolAdministrador;
+            _btnEliminarRol.Enabled = !camposEditables && rolSeleccionado != null && !esRolAdministrador;
         }
 
         private void CargarAtributosRol(Rol rol)
@@ -659,6 +709,17 @@ namespace IDS_TPFinal
                     MessageBoxIcon.Warning
                 );
             }
+        }
+
+        private void _btnEditarRol_Click(object sender, EventArgs e)
+        {
+            if (_modoCreacion || _idRolActual == Guid.Empty)
+            {
+                return;
+            }
+
+            _modoEdicion = true;
+            AplicarModoVisual();
         }
     }
 }

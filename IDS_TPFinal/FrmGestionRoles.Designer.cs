@@ -50,6 +50,7 @@
             this._btnCancelarNuevo = new System.Windows.Forms.Button();
             this._btnCerrar = new System.Windows.Forms.Button();
             this._btnEliminarRol = new System.Windows.Forms.Button();
+            this._btnEditarRol = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // _lblTitulo
@@ -194,7 +195,7 @@
             // 
             // _btnGuardar
             // 
-            this._btnGuardar.Location = new System.Drawing.Point(430, 660);
+            this._btnGuardar.Location = new System.Drawing.Point(390, 660);
             this._btnGuardar.Name = "_btnGuardar";
             this._btnGuardar.Size = new System.Drawing.Size(150, 40);
             this._btnGuardar.TabIndex = 13;
@@ -204,7 +205,7 @@
             // 
             // _btnCancelarNuevo
             // 
-            this._btnCancelarNuevo.Location = new System.Drawing.Point(600, 660);
+            this._btnCancelarNuevo.Location = new System.Drawing.Point(573, 660);
             this._btnCancelarNuevo.Name = "_btnCancelarNuevo";
             this._btnCancelarNuevo.Size = new System.Drawing.Size(150, 40);
             this._btnCancelarNuevo.TabIndex = 14;
@@ -227,20 +228,32 @@
             // 
             // _btnEliminarRol
             //
-            //this._btnEliminarRol.Location = new System.Drawing.Point(259, 660);
+            this._btnEliminarRol.Location = new System.Drawing.Point(692, 130);
             this._btnEliminarRol.Name = "_btnEliminarRol";
-            this._btnEliminarRol.Size = new System.Drawing.Size(150, 40);
+            this._btnEliminarRol.Size = new System.Drawing.Size(140, 36);
             this._btnEliminarRol.TabIndex = 16;
             this._btnEliminarRol.Tag = "Roles.Gestion.EliminarRol";
             this._btnEliminarRol.Text = "Eliminar rol";
             this._btnEliminarRol.UseVisualStyleBackColor = true;
             this._btnEliminarRol.Click += new System.EventHandler(this._btnEliminarRol_Click);
             //
+            // _btnEditarRol
+            //
+            this._btnEditarRol.Location = new System.Drawing.Point(535, 130);
+            this._btnEditarRol.Name = "_btnEditarRol";
+            this._btnEditarRol.Size = new System.Drawing.Size(140, 36);
+            this._btnEditarRol.TabIndex = 17;
+            this._btnEditarRol.Tag = "Roles.Gestion.EditarRol";
+            this._btnEditarRol.Text = "Editar datos";
+            this._btnEditarRol.UseVisualStyleBackColor = true;
+            this._btnEditarRol.Click += new System.EventHandler(this._btnEditarRol_Click);
+            //
             // FrmGestionRoles
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(960, 720);
+            this.Controls.Add(this._btnEditarRol);
             this.Controls.Add(this._btnEliminarRol);
             this.Controls.Add(this._btnCerrar);
             this.Controls.Add(this._btnCancelarNuevo);
@@ -271,5 +284,6 @@
         }
 
         private System.Windows.Forms.Button _btnEliminarRol;
+        private System.Windows.Forms.Button _btnEditarRol;
     }
 }
