@@ -57,7 +57,8 @@ namespace BLL.Configuracion
             IPermisoComponenteRepositorio permisoComponenteRepositorio = new PermisoComponenteRepositorio(connectionFactory);
             IRolComponenteRepositorio rolComponenteRepositorio = new RolComponenteRepositorio(connectionFactory);
             IUsuarioPermisoComponenteRepositorio usuarioPermisoComponenteRepositorio = new UsuarioPermisoComponenteRepositorio(connectionFactory);
-            
+            IUnidadDeTrabajoPermisos unidadDeTrabajoPermisos = new UnidadDeTrabajoPermisos(connectionFactory);
+
             IIdiomaRepositorio idiomaRepositorio = new IdiomaRepositorio(connectionFactory);
             ITraduccionRepositorio traduccionRepositorio = new TraduccionRepositorio(connectionFactory);
 
@@ -105,6 +106,7 @@ namespace BLL.Configuracion
                 rolComponenteRepositorio,
                 usuarioPermisoComponenteRepositorio,
                 usuarioRepositorio,
+                unidadDeTrabajoPermisos,
                 sessionService,
                 BitacoraService
             );
