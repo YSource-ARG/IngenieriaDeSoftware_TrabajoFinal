@@ -1,4 +1,4 @@
-using BE.Permisos;
+﻿using BE.Permisos;
 using BLL.Idiomas;
 using BLL.Permisos;
 using System;
@@ -11,224 +11,120 @@ using UI.Idiomas;
 
 namespace IDS_TPFinal
 {
-    public class FrmGestionRoles : Form
+    public partial class FrmGestionRoles : Form, IObservadorIdioma
     {
         private readonly GestionPermisosAppService _gestionPermisosAppService;
         private readonly IIdiomaAppService _idiomaAppService;
-
-        private Label _lblTitulo;
-        private Label _lblAyuda;
-        private Label _lblRolExistente;
-        private ComboBox _cboRoles;
-        private Button _btnNuevoRol;
-        private Label _lblNombre;
-        private TextBox _txtNombre;
-        private Label _lblCodigo;
-        private TextBox _txtCodigo;
-        private Label _lblDescripcion;
-        private TextBox _txtDescripcion;
-        private CheckBox _chkActivo;
-        private TreeView _treeComponentes;
-        private Button _btnGuardar;
-        private Button _btnCancelarNuevo;
-        private Button _btnCerrar;
+        
         private bool _actualizandoChecks;
         private bool _cargandoRoles;
         private bool _modoCreacion;
         private Guid _idRolActual;
 
+        public FrmGestionRoles()
+        {
+            InitializeComponent();
+        }
+
         public FrmGestionRoles(
             GestionPermisosAppService gestionPermisosAppService,
             IIdiomaAppService idiomaAppService)
+            : this()
         {
             _gestionPermisosAppService = gestionPermisosAppService
                 ?? throw new ArgumentNullException(nameof(gestionPermisosAppService));
+
             _idiomaAppService = idiomaAppService;
 
-            InicializarComponentes();
+            AplicarEstiloVisual();
+
+            if (_idiomaAppService != null)
+            {
+                _idiomaAppService.Suscribir(this);
+                ActualizarIdioma();
+            }
+
             CargarRoles();
         }
 
-        private void InicializarComponentes()
+        private void AplicarEstiloVisual()
         {
-            Text = Traducir("Roles.Gestion.Titulo", "Gestion de roles");
-            StartPosition = FormStartPosition.CenterParent;
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
-            ClientSize = new Size(960, 720);
-
             TemaVisual.AplicarFormularioOscuro(this);
+            TemaVisual.AplicarTitulo(_lblTitulo);
+            TemaVisual.AplicarTextoSecundario(_lblAyuda);
 
-            _lblTitulo = new Label
+            Label[] etiquetas =
             {
-                AutoSize = true,
-                Location = new Point(28, 20),
-                Font = new Font("Segoe UI", 18F, FontStyle.Bold),
-                ForeColor = TemaVisual.TextoPrincipal,
-                Text = Traducir("Roles.Gestion.Titulo", "Gestion de roles")
+                _lblRolExistente,
+                _lblNombre,
+                _lblCodigo,
+                _lblDescripcion
             };
 
-            _lblAyuda = new Label
+            foreach (Label etiqueta in etiquetas)
             {
-                AutoSize = true,
-                MaximumSize = new Size(880, 0),
-                Location = new Point(30, 58),
-                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
-                ForeColor = TemaVisual.TextoSecundario,
-                Text = Traducir(
-                    "Roles.Gestion.Ayuda",
-                    "Seleccione un rol existente para administrar su composicion o cree uno nuevo cargando sus atributos y marcando permisos o subroles en el arbol."
-                )
-            };
+                etiqueta.ForeColor = TemaVisual.TextoPrincipal;
+                etiqueta.BackColor = Color.Transparent;
+                etiqueta.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            }
 
-            _lblRolExistente = new Label
-            {
-                AutoSize = true,
-                Location = new Point(30, 112),
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                ForeColor = TemaVisual.TextoPrincipal,
-                Text = Traducir("Roles.Gestion.RolExistente", "Rol existente")
-            };
+            _cboRoles.BackColor = TemaVisual.FondoInput;
+            _cboRoles.ForeColor = TemaVisual.TextoPrincipal;
+            _cboRoles.FlatStyle = FlatStyle.Flat;
+            _cboRoles.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
 
-            _cboRoles = new ComboBox
-            {
-                Location = new Point(30, 136),
-                Size = new Size(330, 24),
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                BackColor = TemaVisual.FondoInput,
-                ForeColor = TemaVisual.TextoPrincipal,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10F, FontStyle.Regular)
-            };
-            _cboRoles.SelectedIndexChanged += cboRoles_SelectedIndexChanged;
+            TemaVisual.AplicarTextBox(_txtNombre);
+            TemaVisual.AplicarTextBox(_txtCodigo);
+            TemaVisual.AplicarTextBox(_txtDescripcion);
 
-            _btnNuevoRol = new Button
-            {
-                Location = new Point(380, 130),
-                Size = new Size(140, 36),
-                Text = Traducir("Roles.Gestion.NuevoRol", "Nuevo rol")
-            };
-            TemaVisual.AplicarBotonSecundario(_btnNuevoRol);
-            _btnNuevoRol.Click += btnNuevoRol_Click;
+            _chkActivo.ForeColor = TemaVisual.TextoPrincipal;
+            _chkActivo.BackColor = Color.Transparent;
 
-            _lblNombre = new Label
-            {
-                AutoSize = true,
-                Location = new Point(30, 190),
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                ForeColor = TemaVisual.TextoPrincipal,
-                Text = Traducir("Roles.Gestion.Nombre", "Nombre")
-            };
+            _treeComponentes.BackColor = TemaVisual.FondoInput;
+            _treeComponentes.ForeColor = TemaVisual.TextoPrincipal;
+            _treeComponentes.LineColor = TemaVisual.BordeSuave;
 
-            _txtNombre = CrearTextBox(new Point(30, 214), 300);
-
-            _lblCodigo = new Label
-            {
-                AutoSize = true,
-                Location = new Point(360, 190),
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                ForeColor = TemaVisual.TextoPrincipal,
-                Text = Traducir("Roles.Gestion.Codigo", "Codigo")
-            };
-
-            _txtCodigo = CrearTextBox(new Point(360, 214), 250);
-
-            _chkActivo = new CheckBox
-            {
-                AutoSize = true,
-                Location = new Point(640, 217),
-                Font = new Font("Segoe UI", 10F, FontStyle.Regular),
-                ForeColor = TemaVisual.TextoPrincipal,
-                Text = Traducir("Roles.Gestion.Activo", "Activo")
-            };
-
-            _lblDescripcion = new Label
-            {
-                AutoSize = true,
-                Location = new Point(30, 255),
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                ForeColor = TemaVisual.TextoPrincipal,
-                Text = Traducir("Roles.Gestion.Descripcion", "Descripcion")
-            };
-
-            _txtDescripcion = CrearTextBox(new Point(30, 279), 880);
-            _txtDescripcion.Height = 60;
-            _txtDescripcion.Multiline = true;
-            _txtDescripcion.ScrollBars = ScrollBars.Vertical;
-
-            _treeComponentes = new TreeView
-            {
-                Location = new Point(30, 370),
-                Size = new Size(880, 270),
-                CheckBoxes = true,
-                BorderStyle = BorderStyle.FixedSingle,
-                BackColor = TemaVisual.FondoInput,
-                ForeColor = TemaVisual.TextoPrincipal,
-                Font = new Font("Segoe UI", 10F, FontStyle.Regular),
-                HideSelection = false
-            };
-            _treeComponentes.AfterCheck += treeComponentes_AfterCheck;
-
-            _btnGuardar = new Button
-            {
-                Location = new Point(430, 660),
-                Size = new Size(150, 40),
-                Text = Traducir("Roles.Gestion.GuardarComposicion", "Guardar composicion")
-            };
             TemaVisual.AplicarBotonPrincipal(_btnGuardar);
-            _btnGuardar.Click += btnGuardar_Click;
-
-            _btnCancelarNuevo = new Button
-            {
-                Location = new Point(600, 660),
-                Size = new Size(150, 40),
-                Text = Traducir("General.Cancelar", "Cancelar"),
-                Visible = false
-            };
+            TemaVisual.AplicarBotonSecundario(_btnNuevoRol);
             TemaVisual.AplicarBotonSecundario(_btnCancelarNuevo);
-            _btnCancelarNuevo.Click += btnCancelarNuevo_Click;
-
-            _btnCerrar = new Button
-            {
-                Location = new Point(760, 660),
-                Size = new Size(150, 40),
-                Text = Traducir("General.Cerrar", "Cerrar")
-            };
             TemaVisual.AplicarBotonSecundario(_btnCerrar);
-            _btnCerrar.Click += (s, e) => Close();
-
-            Controls.Add(_lblTitulo);
-            Controls.Add(_lblAyuda);
-            Controls.Add(_lblRolExistente);
-            Controls.Add(_cboRoles);
-            Controls.Add(_btnNuevoRol);
-            Controls.Add(_lblNombre);
-            Controls.Add(_txtNombre);
-            Controls.Add(_lblCodigo);
-            Controls.Add(_txtCodigo);
-            Controls.Add(_chkActivo);
-            Controls.Add(_lblDescripcion);
-            Controls.Add(_txtDescripcion);
-            Controls.Add(_treeComponentes);
-            Controls.Add(_btnGuardar);
-            Controls.Add(_btnCancelarNuevo);
-            Controls.Add(_btnCerrar);
-
-            AplicarModoVisual();
         }
 
-        private TextBox CrearTextBox(Point location, int width)
+        public void ActualizarIdioma()
         {
-            return new TextBox
+            if (_idiomaAppService == null)
             {
-                Location = location,
-                Size = new Size(width, 25),
-                BackColor = TemaVisual.FondoInput,
-                ForeColor = TemaVisual.TextoPrincipal,
-                BorderStyle = BorderStyle.FixedSingle,
-                Font = new Font("Segoe UI", 10F, FontStyle.Regular)
-            };
+                return;
+            }
+
+            TraductorControles.TraducirFormulario(this, _idiomaAppService);
+            AplicarModoVisual();
+
+            if (_gestionPermisosAppService == null)
+            {
+                return;
+            }
+
+            if (_modoCreacion)
+            {
+                CargarArbolModoCreacion();
+                return;
+            }
+
+            if (_cboRoles.DataSource != null)
+            {
+                CargarRolSeleccionado();
+            }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (_idiomaAppService != null)
+            {
+                _idiomaAppService.Desuscribir(this);
+            }
+
+            base.OnFormClosed(e);
         }
 
         private void CargarRoles(Guid? idRolSeleccionado = null)
@@ -674,6 +570,11 @@ namespace IDS_TPFinal
             _txtCodigo.Text = string.Empty;
             _txtDescripcion.Text = string.Empty;
             _chkActivo.Checked = false;
+        }
+
+        private void btnCerrar_Click(object sender, EventArgs e)
+        {
+            Close();
         }
 
         private string Traducir(string clave, string fallback)

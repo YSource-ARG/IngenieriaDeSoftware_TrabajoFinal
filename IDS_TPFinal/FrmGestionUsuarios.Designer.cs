@@ -35,6 +35,7 @@
             this.lblTitulo = new System.Windows.Forms.Label();
             this.lblIcono = new System.Windows.Forms.Label();
             this.panelContenido = new System.Windows.Forms.Panel();
+            this._btnPermisos = new System.Windows.Forms.Button();
             this.btnHistorialEmail = new System.Windows.Forms.Button();
             this.dgvUsuarios = new System.Windows.Forms.DataGridView();
             this.panelLineaDerecha = new System.Windows.Forms.Panel();
@@ -119,6 +120,7 @@
             // 
             // panelContenido
             // 
+            this.panelContenido.Controls.Add(this._btnPermisos);
             this.panelContenido.Controls.Add(this.btnHistorialEmail);
             this.panelContenido.Controls.Add(this.dgvUsuarios);
             this.panelContenido.Controls.Add(this.panelLineaDerecha);
@@ -134,11 +136,21 @@
             this.panelContenido.Size = new System.Drawing.Size(1363, 486);
             this.panelContenido.TabIndex = 1;
             // 
+            // _btnPermisos
+            // 
+            this._btnPermisos.Location = new System.Drawing.Point(1105, 366);
+            this._btnPermisos.Name = "_btnPermisos";
+            this._btnPermisos.Size = new System.Drawing.Size(145, 84);
+            this._btnPermisos.TabIndex = 10;
+            this._btnPermisos.Tag = "Usuarios.Permisos";
+            this._btnPermisos.Text = "Permisos";
+            this._btnPermisos.UseVisualStyleBackColor = true;
+            // 
             // btnHistorialEmail
             // 
-            this.btnHistorialEmail.Location = new System.Drawing.Point(1021, 367);
+            this.btnHistorialEmail.Location = new System.Drawing.Point(925, 366);
             this.btnHistorialEmail.Name = "btnHistorialEmail";
-            this.btnHistorialEmail.Size = new System.Drawing.Size(180, 84);
+            this.btnHistorialEmail.Size = new System.Drawing.Size(160, 84);
             this.btnHistorialEmail.TabIndex = 9;
             this.btnHistorialEmail.Text = "Historial email";
             this.btnHistorialEmail.UseVisualStyleBackColor = true;
@@ -361,7 +373,7 @@
             // 
             // btnRestablecerPassword
             // 
-            this.btnRestablecerPassword.Location = new System.Drawing.Point(790, 367);
+            this.btnRestablecerPassword.Location = new System.Drawing.Point(715, 366);
             this.btnRestablecerPassword.Name = "btnRestablecerPassword";
             this.btnRestablecerPassword.Size = new System.Drawing.Size(180, 84);
             this.btnRestablecerPassword.TabIndex = 4;
@@ -370,7 +382,7 @@
             // 
             // btnInhabilitarReactivar
             // 
-            this.btnInhabilitarReactivar.Location = new System.Drawing.Point(554, 367);
+            this.btnInhabilitarReactivar.Location = new System.Drawing.Point(479, 366);
             this.btnInhabilitarReactivar.Name = "btnInhabilitarReactivar";
             this.btnInhabilitarReactivar.Size = new System.Drawing.Size(180, 84);
             this.btnInhabilitarReactivar.TabIndex = 3;
@@ -379,7 +391,7 @@
             // 
             // btnEditar
             // 
-            this.btnEditar.Location = new System.Drawing.Point(366, 367);
+            this.btnEditar.Location = new System.Drawing.Point(291, 366);
             this.btnEditar.Name = "btnEditar";
             this.btnEditar.Size = new System.Drawing.Size(130, 84);
             this.btnEditar.TabIndex = 2;
@@ -388,7 +400,7 @@
             // 
             // btnNuevo
             // 
-            this.btnNuevo.Location = new System.Drawing.Point(181, 367);
+            this.btnNuevo.Location = new System.Drawing.Point(106, 366);
             this.btnNuevo.Name = "btnNuevo";
             this.btnNuevo.Size = new System.Drawing.Size(130, 84);
             this.btnNuevo.TabIndex = 1;
