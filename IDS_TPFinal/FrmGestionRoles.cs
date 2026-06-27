@@ -87,6 +87,7 @@ namespace IDS_TPFinal
 
             TemaVisual.AplicarBotonPrincipal(_btnGuardar);
             TemaVisual.AplicarBotonSecundario(_btnNuevoRol);
+            TemaVisual.AplicarBotonSecundario(_btnEliminarRol);
             TemaVisual.AplicarBotonSecundario(_btnCancelarNuevo);
             TemaVisual.AplicarBotonSecundario(_btnCerrar);
         }
@@ -196,6 +197,8 @@ namespace IDS_TPFinal
 
             CargarAtributosRol(rolSeleccionado);
             CargarArbolComponentes(new HashSet<Guid>(rolSeleccionado.Hijos.Select(x => x.Id)));
+
+            AplicarModoVisual();
         }
 
         private void CargarArbolModoCreacion()
@@ -555,6 +558,23 @@ namespace IDS_TPFinal
                 ? Traducir("Roles.Gestion.CrearRol", "Crear rol")
                 : Traducir("Roles.Gestion.GuardarComposicion", "Guardar composicion");
             _btnGuardar.Enabled = camposEditables || _cboRoles.Items.Count > 0;
+
+            Rol rolSeleccionado = _cboRoles.SelectedItem as Rol;
+
+            bool esRolAdministrador =
+                rolSeleccionado != null &&
+                string.Equals(
+                    rolSeleccionado.Codigo,
+                    "ROL_ADMINISTRADOR",
+                    StringComparison.OrdinalIgnoreCase
+                );
+
+            _btnEliminarRol.Visible = !camposEditables;
+
+            _btnEliminarRol.Enabled =
+                !camposEditables &&
+                rolSeleccionado != null &&
+                !esRolAdministrador;
         }
 
         private void CargarAtributosRol(Rol rol)
@@ -581,6 +601,64 @@ namespace IDS_TPFinal
         private string Traducir(string clave, string fallback)
         {
             return MensajeTraducido.TraducirConFallback(_idiomaAppService, clave, fallback);
+        }
+
+        private void _btnEliminarRol_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_modoCreacion || _idRolActual == Guid.Empty)
+                {
+                    return;
+                }
+
+                Rol rolSeleccionado = _cboRoles.SelectedItem as Rol;
+
+                if (rolSeleccionado == null)
+                {
+                    return;
+                }
+
+                DialogResult respuesta = MessageBox.Show(
+                    this,
+                    $"¿Está seguro de eliminar el rol '{rolSeleccionado.Nombre}'?\n\n" +
+                    "También se eliminarán sus relaciones y asignaciones.",
+                    Traducir("Roles.Gestion.ConfirmarEliminarTitulo", "Confirmar eliminación"),
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning
+                );
+
+                if (respuesta != DialogResult.Yes)
+                {
+                    return;
+                }
+
+                _gestionPermisosAppService.EliminarRol(_idRolActual);
+
+                MessageBox.Show(
+                    this,
+                    Traducir(
+                        "Roles.Gestion.EliminadoOk",
+                        "El rol se eliminó correctamente."
+                    ),
+                    Traducir("Roles.Gestion.Titulo", "Gestión de roles"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+
+                CargarRoles();
+                AplicarModoVisual();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    this,
+                    ex.Message,
+                    Traducir("Mensajes.Titulos.Error", "Error"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            }
         }
     }
 }

@@ -327,13 +327,15 @@ namespace BLL.Permisos
             Rol rol =
                 (Rol)_permisoComponenteRepositorio.ObtenerPorId(pId);
 
+            if (string.Equals(rol.Codigo, "ROL_ADMINISTRADOR", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("El rol Administrador no se puede eliminar.");
+            }
+
             _unidadDeTrabajoPermisos.EliminarComponente(pId);
             RecalcularIntegridadPermisos();
 
-            RegistrarBitacora(
-                "ROL_ELIMINADO",
-                $"Se eliminó el rol '{rol.Nombre}' con código '{rol.Codigo}'."
-            );
+            RegistrarBitacora("ROL_ELIMINADO",$"Se eliminó el rol '{rol.Nombre}' con código '{rol.Codigo}'.");
         }
 
         public void EliminarPermiso(Guid pId)
