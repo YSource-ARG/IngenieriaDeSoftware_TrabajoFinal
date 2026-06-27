@@ -1,4 +1,4 @@
-IF DB_ID('TP_Ing_De_Software') IS NULL CREATE DATABASE TP_Ing_De_Software
+﻿IF DB_ID('TP_Ing_De_Software') IS NULL CREATE DATABASE TP_Ing_De_Software
 GO
 
 USE TP_Ing_De_Software
@@ -407,6 +407,15 @@ BEGIN
 END
 GO
 
+-- DVH de cada rol o permiso del Composite.
+IF COL_LENGTH('dbo.PermisoComponente', 'DigitoVerificadorHorizontal') IS NULL
+BEGIN
+    ALTER TABLE dbo.PermisoComponente
+    ADD DigitoVerificadorHorizontal nvarchar(256) NOT NULL
+        CONSTRAINT DF_PermisoComponente_DVH DEFAULT ('')
+END
+GO
+
 IF NOT EXISTS
 (
     SELECT 1
@@ -452,6 +461,15 @@ BEGIN
 END
 GO
 
+-- DVH de cada relación entre un rol y uno de sus componentes hijos.
+IF COL_LENGTH('dbo.RolComponente', 'DigitoVerificadorHorizontal') IS NULL
+BEGIN
+    ALTER TABLE dbo.RolComponente
+    ADD DigitoVerificadorHorizontal nvarchar(256) NOT NULL
+        CONSTRAINT DF_RolComponente_DVH DEFAULT ('')
+END
+GO
+
 IF NOT EXISTS
 (
     SELECT 1
@@ -486,6 +504,18 @@ BEGIN
             FOREIGN KEY (AsignadoPorUsuarioId)
             REFERENCES dbo.Usuario(Id)
     )
+END
+GO
+
+-- DVH de cada asignación directa de un rol o permiso a un usuario.
+IF COL_LENGTH(
+        'dbo.UsuarioPermisoComponente',
+        'DigitoVerificadorHorizontal'
+    ) IS NULL
+BEGIN
+    ALTER TABLE dbo.UsuarioPermisoComponente
+    ADD DigitoVerificadorHorizontal nvarchar(256) NOT NULL
+        CONSTRAINT DF_UsuarioPermisoComponente_DVH DEFAULT ('')
 END
 GO
 
