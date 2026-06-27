@@ -1,5 +1,6 @@
 using BE.Permisos;
 using BLL.Bitacora;
+using BLL.Integridad;
 using DAL.Permisos;
 using DAL.Usuarios;
 using SSL.Interfaces;
@@ -24,6 +25,7 @@ namespace BLL.Permisos
         private readonly IUsuarioPermisoComponenteRepositorio _usuarioPermisoComponenteRepositorio;
         private readonly IUsuarioRepositorio _usuarioRepositorio;
         private readonly IUnidadDeTrabajoPermisos _unidadDeTrabajoPermisos;
+        private readonly IIntegridadService _integridadService;
         private readonly ISessionService _sessionService;
         private readonly IBitacoraService _bitacoraService;
 
@@ -33,19 +35,37 @@ namespace BLL.Permisos
             IUsuarioPermisoComponenteRepositorio usuarioPermisoComponenteRepositorio,
             IUsuarioRepositorio usuarioRepositorio,
             IUnidadDeTrabajoPermisos unidadDeTrabajoPermisos,
+            IIntegridadService integridadService,
             ISessionService sessionService,
             IBitacoraService bitacoraService)
         {
-            _permisoComponenteRepositorio = permisoComponenteRepositorio ?? throw new ArgumentNullException(nameof(permisoComponenteRepositorio));
-            _rolComponenteRepositorio = rolComponenteRepositorio ?? throw new ArgumentNullException(nameof(rolComponenteRepositorio));
-            _usuarioPermisoComponenteRepositorio = usuarioPermisoComponenteRepositorio ?? throw new ArgumentNullException(nameof(usuarioPermisoComponenteRepositorio));
-            _usuarioRepositorio = usuarioRepositorio ?? throw new ArgumentNullException(nameof(usuarioRepositorio));
-            _unidadDeTrabajoPermisos = unidadDeTrabajoPermisos ?? throw new ArgumentNullException(nameof(unidadDeTrabajoPermisos));
-            _sessionService = sessionService ?? throw new ArgumentNullException(nameof(sessionService));
-            _bitacoraService = bitacoraService ?? throw new ArgumentNullException(nameof(bitacoraService));
+            _permisoComponenteRepositorio = permisoComponenteRepositorio
+                ?? throw new ArgumentNullException(nameof(permisoComponenteRepositorio));
+
+            _rolComponenteRepositorio = rolComponenteRepositorio
+                ?? throw new ArgumentNullException(nameof(rolComponenteRepositorio));
+
+            _usuarioPermisoComponenteRepositorio = usuarioPermisoComponenteRepositorio
+                ?? throw new ArgumentNullException(nameof(usuarioPermisoComponenteRepositorio));
+
+            _usuarioRepositorio = usuarioRepositorio
+                ?? throw new ArgumentNullException(nameof(usuarioRepositorio));
+
+            _unidadDeTrabajoPermisos = unidadDeTrabajoPermisos
+                ?? throw new ArgumentNullException(nameof(unidadDeTrabajoPermisos));
+
+            _integridadService = integridadService
+                ?? throw new ArgumentNullException(nameof(integridadService));
+
+            _sessionService = sessionService
+                ?? throw new ArgumentNullException(nameof(sessionService));
+
+            _bitacoraService = bitacoraService
+                ?? throw new ArgumentNullException(nameof(bitacoraService));
         }
 
         #region Listados y busquedas
+
         public List<ComponentePermisos> ListarComponentesPermisos()
         {
             return _permisoComponenteRepositorio.Listar();
@@ -65,7 +85,10 @@ namespace BLL.Permisos
         {
             if (idComponente == Guid.Empty)
             {
-                throw new ArgumentException("El identificador del componente no puede estar vacío.", nameof(idComponente));
+                throw new ArgumentException(
+                    "El identificador del componente no puede estar vacío.",
+                    nameof(idComponente)
+                );
             }
 
             return _permisoComponenteRepositorio.ObtenerPorId(idComponente);
@@ -87,9 +110,11 @@ namespace BLL.Permisos
 
             return (Permiso)_permisoComponenteRepositorio.ObtenerPorId(idPermiso);
         }
+
         #endregion
 
         #region Alta, Modificación y Baja
+
         public Guid CrearRolConComponentes(
             string pNombre,
             string pCodigo,
@@ -117,7 +142,12 @@ namespace BLL.Permisos
 
             // El rol y sus componentes se guardan en una única transacción.
             // Si falla alguna inserción, DAL revierte toda la operación.
-            _unidadDeTrabajoPermisos.CrearRolConComponentes(rol, hijosNormalizados);
+            _unidadDeTrabajoPermisos.CrearRolConComponentes(
+                rol,
+                hijosNormalizados
+            );
+
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 "ROL_CREADO",
@@ -129,9 +159,20 @@ namespace BLL.Permisos
             return idRol;
         }
 
-        public void CrearRol(string pNombre, string pCodigo, string pDescripcion, bool pEstado)
+        public void CrearRol(
+            string pNombre,
+            string pCodigo,
+            string pDescripcion,
+            bool pEstado)
         {
-            ValidarDatosComponente(Guid.Empty, pNombre, pCodigo, pDescripcion, pEstado);
+            ValidarDatosComponente(
+                Guid.Empty,
+                pNombre,
+                pCodigo,
+                pDescripcion,
+                pEstado
+            );
+
             ValidarCodigoUnico(pCodigo, null);
 
             Rol rol = new Rol
@@ -145,6 +186,7 @@ namespace BLL.Permisos
             };
 
             _permisoComponenteRepositorio.Crear(rol);
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 "ROL_CREADO",
@@ -152,7 +194,12 @@ namespace BLL.Permisos
             );
         }
 
-        public void ModificarRol(Guid pId, string pNombre, string pCodigo, string pDescripcion, bool pEstado)
+        public void ModificarRol(
+            Guid pId,
+            string pNombre,
+            string pCodigo,
+            string pDescripcion,
+            bool pEstado)
         {
             ValidarRolExiste(pId);
             ValidarDatosComponente(pId, pNombre, pCodigo, pDescripcion, pEstado);
@@ -169,6 +216,7 @@ namespace BLL.Permisos
             };
 
             _permisoComponenteRepositorio.Modificar(rol);
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 "ROL_MODIFICADO",
@@ -176,9 +224,20 @@ namespace BLL.Permisos
             );
         }
 
-        public void CrearPermiso(string pNombre, string pCodigo, string pDescripcion, bool pEstado)
+        public void CrearPermiso(
+            string pNombre,
+            string pCodigo,
+            string pDescripcion,
+            bool pEstado)
         {
-            ValidarDatosComponente(Guid.Empty, pNombre, pCodigo, pDescripcion, pEstado);
+            ValidarDatosComponente(
+                Guid.Empty,
+                pNombre,
+                pCodigo,
+                pDescripcion,
+                pEstado
+            );
+
             ValidarCodigoUnico(pCodigo, null);
 
             Permiso permiso = new Permiso
@@ -192,6 +251,7 @@ namespace BLL.Permisos
             };
 
             _permisoComponenteRepositorio.Crear(permiso);
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 "PERMISO_CREADO",
@@ -199,7 +259,12 @@ namespace BLL.Permisos
             );
         }
 
-        public void ModificarPermiso(Guid pId, string pNombre, string pCodigo, string pDescripcion, bool pEstado)
+        public void ModificarPermiso(
+            Guid pId,
+            string pNombre,
+            string pCodigo,
+            string pDescripcion,
+            bool pEstado)
         {
             ValidarPermisoExiste(pId);
             ValidarDatosComponente(pId, pNombre, pCodigo, pDescripcion, pEstado);
@@ -216,6 +281,7 @@ namespace BLL.Permisos
             };
 
             _permisoComponenteRepositorio.Modificar(permiso);
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 "PERMISO_MODIFICADO",
@@ -227,17 +293,24 @@ namespace BLL.Permisos
         {
             if (pId == Guid.Empty)
             {
-                throw new ArgumentException("El identificador del componente no puede estar vacío.", nameof(pId));
+                throw new ArgumentException(
+                    "El identificador del componente no puede estar vacío.",
+                    nameof(pId)
+                );
             }
 
-            ComponentePermisos componente = _permisoComponenteRepositorio.ObtenerPorId(pId);
+            ComponentePermisos componente =
+                _permisoComponenteRepositorio.ObtenerPorId(pId);
 
             if (componente == null)
             {
-                throw new InvalidOperationException("No se encontró el componente indicado.");
+                throw new InvalidOperationException(
+                    "No se encontró el componente indicado."
+                );
             }
 
             _permisoComponenteRepositorio.CambiarEstado(pId, pEstado);
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 pEstado ? "COMPONENTE_ACTIVADO" : "COMPONENTE_DESACTIVADO",
@@ -251,9 +324,11 @@ namespace BLL.Permisos
         {
             ValidarRolExiste(pId);
 
-            Rol rol = (Rol)_permisoComponenteRepositorio.ObtenerPorId(pId);
+            Rol rol =
+                (Rol)_permisoComponenteRepositorio.ObtenerPorId(pId);
 
             _unidadDeTrabajoPermisos.EliminarComponente(pId);
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 "ROL_ELIMINADO",
@@ -265,15 +340,18 @@ namespace BLL.Permisos
         {
             ValidarPermisoExiste(pId);
 
-            Permiso permiso = (Permiso)_permisoComponenteRepositorio.ObtenerPorId(pId);
+            Permiso permiso =
+                (Permiso)_permisoComponenteRepositorio.ObtenerPorId(pId);
 
             _unidadDeTrabajoPermisos.EliminarComponente(pId);
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 "PERMISO_ELIMINADO",
                 $"Se eliminó el permiso '{permiso.Nombre}' con código '{permiso.Codigo}'."
             );
         }
+
         #endregion
 
         #region Composicion de roles
@@ -285,17 +363,21 @@ namespace BLL.Permisos
             return _rolComponenteRepositorio.ListarHijos(pId);
         }
 
-        public void AgregarComponenteARol(Guid pIdRol, Guid pIdComponente)
+        public void AgregarComponenteARol(
+            Guid pIdRol,
+            Guid pIdComponente)
         {
             ValidarRolExiste(pIdRol);
 
-            ComponentePermisos componente = ObtenerComponenteRequerido(pIdComponente);
+            ComponentePermisos componente =
+                ObtenerComponenteRequerido(pIdComponente);
 
             ValidarNoAutoreferencia(pIdRol, pIdComponente);
             ValidarNoCiclo(pIdRol, pIdComponente);
             ValidarNoDuplicadoEnRol(pIdRol, pIdComponente);
 
             _rolComponenteRepositorio.Agregar(pIdRol, pIdComponente);
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 "COMPONENTE_AGREGADO_A_ROL",
@@ -303,17 +385,26 @@ namespace BLL.Permisos
             );
         }
 
-        public void QuitarComponenteARol(Guid pIdRol, Guid pIdComponente)
+        public void QuitarComponenteARol(
+            Guid pIdRol,
+            Guid pIdComponente)
         {
             ValidarRolExiste(pIdRol);
-            ComponentePermisos componente = ObtenerComponenteRequerido(pIdComponente);
 
-            if (!_rolComponenteRepositorio.ExisteRelacion(pIdRol, pIdComponente))
+            ComponentePermisos componente =
+                ObtenerComponenteRequerido(pIdComponente);
+
+            if (!_rolComponenteRepositorio.ExisteRelacion(
+                    pIdRol,
+                    pIdComponente))
             {
-                throw new InvalidOperationException("El componente indicado no está asociado al rol.");
+                throw new InvalidOperationException(
+                    "El componente indicado no está asociado al rol."
+                );
             }
 
             _rolComponenteRepositorio.Quitar(pIdRol, pIdComponente);
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 "COMPONENTE_QUITADO_DE_ROL",
@@ -321,14 +412,24 @@ namespace BLL.Permisos
             );
         }
 
-        public void ReemplazarComponentesDeRol(Guid pIdRol, List<Guid> pHijosId)
+        public void ReemplazarComponentesDeRol(
+            Guid pIdRol,
+            List<Guid> pHijosId)
         {
             ValidarRolExiste(pIdRol);
 
             List<Guid> hijosNormalizados = NormalizarListaIds(pHijosId);
-            ValidarConjuntoDeComponentesDeRol(pIdRol, hijosNormalizados);
+            ValidarConjuntoDeComponentesDeRol(
+                pIdRol,
+                hijosNormalizados
+            );
 
-            _unidadDeTrabajoPermisos.ReemplazarComponentesDeRol(pIdRol, hijosNormalizados);
+            _unidadDeTrabajoPermisos.ReemplazarComponentesDeRol(
+                pIdRol,
+                hijosNormalizados
+            );
+
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 "ROL_COMPONENTES_REEMPLAZADOS",
@@ -339,24 +440,39 @@ namespace BLL.Permisos
         #endregion
 
         #region Asignación a usuarios
-        public List<ComponentePermisos> ListarComponentesAsignadosAUsuario(Guid pIdUsuario)
+
+        public List<ComponentePermisos>
+            ListarComponentesAsignadosAUsuario(Guid pIdUsuario)
         {
             ValidarUsuarioExiste(pIdUsuario);
 
-            return _usuarioPermisoComponenteRepositorio.ListarPorUsuario(pIdUsuario);
+            return _usuarioPermisoComponenteRepositorio
+                .ListarPorUsuario(pIdUsuario);
         }
 
-        public void AsignarComponenteAUsuario(Guid pIdUsuario, Guid pIdComponente)
+        public void AsignarComponenteAUsuario(
+            Guid pIdUsuario,
+            Guid pIdComponente)
         {
             ValidarUsuarioExiste(pIdUsuario);
-            ComponentePermisos componente = ObtenerComponenteRequerido(pIdComponente);
-            ValidarNoDuplicadoAsignacionUsuario(pIdUsuario, componente);
+
+            ComponentePermisos componente =
+                ObtenerComponenteRequerido(pIdComponente);
+
+            ValidarNoDuplicadoAsignacionUsuario(
+                pIdUsuario,
+                componente
+            );
 
             _usuarioPermisoComponenteRepositorio.Asignar(
                 pIdUsuario,
                 pIdComponente,
-                _sessionService.HaySesionActiva ? (Guid?)_sessionService.UsuarioIdActual : null
+                _sessionService.HaySesionActiva
+                    ? (Guid?)_sessionService.UsuarioIdActual
+                    : null
             );
+
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 "COMPONENTE_ASIGNADO_USUARIO",
@@ -364,17 +480,28 @@ namespace BLL.Permisos
             );
         }
 
-        public void DesasignarComponenteAUsuario(Guid pIdUsuario, Guid pIdComponente)
+        public void DesasignarComponenteAUsuario(
+            Guid pIdUsuario,
+            Guid pIdComponente)
         {
             ValidarUsuarioExiste(pIdUsuario);
             ObtenerComponenteRequerido(pIdComponente);
 
-            if (!_usuarioPermisoComponenteRepositorio.ExisteAsignacion(pIdUsuario, pIdComponente))
+            if (!_usuarioPermisoComponenteRepositorio.ExisteAsignacion(
+                    pIdUsuario,
+                    pIdComponente))
             {
-                throw new InvalidOperationException("El componente indicado no está asignado al usuario.");
+                throw new InvalidOperationException(
+                    "El componente indicado no está asignado al usuario."
+                );
             }
 
-            _usuarioPermisoComponenteRepositorio.Desasignar(pIdUsuario, pIdComponente);
+            _usuarioPermisoComponenteRepositorio.Desasignar(
+                pIdUsuario,
+                pIdComponente
+            );
+
+            RecalcularIntegridadPermisos();
 
             RegistrarBitacora(
                 "COMPONENTE_DESASIGNADO_USUARIO",
@@ -382,22 +509,28 @@ namespace BLL.Permisos
             );
         }
 
-        public void ReemplazarAsignacionesUsuario(Guid pIdUsuario, List<Guid> pHijosId)
+        public void ReemplazarAsignacionesUsuario(
+            Guid pIdUsuario,
+            List<Guid> pHijosId)
         {
             ValidarUsuarioExiste(pIdUsuario);
 
-            List<Guid> componentesNormalizados = NormalizarListaIds(pHijosId);
+            List<Guid> componentesNormalizados =
+                NormalizarListaIds(pHijosId);
 
             foreach (Guid idComponente in componentesNormalizados)
             {
                 ObtenerComponenteRequerido(idComponente);
             }
 
-            ValidarConjuntoAsignacionesUsuario(componentesNormalizados);
+            ValidarConjuntoAsignacionesUsuario(
+                componentesNormalizados
+            );
 
-            Guid? asignadoPorUsuarioId = _sessionService.HaySesionActiva
-                ? (Guid?)_sessionService.UsuarioIdActual
-                : null;
+            Guid? asignadoPorUsuarioId =
+                _sessionService.HaySesionActiva
+                    ? (Guid?)_sessionService.UsuarioIdActual
+                    : null;
 
             _unidadDeTrabajoPermisos.ReemplazarAsignacionesDeUsuario(
                 pIdUsuario,
@@ -405,48 +538,78 @@ namespace BLL.Permisos
                 asignadoPorUsuarioId
             );
 
+            RecalcularIntegridadPermisos();
+
             RegistrarBitacora(
                 "USUARIO_COMPONENTES_REEMPLAZADOS",
                 $"Se reemplazaron las asignaciones del usuario '{ObtenerNombreUsuario(pIdUsuario)}'."
             );
         }
+
         #endregion
 
         #region Validaciones
 
-        private void ValidarDatosComponente(Guid pId, string pNombre, string pCodigo, string pDescripcion, bool pEstado)
+        private void ValidarDatosComponente(
+            Guid pId,
+            string pNombre,
+            string pCodigo,
+            string pDescripcion,
+            bool pEstado)
         {
             if (string.IsNullOrWhiteSpace(pNombre))
             {
-                throw new ArgumentException("El nombre del componente no puede estar vacío.", nameof(pNombre));
+                throw new ArgumentException(
+                    "El nombre del componente no puede estar vacío.",
+                    nameof(pNombre)
+                );
             }
 
             if (string.IsNullOrWhiteSpace(pCodigo))
             {
-                throw new ArgumentException("El código del componente no puede estar vacío.", nameof(pCodigo));
+                throw new ArgumentException(
+                    "El código del componente no puede estar vacío.",
+                    nameof(pCodigo)
+                );
             }
 
             if (pNombre.Trim().Length > 150)
             {
-                throw new ArgumentException("El nombre del componente no puede superar los 150 caracteres.", nameof(pNombre));
+                throw new ArgumentException(
+                    "El nombre del componente no puede superar los 150 caracteres.",
+                    nameof(pNombre)
+                );
             }
 
             if (pCodigo.Trim().Length > 100)
             {
-                throw new ArgumentException("El código del componente no puede superar los 100 caracteres.", nameof(pCodigo));
+                throw new ArgumentException(
+                    "El código del componente no puede superar los 100 caracteres.",
+                    nameof(pCodigo)
+                );
             }
 
-            if (!string.IsNullOrWhiteSpace(pDescripcion) && pDescripcion.Trim().Length > 300)
+            if (!string.IsNullOrWhiteSpace(pDescripcion)
+                && pDescripcion.Trim().Length > 300)
             {
-                throw new ArgumentException("La descripción del componente no puede superar los 300 caracteres.", nameof(pDescripcion));
+                throw new ArgumentException(
+                    "La descripción del componente no puede superar los 300 caracteres.",
+                    nameof(pDescripcion)
+                );
             }
         }
 
-        private void ValidarCodigoUnico(string codigo, Guid? idExcluido)
+        private void ValidarCodigoUnico(
+            string codigo,
+            Guid? idExcluido)
         {
-            if (_permisoComponenteRepositorio.ExisteCodigo(codigo.Trim(), idExcluido))
+            if (_permisoComponenteRepositorio.ExisteCodigo(
+                    codigo.Trim(),
+                    idExcluido))
             {
-                throw new InvalidOperationException("Ya existe un componente con el código indicado.");
+                throw new InvalidOperationException(
+                    "Ya existe un componente con el código indicado."
+                );
             }
         }
 
@@ -454,14 +617,21 @@ namespace BLL.Permisos
         {
             if (idRol == Guid.Empty)
             {
-                throw new ArgumentException("El identificador del rol no puede estar vacío.", nameof(idRol));
+                throw new ArgumentException(
+                    "El identificador del rol no puede estar vacío.",
+                    nameof(idRol)
+                );
             }
 
-            ComponentePermisos componente = _permisoComponenteRepositorio.ObtenerPorId(idRol);
+            ComponentePermisos componente =
+                _permisoComponenteRepositorio.ObtenerPorId(idRol);
 
-            if (componente == null || componente.Tipo != TipoComponentePermisos.Rol)
+            if (componente == null
+                || componente.Tipo != TipoComponentePermisos.Rol)
             {
-                throw new InvalidOperationException("No se encontró el rol indicado.");
+                throw new InvalidOperationException(
+                    "No se encontró el rol indicado."
+                );
             }
         }
 
@@ -469,82 +639,153 @@ namespace BLL.Permisos
         {
             if (idPermiso == Guid.Empty)
             {
-                throw new ArgumentException("El identificador del permiso no puede estar vacío.", nameof(idPermiso));
+                throw new ArgumentException(
+                    "El identificador del permiso no puede estar vacío.",
+                    nameof(idPermiso)
+                );
             }
 
-            ComponentePermisos componente = _permisoComponenteRepositorio.ObtenerPorId(idPermiso);
+            ComponentePermisos componente =
+                _permisoComponenteRepositorio.ObtenerPorId(idPermiso);
 
-            if (componente == null || componente.Tipo != TipoComponentePermisos.Permiso)
+            if (componente == null
+                || componente.Tipo != TipoComponentePermisos.Permiso)
             {
-                throw new InvalidOperationException("No se encontró el permiso indicado.");
+                throw new InvalidOperationException(
+                    "No se encontró el permiso indicado."
+                );
             }
         }
 
-        private void ValidarNoAutoreferencia(Guid idRol, Guid idComponenteHijo)
+        private void ValidarNoAutoreferencia(
+            Guid idRol,
+            Guid idComponenteHijo)
         {
             if (idRol == idComponenteHijo)
             {
-                throw new InvalidOperationException("Un rol no puede contenerse a sí mismo.");
+                throw new InvalidOperationException(
+                    "Un rol no puede contenerse a sí mismo."
+                );
             }
         }
 
-        private void ValidarNoCiclo(Guid idRol, Guid idComponenteHijo)
+        private void ValidarNoCiclo(
+            Guid idRol,
+            Guid idComponenteHijo)
         {
-            ComponentePermisos componente = ObtenerComponenteRequerido(idComponenteHijo);
+            ComponentePermisos componente =
+                ObtenerComponenteRequerido(idComponenteHijo);
 
             if (componente.Tipo != TipoComponentePermisos.Rol)
             {
                 return;
             }
 
-            if (ExisteCaminoEntreRoles(idComponenteHijo, idRol, new HashSet<Guid>()))
+            if (ExisteCaminoEntreRoles(
+                    idComponenteHijo,
+                    idRol,
+                    new HashSet<Guid>()))
             {
-                throw new InvalidOperationException("La operación genera un ciclo en la jerarquía de roles.");
+                throw new InvalidOperationException(
+                    "La operación genera un ciclo en la jerarquía de roles."
+                );
             }
         }
 
-        private void ValidarNoDuplicadoEnRol(Guid idRol, Guid idComponenteHijo)
+        private void ValidarNoDuplicadoEnRol(
+            Guid idRol,
+            Guid idComponenteHijo)
         {
-            if (_rolComponenteRepositorio.ExisteRelacion(idRol, idComponenteHijo))
+            if (_rolComponenteRepositorio.ExisteRelacion(
+                    idRol,
+                    idComponenteHijo))
             {
-                throw new InvalidOperationException("El componente ya está asociado directamente al rol.");
+                throw new InvalidOperationException(
+                    "El componente ya está asociado directamente al rol."
+                );
             }
 
-            HashSet<string> permisosActuales = ObtenerCodigosPermisosDeRol(idRol);
-            HashSet<string> permisosNuevoComponente = ObtenerCodigosPermisosDeComponente(idComponenteHijo, new HashSet<Guid>());
+            HashSet<string> permisosActuales =
+                ObtenerCodigosPermisosDeRol(idRol);
+
+            HashSet<string> permisosNuevoComponente =
+                ObtenerCodigosPermisosDeComponente(
+                    idComponenteHijo,
+                    new HashSet<Guid>()
+                );
 
             if (permisosActuales.Overlaps(permisosNuevoComponente))
             {
-                throw new InvalidOperationException("El componente agrega permisos que el rol ya posee, directa o indirectamente.");
+                throw new InvalidOperationException(
+                    "El componente agrega permisos que el rol ya posee, directa o indirectamente."
+                );
             }
         }
 
-        private void ValidarNoDuplicadoAsignacionUsuario(Guid idUsuario, Guid idComponente)
+        private void ValidarNoDuplicadoAsignacionUsuario(
+            Guid idUsuario,
+            Guid idComponente)
         {
-            if (_usuarioPermisoComponenteRepositorio.ExisteAsignacion(idUsuario, idComponente))
+            if (_usuarioPermisoComponenteRepositorio.ExisteAsignacion(
+                    idUsuario,
+                    idComponente))
             {
-                throw new InvalidOperationException("El componente ya está asignado al usuario.");
+                throw new InvalidOperationException(
+                    "El componente ya está asignado al usuario."
+                );
             }
         }
 
-        private void ValidarNoDuplicadoAsignacionUsuario(Guid idUsuario, ComponentePermisos componente)
+        private void ValidarNoDuplicadoAsignacionUsuario(
+            Guid idUsuario,
+            ComponentePermisos componente)
         {
-            ValidarNoDuplicadoAsignacionUsuario(idUsuario, componente.Id);
+            ValidarNoDuplicadoAsignacionUsuario(
+                idUsuario,
+                componente.Id
+            );
 
-            HashSet<string> permisosActuales = ObtenerCodigosPermisosEfectivosUsuario(idUsuario);
-            HashSet<string> permisosNuevoComponente = ObtenerCodigosPermisosDeComponente(componente.Id, new HashSet<Guid>());
-            List<string> permisosDuplicados = ObtenerPermisosDuplicados(permisosActuales, permisosNuevoComponente);
+            HashSet<string> permisosActuales =
+                ObtenerCodigosPermisosEfectivosUsuario(idUsuario);
+
+            HashSet<string> permisosNuevoComponente =
+                ObtenerCodigosPermisosDeComponente(
+                    componente.Id,
+                    new HashSet<Guid>()
+                );
+
+            List<string> permisosDuplicados =
+                ObtenerPermisosDuplicados(
+                    permisosActuales,
+                    permisosNuevoComponente
+                );
 
             if (permisosDuplicados.Count > 0)
             {
-                throw CrearExcepcionPermisoDuplicadoUsuario(componente.Nombre, permisosDuplicados);
+                throw CrearExcepcionPermisoDuplicadoUsuario(
+                    componente.Nombre,
+                    permisosDuplicados
+                );
             }
         }
 
-        private void RegistrarBitacora(string accion, string descripcion)
+        #endregion
+
+        private void RecalcularIntegridadPermisos()
+        {
+            // Cada modificación legítima debe establecer inmediatamente
+            // un nuevo estado íntegro para los tres conjuntos de permisos.
+            _integridadService.RecalcularDigitosPermisos();
+        }
+
+        private void RegistrarBitacora(
+            string accion,
+            string descripcion)
         {
             _bitacoraService.Registrar(
-                _sessionService.HaySesionActiva ? (Guid?)_sessionService.UsuarioIdActual : null,
+                _sessionService.HaySesionActiva
+                    ? (Guid?)_sessionService.UsuarioIdActual
+                    : null,
                 _sessionService.NombreUsuarioActual,
                 "Permisos",
                 accion,
@@ -553,33 +794,43 @@ namespace BLL.Permisos
             );
         }
 
-        #endregion
-
         private void ValidarUsuarioExiste(Guid idUsuario)
         {
             if (idUsuario == Guid.Empty)
             {
-                throw new ArgumentException("El identificador del usuario no puede estar vacío.", nameof(idUsuario));
+                throw new ArgumentException(
+                    "El identificador del usuario no puede estar vacío.",
+                    nameof(idUsuario)
+                );
             }
 
             if (_usuarioRepositorio.ObtenerPorId(idUsuario) == null)
             {
-                throw new InvalidOperationException("No se encontró el usuario indicado.");
+                throw new InvalidOperationException(
+                    "No se encontró el usuario indicado."
+                );
             }
         }
 
-        private ComponentePermisos ObtenerComponenteRequerido(Guid idComponente)
+        private ComponentePermisos ObtenerComponenteRequerido(
+            Guid idComponente)
         {
             if (idComponente == Guid.Empty)
             {
-                throw new ArgumentException("El identificador del componente no puede estar vacío.", nameof(idComponente));
+                throw new ArgumentException(
+                    "El identificador del componente no puede estar vacío.",
+                    nameof(idComponente)
+                );
             }
 
-            ComponentePermisos componente = _permisoComponenteRepositorio.ObtenerPorId(idComponente);
+            ComponentePermisos componente =
+                _permisoComponenteRepositorio.ObtenerPorId(idComponente);
 
             if (componente == null)
             {
-                throw new InvalidOperationException("No se encontró el componente indicado.");
+                throw new InvalidOperationException(
+                    "No se encontró el componente indicado."
+                );
             }
 
             return componente;
@@ -609,17 +860,18 @@ namespace BLL.Permisos
                 return new List<Guid>();
             }
 
-            List<Guid> idsNormalizados = ids
+            return ids
                 .Where(id => id != Guid.Empty)
                 .Distinct()
                 .ToList();
-
-            return idsNormalizados;
         }
 
-        private void ValidarConjuntoDeComponentesDeRol(Guid idRol, List<Guid> idsHijos)
+        private void ValidarConjuntoDeComponentesDeRol(
+            Guid idRol,
+            List<Guid> idsHijos)
         {
-            HashSet<string> permisosAcumulados = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> permisosAcumulados =
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (Guid idHijo in idsHijos)
             {
@@ -627,53 +879,83 @@ namespace BLL.Permisos
                 ValidarNoAutoreferencia(idRol, idHijo);
                 ValidarNoCiclo(idRol, idHijo);
 
-                HashSet<string> permisosDelHijo = ObtenerCodigosPermisosDeComponente(idHijo, new HashSet<Guid>());
+                HashSet<string> permisosDelHijo =
+                    ObtenerCodigosPermisosDeComponente(
+                        idHijo,
+                        new HashSet<Guid>()
+                    );
 
                 if (permisosAcumulados.Overlaps(permisosDelHijo))
                 {
-                    throw new InvalidOperationException("La composición del rol contiene permisos duplicados, directos o indirectos.");
+                    throw new InvalidOperationException(
+                        "La composición del rol contiene permisos duplicados, directos o indirectos."
+                    );
                 }
 
                 permisosAcumulados.UnionWith(permisosDelHijo);
             }
         }
 
-        private void ValidarConjuntoAsignacionesUsuario(List<Guid> idsComponentes)
+        private void ValidarConjuntoAsignacionesUsuario(
+            List<Guid> idsComponentes)
         {
-            HashSet<string> permisosAcumulados = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> permisosAcumulados =
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (Guid idComponente in idsComponentes)
             {
-                ComponentePermisos componente = ObtenerComponenteRequerido(idComponente);
-                HashSet<string> permisosDelComponente = ObtenerCodigosPermisosDeComponente(idComponente, new HashSet<Guid>());
-                List<string> permisosDuplicados = ObtenerPermisosDuplicados(permisosAcumulados, permisosDelComponente);
+                ComponentePermisos componente =
+                    ObtenerComponenteRequerido(idComponente);
+
+                HashSet<string> permisosDelComponente =
+                    ObtenerCodigosPermisosDeComponente(
+                        idComponente,
+                        new HashSet<Guid>()
+                    );
+
+                List<string> permisosDuplicados =
+                    ObtenerPermisosDuplicados(
+                        permisosAcumulados,
+                        permisosDelComponente
+                    );
 
                 if (permisosDuplicados.Count > 0)
                 {
-                    throw CrearExcepcionPermisoDuplicadoUsuario(componente.Nombre, permisosDuplicados);
+                    throw CrearExcepcionPermisoDuplicadoUsuario(
+                        componente.Nombre,
+                        permisosDuplicados
+                    );
                 }
 
                 permisosAcumulados.UnionWith(permisosDelComponente);
             }
         }
 
-        private bool ExisteCaminoEntreRoles(Guid idRolOrigen, Guid idRolBuscado, HashSet<Guid> rolesVisitados)
+        private bool ExisteCaminoEntreRoles(
+            Guid idRolOrigen,
+            Guid idRolBuscado,
+            HashSet<Guid> rolesVisitados)
         {
             if (!rolesVisitados.Add(idRolOrigen))
             {
                 return false;
             }
 
-            List<ComponentePermisos> hijos = _rolComponenteRepositorio.ListarHijos(idRolOrigen);
+            List<ComponentePermisos> hijos =
+                _rolComponenteRepositorio.ListarHijos(idRolOrigen);
 
-            foreach (ComponentePermisos hijo in hijos.Where(x => x.Tipo == TipoComponentePermisos.Rol))
+            foreach (ComponentePermisos hijo in hijos.Where(
+                         x => x.Tipo == TipoComponentePermisos.Rol))
             {
                 if (hijo.Id == idRolBuscado)
                 {
                     return true;
                 }
 
-                if (ExisteCaminoEntreRoles(hijo.Id, idRolBuscado, rolesVisitados))
+                if (ExisteCaminoEntreRoles(
+                        hijo.Id,
+                        idRolBuscado,
+                        rolesVisitados))
                 {
                     return true;
                 }
@@ -684,29 +966,47 @@ namespace BLL.Permisos
 
         private HashSet<string> ObtenerCodigosPermisosDeRol(Guid idRol)
         {
-            HashSet<string> permisos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> permisos =
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (ComponentePermisos hijo in _rolComponenteRepositorio.ListarHijos(idRol))
+            foreach (ComponentePermisos hijo
+                     in _rolComponenteRepositorio.ListarHijos(idRol))
             {
-                permisos.UnionWith(ObtenerCodigosPermisosDeComponente(hijo.Id, new HashSet<Guid>()));
+                permisos.UnionWith(
+                    ObtenerCodigosPermisosDeComponente(
+                        hijo.Id,
+                        new HashSet<Guid>()
+                    )
+                );
             }
 
             return permisos;
         }
 
-        private HashSet<string> ObtenerCodigosPermisosEfectivosUsuario(Guid idUsuario)
+        private HashSet<string> ObtenerCodigosPermisosEfectivosUsuario(
+            Guid idUsuario)
         {
-            HashSet<string> permisos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> permisos =
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (ComponentePermisos componente in _usuarioPermisoComponenteRepositorio.ListarPorUsuario(idUsuario))
+            foreach (ComponentePermisos componente
+                     in _usuarioPermisoComponenteRepositorio
+                         .ListarPorUsuario(idUsuario))
             {
-                permisos.UnionWith(ObtenerCodigosPermisosDeComponente(componente.Id, new HashSet<Guid>()));
+                permisos.UnionWith(
+                    ObtenerCodigosPermisosDeComponente(
+                        componente.Id,
+                        new HashSet<Guid>()
+                    )
+                );
             }
 
             return permisos;
         }
 
-        private List<string> ObtenerPermisosDuplicados(HashSet<string> permisosExistentes, HashSet<string> permisosNuevos)
+        private List<string> ObtenerPermisosDuplicados(
+            HashSet<string> permisosExistentes,
+            HashSet<string> permisosNuevos)
         {
             return permisosNuevos
                 .Where(permisosExistentes.Contains)
@@ -714,22 +1014,27 @@ namespace BLL.Permisos
                 .ToList();
         }
 
-        private PermisoEfectivoDuplicadoException CrearExcepcionPermisoDuplicadoUsuario(
-            string nombreComponente,
-            List<string> permisosDuplicados)
+        private PermisoEfectivoDuplicadoException
+            CrearExcepcionPermisoDuplicadoUsuario(
+                string nombreComponente,
+                List<string> permisosDuplicados)
         {
             return new PermisoEfectivoDuplicadoException(
                 $"No se puede asignar el componente '{nombreComponente}' porque aporta permisos que el usuario ya posee por otras asignaciones: {string.Join(", ", permisosDuplicados)}."
             );
         }
 
-        private HashSet<string> ObtenerCodigosPermisosDeComponente(Guid idComponente, HashSet<Guid> rolesVisitados)
+        private HashSet<string> ObtenerCodigosPermisosDeComponente(
+            Guid idComponente,
+            HashSet<Guid> rolesVisitados)
         {
-            ComponentePermisos componente = ObtenerComponenteRequerido(idComponente);
+            ComponentePermisos componente =
+                ObtenerComponenteRequerido(idComponente);
 
             if (componente.Tipo == TipoComponentePermisos.Permiso)
             {
-                return new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                return new HashSet<string>(
+                    StringComparer.OrdinalIgnoreCase)
                 {
                     componente.Codigo
                 };
@@ -737,14 +1042,24 @@ namespace BLL.Permisos
 
             if (!rolesVisitados.Add(componente.Id))
             {
-                return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                return new HashSet<string>(
+                    StringComparer.OrdinalIgnoreCase
+                );
             }
 
-            HashSet<string> permisos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> permisos =
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (ComponentePermisos hijo in _rolComponenteRepositorio.ListarHijos(componente.Id))
+            foreach (ComponentePermisos hijo
+                     in _rolComponenteRepositorio.ListarHijos(
+                         componente.Id))
             {
-                permisos.UnionWith(ObtenerCodigosPermisosDeComponente(hijo.Id, rolesVisitados));
+                permisos.UnionWith(
+                    ObtenerCodigosPermisosDeComponente(
+                        hijo.Id,
+                        rolesVisitados
+                    )
+                );
             }
 
             return permisos;

@@ -90,6 +90,16 @@ namespace BLL.Integridad
             );
         }
 
+        public void RecalcularDigitosPermisos()
+        {
+            // Las operaciones legítimas de permisos actualizan sus DV sin
+            // generar un evento adicional: cada caso de uso ya registra
+            // su propia acción en la bitácora.
+            RecalcularComponentesPermisos();
+            RecalcularRelacionesDeRoles();
+            RecalcularAsignacionesDePermisos();
+        }
+
         public void DesbloquearUsuariosPorIntegridad(
             Guid? usuarioId,
             string usuario)
