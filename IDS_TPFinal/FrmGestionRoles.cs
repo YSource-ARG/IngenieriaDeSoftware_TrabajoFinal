@@ -669,11 +669,22 @@ namespace IDS_TPFinal
                     return;
                 }
 
+                string mensajeConfirmacion = string.Format(
+                    Traducir(
+                        "Roles.Gestion.ConfirmarEliminar",
+                        "¿Está seguro de eliminar el rol '{0}'?\n\n" +
+                        "También se eliminarán sus relaciones y asignaciones."
+                    ),
+                    rolSeleccionado.Nombre
+                );
+
                 DialogResult respuesta = MessageBox.Show(
                     this,
-                    $"¿Está seguro de eliminar el rol '{rolSeleccionado.Nombre}'?\n\n" +
-                    "También se eliminarán sus relaciones y asignaciones.",
-                    Traducir("Roles.Gestion.ConfirmarEliminarTitulo", "Confirmar eliminación"),
+                    mensajeConfirmacion,
+                    Traducir(
+                        "Roles.Gestion.ConfirmarEliminarTitulo",
+                        "Confirmar eliminación"
+                    ),
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning
                 );
