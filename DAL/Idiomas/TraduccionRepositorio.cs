@@ -124,6 +124,60 @@ namespace DAL.Idiomas
             }
         }
 
+        public Traduccion ObtenerPorId(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException(
+                    "El id de la traducción no puede estar vacío.",
+                    nameof(id)
+                );
+            }
+
+            const string sql = @"
+                SELECT
+                    Id,
+                    Clave,
+                    IdiomaId,
+                    Texto
+                FROM dbo.Traduccion
+                WHERE Id = @Id";
+
+            try
+            {
+                using (SqlConnection connection = _connectionFactory.CrearConexion())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters
+                        .Add("@Id", SqlDbType.UniqueIdentifier)
+                        .Value = id;
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        return reader.Read()
+                            ? MapearTraduccion(reader)
+                            : null;
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new AccesoDatosException(
+                    "No se pudo obtener la traducción.",
+                    ex
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new AccesoDatosException(
+                    "No se pudo abrir o utilizar la conexión con la base de datos.",
+                    ex
+                );
+            }
+        }
+
         public void Guardar(Guid idiomaId, string clave, string texto)
         {
             if (idiomaId == Guid.Empty)
