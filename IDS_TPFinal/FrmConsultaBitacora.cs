@@ -129,6 +129,8 @@ namespace IDS_TPFinal
             cmbModulo.Items.Add(TraducirTexto("Bitacora.Opciones.Todos", "Todos"));
             cmbModulo.Items.Add(TraducirTexto("Bitacora.Opciones.Seguridad", "Seguridad"));
             cmbModulo.Items.Add(TraducirTexto("Bitacora.Opciones.Usuarios", "Usuarios"));
+            cmbModulo.Items.Add(TraducirTexto("Bitacora.Opciones.Permisos", "Permisos"));
+            cmbModulo.Items.Add(TraducirTexto("Bitacora.Opciones.Integridad", "Integridad"));
             cmbModulo.SelectedIndex = 0;
 
             cmbTipo.Items.Clear();
@@ -259,6 +261,16 @@ namespace IDS_TPFinal
             if (cmbModulo.SelectedIndex == 2)
             {
                 return "Usuarios";
+            }
+
+            if (cmbModulo.SelectedIndex == 3)
+            {
+                return "Permisos";
+            }
+
+            if (cmbModulo.SelectedIndex == 4)
+            {
+                return "Integridad";
             }
 
             return null;
