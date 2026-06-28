@@ -327,8 +327,8 @@ namespace IDS_TPFinal
         private string ConstruirTextoNodo(ComponentePermisos componente, bool esRolActual)
         {
             string prefijo = componente.Tipo == TipoComponentePermisos.Rol
-                ? "[Rol]"
-                : "[Permiso]";
+                ? $"[{Traducir("Permisos.Componentes.Rol", "Rol")}]"
+                : $"[{Traducir("Permisos.Componentes.Permiso", "Permiso")}]";
 
             string sufijo = esRolActual
                 ? Traducir("Roles.Gestion.RolActual", " - rol actual")
