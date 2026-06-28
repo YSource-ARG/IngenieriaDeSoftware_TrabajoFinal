@@ -1,6 +1,8 @@
 ﻿using BE;
 using DAL.Excepciones;
 using DAL.Idiomas;
+using BLL.Bitacora;
+using SSL.Interfaces;
 using System;
 using System.Collections.Generic;
 
@@ -10,10 +12,14 @@ namespace BLL.Idiomas
     {
         private readonly IIdiomaRepositorio _idiomaRepositorio;
         private readonly ITraduccionRepositorio _traduccionRepositorio;
+        private readonly ISessionService _sessionService;
+        private readonly IBitacoraService _bitacoraService;
 
         public GestionTraduccionesAppService(
             IIdiomaRepositorio idiomaRepositorio,
-            ITraduccionRepositorio traduccionRepositorio)
+            ITraduccionRepositorio traduccionRepositorio,
+            ISessionService sessionService,
+            IBitacoraService bitacoraService)
         {
             if (idiomaRepositorio == null)
             {
@@ -25,8 +31,20 @@ namespace BLL.Idiomas
                 throw new ArgumentNullException(nameof(traduccionRepositorio));
             }
 
+            if (sessionService == null)
+            {
+                throw new ArgumentNullException(nameof(sessionService));
+            }
+
+            if (bitacoraService == null)
+            {
+                throw new ArgumentNullException(nameof(bitacoraService));
+            }
+
             _idiomaRepositorio = idiomaRepositorio;
             _traduccionRepositorio = traduccionRepositorio;
+            _sessionService = sessionService;
+            _bitacoraService = bitacoraService;
         }
 
         public List<Idioma> ListarIdiomasActivos()
@@ -79,6 +97,8 @@ namespace BLL.Idiomas
             {
                 _traduccionRepositorio.Guardar(idiomaId, clave, texto);
 
+                RegistrarBitacora("TRADUCCION_CREADA",$"Se creó la traducción para la clave '{clave.Trim()}'.");
+
                 return ResultadoGuardadoTraduccion.Ok();
             }
             catch (AccesoDatosException)
@@ -108,6 +128,8 @@ namespace BLL.Idiomas
             {
                 _traduccionRepositorio.Modificar(id, clave, texto);
 
+                RegistrarBitacora("TRADUCCION_MODIFICADA",$"Se modificó la traducción para la clave '{clave.Trim()}'.");
+
                 return ResultadoGuardadoTraduccion.Ok("La traducción fue modificada correctamente.");
             }
             catch (AccesoDatosException)
@@ -125,7 +147,16 @@ namespace BLL.Idiomas
 
             try
             {
+                Traduccion traduccion = _traduccionRepositorio.ObtenerPorId(id);
+
+                if (traduccion == null)
+                {
+                    return ResultadoGuardadoTraduccion.Error("No se encontró la traducción seleccionada.");
+                }
+
                 _traduccionRepositorio.Eliminar(id);
+
+                RegistrarBitacora("TRADUCCION_ELIMINADA",$"Se eliminó la traducción para la clave '{traduccion.Clave}'.");
 
                 return ResultadoGuardadoTraduccion.Ok("La traducción fue eliminada correctamente.");
             }
@@ -133,6 +164,20 @@ namespace BLL.Idiomas
             {
                 return ResultadoGuardadoTraduccion.Error("No se pudo eliminar la traducción. Verifique la conexión con la base de datos.");
             }
+        }
+
+        private void RegistrarBitacora(string accion, string descripcion)
+        {
+            _bitacoraService.Registrar(
+                _sessionService.HaySesionActiva
+                    ? (Guid?)_sessionService.UsuarioIdActual
+                    : null,
+                _sessionService.NombreUsuarioActual,
+                "Traducciones",
+                accion,
+                descripcion,
+                "INFO"
+            );
         }
     }
 }

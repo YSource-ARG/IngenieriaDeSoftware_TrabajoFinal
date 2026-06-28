@@ -10,6 +10,8 @@ namespace DAL.Idiomas
 
         List<Traduccion> ListarDetallePorIdioma(Guid idiomaId);
 
+        Traduccion ObtenerPorId(Guid id);
+
         void Guardar(Guid idiomaId, string clave, string texto);
 
         void Modificar(Guid id, string clave, string texto);

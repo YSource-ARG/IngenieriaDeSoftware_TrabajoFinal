@@ -68,11 +68,18 @@ namespace BLL.Configuracion
 
             IBitacoraContingenciaService bitacoraContingenciaService = new BitacoraContingenciaService();
 
-            IdiomaAppService = new IdiomaAppService(idiomaRepositorio, traduccionRepositorio);
-            GestionIdiomasAppService = new GestionIdiomasAppService(idiomaRepositorio);
-            GestionTraduccionesAppService = new GestionTraduccionesAppService(idiomaRepositorio, traduccionRepositorio);
-
             BitacoraService = new BitacoraService(bitacoraRepositorio, bitacoraContingenciaService);
+
+            IdiomaAppService = new IdiomaAppService(idiomaRepositorio, traduccionRepositorio);
+
+            GestionIdiomasAppService = new GestionIdiomasAppService(idiomaRepositorio, sessionService, BitacoraService);
+
+            GestionTraduccionesAppService = new GestionTraduccionesAppService(
+                idiomaRepositorio,
+                traduccionRepositorio,
+                sessionService,
+                BitacoraService
+            );
 
             IntegridadService = new IntegridadService(
                 digitoVerificadorRepositorio,
